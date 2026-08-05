@@ -1,5 +1,9 @@
 # ⚡ VNV Linux — Viva New Vegas para Linux/Steam
 
+<p align="center">
+  <img src="assets/gecko.png" alt="Gecko de Fallout New Vegas" width="160">
+</p>
+
 Instalador **100% automático** del Core de Viva New Vegas (53 mods) para Fallout New Vegas en Linux.
 
 > 🎮 **Un solo comando y te lleva de la mano:**
