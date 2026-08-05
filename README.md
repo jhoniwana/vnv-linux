@@ -24,7 +24,7 @@ Instalador **100% automático** del Core de Viva New Vegas (53 mods) para Fallou
 ## 🚀 Empezar
 
 ```bash
-git clone https://github.com/tu-usuario/vnv-linux
+git clone https://github.com/jhoniwana/vnv-linux
 cd vnv-linux
 ./vnv.sh ui
 ```
