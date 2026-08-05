@@ -1,0 +1,426 @@
+[
+  {
+    "mod_id": 57174,
+    "seccion": "utilities",
+    "nombre": "UIO - User Interface Organizer",
+    "file_id": 1000080073,
+    "checksum": null,
+    "version": "2.30"
+  },
+  {
+    "mod_id": 58277,
+    "seccion": "utilities",
+    "nombre": "JIP LN NVSE Plugin",
+    "file_id": 1000132314,
+    "checksum": null,
+    "version": "57.30"
+  },
+  {
+    "mod_id": 62552,
+    "seccion": "utilities",
+    "nombre": "FNV 4GB Patcher",
+    "file_id": 1000079136,
+    "checksum": null,
+    "version": "1.5"
+  },
+  {
+    "mod_id": 65854,
+    "seccion": "utilities",
+    "nombre": "FNV BSA Decompressor",
+    "file_id": 1000136741,
+    "checksum": null,
+    "version": "1.3"
+  },
+  {
+    "mod_id": 65906,
+    "seccion": "utilities",
+    "nombre": "Console Paste Support",
+    "file_id": 1000122282,
+    "checksum": null,
+    "version": "2.3"
+  },
+  {
+    "mod_id": 66537,
+    "seccion": "utilities",
+    "nombre": "NVTF - New Vegas Tick Fix",
+    "file_id": 1000156835,
+    "checksum": null,
+    "version": "10.61"
+  },
+  {
+    "mod_id": 66927,
+    "seccion": "utilities",
+    "nombre": "JohnnyGuitar NVSE",
+    "file_id": 1000175713,
+    "checksum": null,
+    "version": "5.28"
+  },
+  {
+    "mod_id": 67883,
+    "seccion": "utilities",
+    "nombre": "New Vegas Script Extender (NVSE xNVSE)",
+    "file_id": 1000175507,
+    "checksum": null,
+    "version": "6.4.8"
+  },
+  {
+    "mod_id": 68714,
+    "seccion": "utilities",
+    "nombre": "FNV Mod Limit Fix",
+    "file_id": 1000172551,
+    "checksum": null,
+    "version": "6"
+  },
+  {
+    "mod_id": 70801,
+    "seccion": "utilities",
+    "nombre": "Improved Console (NVSE)",
+    "file_id": 1000120606,
+    "checksum": null,
+    "version": "3"
+  },
+  {
+    "mod_id": 71336,
+    "seccion": "utilities",
+    "nombre": "kNVSE Animation Plugin",
+    "file_id": 1000142858,
+    "checksum": null,
+    "version": "37"
+  },
+  {
+    "mod_id": 72541,
+    "seccion": "utilities",
+    "nombre": "ShowOff xNVSE Plugin",
+    "file_id": 1000172754,
+    "checksum": null,
+    "version": "1.84"
+  },
+  {
+    "mod_id": 75417,
+    "seccion": "utilities",
+    "nombre": "ISControl Enabler and Ironsights adjuster (now ESPless)",
+    "file_id": 1000112545,
+    "checksum": null,
+    "version": "2.3"
+  },
+  {
+    "mod_id": 79358,
+    "seccion": "utilities",
+    "nombre": "Viva New Vegas Resources",
+    "file_id": 1000178009,
+    "checksum": null,
+    "version": "1.0"
+  },
+  {
+    "mod_id": 81281,
+    "seccion": "utilities",
+    "nombre": "Epic Games Patcher",
+    "file_id": 1000129652,
+    "checksum": null,
+    "version": "2.2"
+  },
+  {
+    "mod_id": 82540,
+    "seccion": "utilities",
+    "nombre": "Yvile's Crash Logger",
+    "file_id": 1000172208,
+    "checksum": null,
+    "version": "5.17a"
+  },
+  {
+    "mod_id": 85748,
+    "seccion": "utilities",
+    "nombre": "hNVSE",
+    "file_id": 1000150970,
+    "checksum": null,
+    "version": "1.2"
+  },
+  {
+    "mod_id": 86136,
+    "seccion": "utilities",
+    "nombre": "No Exit to Main Menu",
+    "file_id": 1000151133,
+    "checksum": null,
+    "version": "1.4"
+  },
+  {
+    "mod_id": 86200,
+    "seccion": "utilities",
+    "nombre": "JohnnyGuitar NVSE - INI Presets",
+    "file_id": 1000175896,
+    "checksum": null,
+    "version": "5.28"
+  },
+  {
+    "mod_id": 87814,
+    "seccion": "utilities",
+    "nombre": "Shader Loader - NVSE",
+    "file_id": 1000169903,
+    "checksum": null,
+    "version": "1.40"
+  },
+  {
+    "mod_id": 92289,
+    "seccion": "utilities",
+    "nombre": "Ultimate Edition ESM Fixes Remastered",
+    "file_id": 1000176515,
+    "checksum": null,
+    "version": "1.3"
+  },
+  {
+    "mod_id": 51664,
+    "seccion": "bugfix",
+    "nombre": "Yukichigai Unofficial Patch - YUP",
+    "file_id": 1000174766,
+    "checksum": null,
+    "version": "13.9.1"
+  },
+  {
+    "mod_id": 66347,
+    "seccion": "bugfix",
+    "nombre": "lStewieAl's Tweaks and Engine Fixes",
+    "file_id": 1000177460,
+    "checksum": null,
+    "version": "9.95"
+  },
+  {
+    "mod_id": 71239,
+    "seccion": "bugfix",
+    "nombre": "Unofficial Patch NVSE Plus",
+    "file_id": 1000174627,
+    "checksum": null,
+    "version": "1.7.3"
+  },
+  {
+    "mod_id": 71577,
+    "seccion": "bugfix",
+    "nombre": "Mostly Fixed FaceGen Tints (NV or TTW)",
+    "file_id": 1000164167,
+    "checksum": null,
+    "version": "1.1.1"
+  },
+  {
+    "mod_id": 71973,
+    "seccion": "bugfix",
+    "nombre": "Combat Lag Fix (NVSE)",
+    "file_id": 1000074493,
+    "checksum": null,
+    "version": "1.0"
+  },
+  {
+    "mod_id": 73596,
+    "seccion": "bugfix",
+    "nombre": "Strip Lights Region Fix",
+    "file_id": 1000167222,
+    "checksum": null,
+    "version": "1.4.1"
+  },
+  {
+    "mod_id": 73937,
+    "seccion": "bugfix",
+    "nombre": "Landscape Disposition Fix",
+    "file_id": 1000174034,
+    "checksum": null,
+    "version": "0.5.7"
+  },
+  {
+    "mod_id": 74295,
+    "seccion": "bugfix",
+    "nombre": "New Vegas Mesh Improvement Mod - NVMIM",
+    "file_id": 1000165242,
+    "checksum": null,
+    "version": "1.13hf2"
+  },
+  {
+    "mod_id": 77073,
+    "seccion": "bugfix",
+    "nombre": "Misc Audio Tweaks and Fixes",
+    "file_id": 1000132747,
+    "checksum": null,
+    "version": "2.5"
+  },
+  {
+    "mod_id": 77205,
+    "seccion": "bugfix",
+    "nombre": "Climate Control NVSE",
+    "file_id": 1000094799,
+    "checksum": null,
+    "version": "1.0"
+  },
+  {
+    "mod_id": 80316,
+    "seccion": "bugfix",
+    "nombre": "Fallout Alpha Rendering Tweaks - NVSE",
+    "file_id": 1000125920,
+    "checksum": null,
+    "version": "2.5.2"
+  },
+  {
+    "mod_id": 80443,
+    "seccion": "bugfix",
+    "nombre": "External Emittance Fix - NVSE",
+    "file_id": 1000170915,
+    "checksum": null,
+    "version": "1.31"
+  },
+  {
+    "mod_id": 80666,
+    "seccion": "bugfix",
+    "nombre": "ActorCause Save Bloat Fix",
+    "file_id": 1000107287,
+    "checksum": null,
+    "version": "1.0"
+  },
+  {
+    "mod_id": 80993,
+    "seccion": "bugfix",
+    "nombre": "lStewieAl's Engine Optimizations",
+    "file_id": 1000115492,
+    "checksum": null,
+    "version": "1.0"
+  },
+  {
+    "mod_id": 81200,
+    "seccion": "bugfix",
+    "nombre": "Depth of Field Fix - NVSE",
+    "file_id": 1000162968,
+    "checksum": null,
+    "version": "1.2"
+  },
+  {
+    "mod_id": 81201,
+    "seccion": "bugfix",
+    "nombre": "Muzzle Flash Light Fix - NVSE",
+    "file_id": 1000169890,
+    "checksum": null,
+    "version": "2"
+  },
+  {
+    "mod_id": 81775,
+    "seccion": "bugfix",
+    "nombre": "PipBoyOn Node Fixes",
+    "file_id": 1000141500,
+    "checksum": null,
+    "version": "2.0"
+  },
+  {
+    "mod_id": 81933,
+    "seccion": "bugfix",
+    "nombre": "Iron Sights Aligned",
+    "file_id": 1000166344,
+    "checksum": null,
+    "version": "5.3"
+  },
+  {
+    "mod_id": 82042,
+    "seccion": "bugfix",
+    "nombre": "skinned mesh improvement mod - redone redux remake retry revengeance retopology refridgerator",
+    "file_id": 1000162222,
+    "checksum": null,
+    "version": "29"
+  },
+  {
+    "mod_id": 83425,
+    "seccion": "bugfix",
+    "nombre": "Landscape Texture Improvements (FNV - TTW)",
+    "file_id": 1000150443,
+    "checksum": null,
+    "version": "1.5"
+  },
+  {
+    "mod_id": 83815,
+    "seccion": "bugfix",
+    "nombre": "Meshes and Collision - Totally Enhanced Nifs (MAC-TEN)",
+    "file_id": 1000174474,
+    "checksum": null,
+    "version": "15.0"
+  },
+  {
+    "mod_id": 84171,
+    "seccion": "bugfix",
+    "nombre": "LOD Fixes and Improvements - NVSE",
+    "file_id": 1000150632,
+    "checksum": null,
+    "version": "1.33"
+  },
+  {
+    "mod_id": 84443,
+    "seccion": "bugfix",
+    "nombre": "Viewmodel Shake Fix - NVSE",
+    "file_id": 1000169893,
+    "checksum": null,
+    "version": "1.21"
+  },
+  {
+    "mod_id": 84781,
+    "seccion": "bugfix",
+    "nombre": "Viewmodel Shading Fix - NVSE",
+    "file_id": 1000145573,
+    "checksum": null,
+    "version": "2.2"
+  },
+  {
+    "mod_id": 84823,
+    "seccion": "bugfix",
+    "nombre": "VATS Lag Fix",
+    "file_id": 1000123023,
+    "checksum": null,
+    "version": "1.0"
+  },
+  {
+    "mod_id": 85198,
+    "seccion": "bugfix",
+    "nombre": "3rd Person Animation Fixpack",
+    "file_id": 1000167727,
+    "checksum": null,
+    "version": "1.31"
+  },
+  {
+    "mod_id": 85622,
+    "seccion": "bugfix",
+    "nombre": "Items Transformed - Enhanced Meshes (ITEM)",
+    "file_id": 1000155727,
+    "checksum": null,
+    "version": "3.0"
+  },
+  {
+    "mod_id": 87830,
+    "seccion": "bugfix",
+    "nombre": "Blood Decal Flashing Fix",
+    "file_id": 1000140291,
+    "checksum": null,
+    "version": "1.1"
+  },
+  {
+    "mod_id": 90593,
+    "seccion": "bugfix",
+    "nombre": "Vanilla Placement Fixes",
+    "file_id": 1000152141,
+    "checksum": null,
+    "version": "1.8"
+  },
+  {
+    "mod_id": 91705,
+    "seccion": "bugfix",
+    "nombre": "LOD Flicker Fix - NVSE",
+    "file_id": 1000160476,
+    "checksum": null,
+    "version": "1.2.1"
+  },
+  {
+    "mod_id": 92519,
+    "seccion": "bugfix",
+    "nombre": "Vanilla Plus Terrain",
+    "file_id": 1000154397,
+    "checksum": null,
+    "version": "1.0.2"
+  },
+  {
+    "mod_id": 96007,
+    "seccion": "bugfix",
+    "nombre": "Third Person Aim Fix NVSE",
+    "file_id": 1000177683,
+    "checksum": null,
+    "version": "1.2.1"
+  }
+]
