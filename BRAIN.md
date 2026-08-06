@@ -204,6 +204,17 @@ El usuario insistió: "al estar en la página del mod tienes que darle a files y
 
 # 🧩 SEGUNDA FASE — ROOT MODS, NATIVO Y REPOS POR MOD (5 ago 2026)
 
+## 🏆 VALIDACIÓN COMPLETA DEL JUEGO (6 ago, noche) — MENÚ CON MODS
+- **El juego llega al MENÚ PRINCIPAL con TODO el pipeline**: BSAs descomprimidos (v2) + exe 4GB parcheado + xNVSE + los 53 mods del perfil Default + Fixed ESMs. Confirmado por el usuario (Stewie Tweaks apareció en Settings = mods cargados).
+- **El bug de la descompresión (CRÍTICO)**: el v1 ponía `flags=0` → el juego crasheaba (`page fault` a distintas direcciones — el lector BSA del juego necesita los bits del header). **El fix real (spec UESP)**: **mantener flags=0x100 y marcar cada archivo con el BIT 30 (0x40000000) en el size** ("si bit 30 seteado, la compresión por defecto se invierte") + data raw sin prefijo. Commiteado en `fnv-bsa-decompressor-linux` (`aec8e47`).
+- **Steam validation restaura el exe vanilla** → el parche 4GB hay que re-aplicarlo DESPUÉS de validar. Fix en `fnv-4gb-patch-linux` (`f1ce0c5`): detecta exe parcheado por LAA (0x20 en COFF header) + import `nvse_steam_loader` (NO por la existencia del backup).
+- **El `run` de MO2 sin `--profile` usa el último perfil activo de la UI** (no profiles.ini) → el perfil test-vanilla nunca se usó; los tests con "perfil vanilla" corrían el Default (con mods). Por eso el crash era siempre el BSA v1 o el entorno.
+- **Lección de diagnóstico**: los logs de NVSE (nvse*.log en el game root) se ACUMULAN entre corridas — truncarlos antes de cada test para leer solo la corrida actual.
+- **Launcher de FNV roto bajo Proton** (proceso corre, nunca muestra ventana) — el entry real es FalloutNV.exe vía MO2 (`run -e "New Vegas"`).
+- **Input automation definitiva**: XTest roto en esta sesión → **uinput/evdev** (`scripts/uikey.py`, pip evdev, /dev/uinput con grupo input) — inyecta teclado real a nivel kernel, funciona en GNOME (wtype no: mutter no soporta virtual-keyboard). Los diálogos de MO2 (Launch Steam / Waiting) se resuelven con Tab+Enter.
+- El "Launch Steam" de MO2 es un falso positivo (busca proceso Windows "Steam.exe"; el Steam nativo es Linux) — "Continue without starting Steam" es seguro (el DRM encuentra a Steam por IPC).
+- El juego NUNCA había corrido de verdad en esta máquina (el "run" de ayer era el launcher colgado).
+
 ## 🧰 BSA DECOMPRESSOR — PORT NATIVO LISTO (5 ago, noche)
 - **Repo**: `repos/fnv-bsa-decompressor-linux/` (git `6a95a62`) — `decompress.py` (Python puro, stdlib, sin wine).
 - **Formato FNV BSA v104/v105 real (difiere del UESP estándar)**: header 36B ("BSA\0"+version+folderRecOff+fileRecOff+counts+lengths+flags) → folder records [hash(8)][count(4)][nameOff(4)] → **por carpeta: [nameLen(1)][nombre][file records count×16: hash(8)+size(4)+off(4)]** → file names (fileNameLen, NUL-terminated) → datos. `fileRecOff` del header = 7 en los BSAs vanilla (valor aparentemente ignorado). Los folder nameOff apuntan al primer FILE NAME de la carpeta en la sección de names.
