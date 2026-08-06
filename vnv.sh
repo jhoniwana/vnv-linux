@@ -127,6 +127,14 @@ importar_mods() {
   fi
 }
 
+root_mods() {
+  info "Instalando root mods (xNVSE, 4GB, BSA Decompressor, UE ESM Fixes — nativos)..."
+  "$PY" scripts/root_mods.py --mo2-dir "$MO2_INSTANCE" || {
+    fail "root mods: falló algún paso — revisá la salida"
+    return 1
+  }
+}
+
 tweaks_ini() {
   info "Aplicando tweaks de INI (NVTF / heap / 4GB)..."
   local ini="$GAME_DIR/Data/NVSE/Plugins/nvtf.ini"
@@ -323,6 +331,7 @@ case "${1:-}" in
       ok "Instancia MO2 ya existe: $MO2_INSTANCE"
     fi
     importar_mods
+    root_mods
     tweaks_ini
     correr_loot
     info "Instalación lista. Siguiente: ./vnv.sh run"

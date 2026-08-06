@@ -224,6 +224,13 @@ El usuario insistió: "al estar en la página del mod tienes que darle a files y
   - Instalador requiere `xdelta3.dll` al lado del exe (commit b7ebdbf lo agregó).
 - **Lecciones**: (1) el error anterior "address too large" era porque alimentaba a xdelta3 los bytes crudos sin descomprimir (p1c.xd3 ≠ full_4735.xd3); (2) `xdelta3 test` cuelga el shell — no usarlo; (3) protontricks-launch de este sistema usa `--appid` y necesita `vdf` (instalado en venv) + `winetricks` (descargado a ~/.local/bin); (4) `import`/`magick import` de ImageMagick falla con "missing an image filename" (usar ffmpeg x11grab o gnome-screenshot); (5) `xdelta3 printdelta` con streams VCD_SOURCE falla sin source — usar `-d -s` real; (6) flags VCDIFF reales: VCD_SOURCE=1, VCD_TARGET=2, VCD_ADLER32=4.
 
+## ✅ ROOT MODS INTEGRADO (5 ago, noche)
+- `scripts/root_mods.py` reescrito: **orquestador** que delega en los 5 repos (`repos/<mod>-linux/`) vía subprocess — sin wine, sin proton. `--solo`, `--game-dir`, `--mo2-dir`; uefix → `mods/Fixed ESMs` y activa `+Fixed ESMs` en modlist.txt.
+- `vnv.sh install` ahora corre: instalar_mo2 → crear_instancia_mo2 → importar_mods → **root_mods** → tweaks_ini → correr_loot.
+- **Probado end-to-end contra el juego real**: 11 BSAs descomprimidos in-place + 6 esm Fixed ESMs generados en el MO2 real + modlist activado. Idempotente (2ª corrida: todo "skip" sin error).
+- **Bug encontrado en juego real**: BSAs vanilla contienen archivos de tamaño 0 → `struct.unpack` explotaba; fix `sz == 0 → b""` (commit en fnv-bsa-decompressor-linux).
+- **Idempotencia uefix**: si los esm ya existen → OK (no error).
+
 ## 🗂️ REPOS POR MOD (nombres: <mod>-linux)
 | Mod | Repo | Contenido |
 |---|---|---|
@@ -234,8 +241,8 @@ El usuario insistió: "al estar en la página del mod tienes que darle a files y
 | Epic Games Patcher | `repos/epic-games-patcher-linux` | port.py (xdelta3 nativo, EGS-only) + patch.xdelta |
 
 ## 🚧 PENDIENTE de la fase 2
-- [ ] Integrar los 5 ports en `root_mods.py` (reemplazar pasos wine; `_wine()` muere) + `vnv.sh install` + commit en vnv
 - [ ] Probar `install` completo en máquina real (MO2-LINT, LOOT, primer lanzamiento)
+- [ ] LOOT + primer lanzamiento validado (correr_loot/lanzar siguen instructivos)
 
 ## Qué son los "root mods" (paso de la guía VNV)
 - Mods que van **directo al directorio del juego** (no al VFS de MO2). En MO2 quedan desactivados a propósito (importar_mo2.py les pone `-` + `validated=true`, instalados al "Root").
