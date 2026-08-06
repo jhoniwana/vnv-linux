@@ -204,6 +204,15 @@ El usuario insistió: "al estar en la página del mod tienes que darle a files y
 
 # 🧩 SEGUNDA FASE — ROOT MODS, NATIVO Y REPOS POR MOD (5 ago 2026)
 
+## 🧰 BSA DECOMPRESSOR — PORT NATIVO LISTO (5 ago, noche)
+- **Repo**: `repos/bsa/` (git `6a95a62`) — `decompress.py` (Python puro, stdlib, sin wine).
+- **Formato FNV BSA v104/v105 real (difiere del UESP estándar)**: header 36B ("BSA\0"+version+folderRecOff+fileRecOff+counts+lengths+flags) → folder records [hash(8)][count(4)][nameOff(4)] → **por carpeta: [nameLen(1)][nombre][file records count×16: hash(8)+size(4)+off(4)]** → file names (fileNameLen, NUL-terminated) → datos. `fileRecOff` del header = 7 en los BSAs vanilla (valor aparentemente ignorado). Los folder nameOff apuntan al primer FILE NAME de la carpeta en la sección de names.
+- Compresión: flag header 0x100 → cada archivo = `[u32 size sin comprimir][zlib]`; size del record = tamaño comprimido (incluye el prefijo).
+- `reescribir()`: header flags sin 0x100 + records con size=raw y offsets recomputados + names intactos + datos en crudo.
+- **Bug encontrado**: `pos += n*16` faltaba en el loop por carpeta (leía los nombres desde posiciones equivocadas).
+- **Validación roundtrip** (parse→decompress→rewrite→reparse→SHA1 por archivo contra original): Misc 142/142 ✓, Caravan 11/11 ✓, Classic 19/19 ✓, **DeadMoney - Main (358MB, 7207 archivos) 7207/7207 ✓**.
+- BSAs vanilla comprimidos: DeadMoney-Main, Fallout-Misc, GRA-Main, HH-Main, LR-Main, MercenaryPack, OWB-Main, CaravanPack, ClassicPack, TribalPack, Update.bsa (11). Los Sounds/Meshes/Textures ya no → se omiten.
+
 ## 💎 UE ESM FIXES — PORT NATIVO RESUELTO (5 ago, noche)
 - **Repo**: `repos/uefix-linux-port/` (git `89cfef1`) — `port.py` + `build_xdelta3.sh` + `Installer.exe`/`.mpi` originales.
 - **El secreto del `.mpi`**: los 6 parches `.xd3` están envueltos en **LZ4 Frame** (magic `04 22 4D 18`, 13 bytes antes de cada magic VCDIFF `D6 C3 C4 00`). Por eso los "magics falsos" y los streams ilegibles: eran bloques LZ4 comprimidos. Los errores `ERROR_blockMode_invalid` del .exe son códigos de `lz4frame`.
