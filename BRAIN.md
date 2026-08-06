@@ -225,6 +225,17 @@ El usuario insistió: "al estar en la página del mod tienes que darle a files y
 - **Lecciones**: (1) el error anterior "address too large" era porque alimentaba a xdelta3 los bytes crudos sin descomprimir (p1c.xd3 ≠ full_4735.xd3); (2) `xdelta3 test` cuelga el shell — no usarlo; (3) protontricks-launch de este sistema usa `--appid` y necesita `vdf` (instalado en venv) + `winetricks` (descargado a ~/.local/bin); (4) `import`/`magick import` de ImageMagick falla con "missing an image filename" (usar ffmpeg x11grab o gnome-screenshot); (5) `xdelta3 printdelta` con streams VCD_SOURCE falla sin source — usar `-d -s` real; (6) flags VCDIFF reales: VCD_SOURCE=1, VCD_TARGET=2, VCD_ADLER32=4.
 
 ## ✅ VALIDACIÓN LOOT + MO2 (6 ago)
+- **Intentos de boot del juego (6 ago, tarde)**: todo lo automatizable está validado EXCEPTO el boot final, bloqueado por el entorno degradado:
+  - `steam -applaunch 22380` SÍ lanza el juego → pero arranca **FalloutNVLauncher.exe** (launcher roto bajo Proton: proceso corre, ventana nunca aparece) → sin Play clickable.
+  - Lanzar FalloutNV.exe con el wrapper real de Steam (`reaper SteamLaunch AppId=22380 -- ... _v2-entry-point --verb=waitforexitandrun -- proton waitforexitandrun FalloutNV.exe` + STEAM_COMPAT_DATA_PATH/CLIENT_INSTALL_PATH/LIBRARY_PATHS/RUNTIME_PATHS) → pasa el DRM, inicia DXVK (Fossilize) y **muere silenciosamente** (sin window, sin error en log).
+  - Directo por protontricks: DRM error sin Steam; con Steam corriendo → page fault (falta el entorno Steam).
+  - nvse_loader directo: "Couldn't Find FalloutNV.exe" si el CWD no es el juego (protontricks usa --directory); con CWD correcto → sigue igual que el exe.
+  - El juego SÍ corrió ayer (log Steam 20:52 del 5 ago: procesos 22380 agregados/removidos) — el usuario lo lanzó desde el entorno sano.
+- **Input automation**: XTest roto (puntero congelado) tras el cambio de resolución 1368x768→2560x1440; capturas de root en negro; ydotool no instalado. Los clicks/keys solo funcionan vía XSendEvent (`--window`) en diálogos nativos puntuales. → el click final (Play del launcher, o Run de MO2, o "Continue without starting Steam") lo hace el usuario físicamente.
+- **Launcher de FNV (FalloutNVLauncher.exe) roto bajo Proton**: proceso corre pero nunca muestra ventana.
+- **Lección**: `pkill -f` con el patrón en la propia línea de comando se mata solo (2 veces hoy). Usar `pkill -x` o matar por PID.
+
+## ✅ VALIDACIÓN LOOT + MO2 (6 ago)
 - **LOOT real**: `lootcli.exe` de la instancia MO2 (`loot/lootcli.exe`) corre en el prefix con `WINEPATH=<MO2>/dlls` (Qt6 está ahí) + `--game FalloutNV --gamePath <game> --pluginListPath <profile>/plugins.txt --out <reporte> --auto-sort`. Descarga el masterlist de GitHub y ordena. **El orden LOOT == el orden de la guía (20 plugins idénticos).**
   - ⚠️ lootcli standalone NO ve el VFS de MO2 → descarta los esps de los mods (solo resuelve los esm del Data real) y **re-escribe plugins.txt** dejándolo en 10 → no usarlo para el perfil (solo como validación); el Sort real se hace con MO2 GUI.
   - ⚠️ `--out` ES obligatorio (sin él: "argument missing out") y SOBREESCRIBE el archivo destino — apuntarlo a un reporte aparte.
