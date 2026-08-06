@@ -3,6 +3,15 @@ tags: [bitacora]
 ---
 # Cronología
 
+## 6 agosto 2026 — 🏆 EL JUEGO LLEGA AL MENÚ CON MODS
+
+- **Validación completa del pipeline**: BSAs descomprimidos (v2) + exe 4GB + xNVSE + 53 mods + Fixed ESMs → menú principal con mods (Stewie Tweaks en Settings)
+- **Bug crítico encontrado y arreglado**: la descompresión v1 (flags=0) crasheaba el juego; el fix = mantener flags=0x100 + bit 30 (0x40000000) en cada size + data raw (spec UESP)
+- **Steam validation restaura el exe vanilla** → re-aplicar 4GB después (fix en el port: detecta LAA+import NVSE)
+- **Input automation**: XTest roto → uinput/evdev (`scripts/uikey.py`) — teclado real en GNOME
+- MO2 "Launch Steam" = falso positivo (busca Steam.exe Windows); "Continue" es seguro
+- El juego nunca había corrido de verdad (el run de ayer era el launcher colgado)
+
 ## 5 agosto 2026 — UE ESM Fixes: port nativo RESUELTO
 
 - **Breakthrough**: los parches `.xd3` del `.mpi` están **comprimidos con LZ4 Frame** (magic `04 22 4D 18`) — por eso los streams se veían ilegibles/corruptos
