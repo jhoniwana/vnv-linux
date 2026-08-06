@@ -95,6 +95,16 @@ crear_venv() {
       return 1
     }
   fi
+  if ! "$VENV/bin/python" -c "
+from camoufox import pkgman
+pkgman.installed_verstr()
+" >/dev/null 2>&1; then
+    info "Descargando el binario de Camoufox (Firefox anti-detección)..."
+    "$VENV/bin/python" -m camoufox fetch 2>&1 | tail -1 || {
+      fail "camoufox fetch falló (¿red?)"
+      return 1
+    }
+  fi
   if ! "$VENV/bin/python" -c "import flask" 2>/dev/null; then
     info "Instalando Flask (para la interfaz web)..."
     "$VENV/bin/pip" install -q flask 2>&1 | tail -1 || {

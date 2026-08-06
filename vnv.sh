@@ -7,8 +7,8 @@
 #   ./vnv.sh config-cookies → guarda la cookie de sesión manualmente (fallback)
 #   ./vnv.sh download       → descarga/actualiza los mods (gestor con estados)
 #   ./vnv.sh estado         → verifica archivos vs manifest (53/53, integridad)
-#   ./vnv.sh install        → MO2 + Wine prefix + INIs + LOOT + importar mods
-#   ./vnv.sh run            → lanza el juego vía MO2
+#   ./vnv.sh install        → MO2-LINT + prefix Proton + importar mods + INIs + LOOT
+#   ./vnv.sh run            → lanza el juego vía MO2 (Steam → "Launch Mod Organizer")
 #   ./vnv.sh update         → alias de download (actualiza manifest + mods)
 #
 # Funciona en: Debian, Ubuntu, Arch, Fedora, openSUSE y derivadas.
@@ -24,6 +24,9 @@ STEAM_LIBRARIES=(
   "/mnt/games/steamapps"   # editar según tu setup
 )
 MO2_INSTALLER_REPO="Furglitch/modorganizer2-linux-installer"
+MO2_LINT="$HOME/.local/bin/mo2-lint"
+MO2_INSTANCE="${MO2_INSTANCE:-$HOME/.local/share/modorganizer2}"
+MO2_GAME_ID="falloutnv"
 WINEPREFIX_DEFAULT="$HOME/.local/share/vnv-wine"
 CONFIG_DIR="$HOME/.config/vnv-linux"
 PY="$ROOT/venv/camoufox-python"   # python del venv con libs correctas
@@ -54,20 +57,39 @@ buscar_juego() {
 }
 
 instalar_mo2() {
-  if command -v mo2-installer >/dev/null 2>&1; then
-    ok "MO2-LINT ya instalado"
+  local MO2_BIN="$(command -v mo2-lint 2>/dev/null || true)"
+  if [[ -z "$MO2_BIN" && -x "$MO2_LINT" ]]; then MO2_BIN="$MO2_LINT"; fi
+  if [[ -n "$MO2_BIN" ]]; then
+    ok "MO2-LINT listo: $MO2_BIN"
     return 0
   fi
-  info "Instalando Mod Organizer 2 (MO2-LINT)..."
-  local tmp
-  tmp="$(mktemp -d)"
-  git clone --depth 1 "https://github.com/$MO2_INSTALLER_REPO" "$tmp/mo2lint" 2>/dev/null || {
-    fail "No pude clonar MO2-LINT (¿falta git?)"
+  info "Descargando MO2-LINT (instalador de Mod Organizer 2 para Linux)..."
+  mkdir -p "$HOME/.local/bin"
+  local rel url
+  rel="$(curl -fsSL "https://api.github.com/repos/$MO2_INSTALLER_REPO/releases" \
+        | grep -m1 '"tag_name":' | sed -E 's/.*"tag_name": *"([^"]+)".*/\1/')"
+  if [[ -z "$rel" ]]; then
+    fail "No pude obtener la última release de MO2-LINT (¿red?)"
+    return 1
+  fi
+  url="https://github.com/$MO2_INSTALLER_REPO/releases/download/$rel/mo2-lint"
+  curl -fL "$url" -o "$MO2_LINT" 2>/dev/null || {
+    fail "Descarga de MO2-LINT falló"
     return 1
   }
-  (cd "$tmp/mo2lint" && pipx install . 2>/dev/null || pip install --user . )
-  rm -rf "$tmp"
-  ok "MO2-LINT instalado"
+  chmod +x "$MO2_LINT"
+  ok "MO2-LINT instalado en $MO2_LINT"
+}
+
+crear_instancia_mo2() {
+  info "Creando instancia de MO2 para Fallout: New Vegas en $MO2_INSTANCE..."
+  info "  (descarga MO2 + Java + winetricks, configura el prefix de Proton"
+  info "   y agrega la opción 'Launch Mod Organizer' a Steam)"
+  mo2-lint install "$MO2_GAME_ID" "$MO2_INSTANCE" --unattended -l INFO 2>/dev/null || {
+    fail "mo2-lint install falló — revisá el log (mo2-lint -l DEBUG ...)"
+    return 1
+  }
+  ok "Instancia MO2 creada"
 }
 
 dependencias_wine() {
@@ -93,9 +115,9 @@ dependencias_wine() {
 }
 
 importar_mods() {
-  info "Importando mods al perfil de MO2 (automático)..."
+  info "Importando mods a la instancia de MO2 ($MO2_INSTANCE)..."
   if [[ -d "$ROOT/downloads" && -n "$(ls -A "$ROOT/downloads" 2>/dev/null)" ]]; then
-    "$PY" scripts/importar_mo2.py || {
+    "$PY" scripts/importar_mo2.py --dir "$MO2_INSTANCE" || {
       fail "La importación tuvo fallos — revisá el listado"
       return 1
     }
@@ -118,24 +140,33 @@ Enable4GBPatch = true
 [VRAM]
 EnableVRAMSizeOverride = true
 EOF
-  ok "nvtf.ini aplicado"
+  # además, dentro del mod NVTF importado a MO2 (si existe), para que VFS lo provea
+  local nvtf_ini_mo2="$(find "$MO2_INSTANCE/mods" -maxdepth 4 -path '*NVSE/Plugins/nvtf.ini' 2>/dev/null | head -1)"
+  if [[ -n "$nvtf_ini_mo2" ]]; then
+    cp "$ini" "$nvtf_ini_mo2"
+    ok "nvtf.ini aplicado (juego + $nvtf_ini_mo2)"
+  else
+    ok "nvtf.ini aplicado (juego — el mod NVTF no incluye el archivo; MO2 lo ve por VFS)"
+  fi
 }
 
 correr_loot() {
   info "Ordenando plugins con LOOT..."
-  if command -v mo2-installer >/dev/null 2>&1; then
-    ok "Ejecutá LOOT desde MO2 (botón Sort) la primera vez"
-  else
-    fail "LOOT manual: abrí MO2 → botón Sort"
+  info "  Abrí MO2 (Steam → Play → 'Launch Mod Organizer') y pulsá el botón Sort la primera vez."
+  if command -v mo2-lint >/dev/null 2>&1; then
+    info "  LOOT corre dentro del prefix del juego (lo incluye MO2-LINT)."
   fi
 }
 
 lanzar() {
   info "Lanzando Fallout New Vegas vía MO2..."
-  if command -v mo2-installer >/dev/null 2>&1; then
-    mo2-installer run --game "fallout-new-vegas" 2>/dev/null \
-      || mo2-installer run 2>/dev/null \
-      || fail "Lanzá MO2 manualmente (mo2-installer run)"
+  info "  En Steam: FNV → Play (botón con flechita) → 'Launch Mod Organizer'."
+  info "  Eso abre MO2 con los 53 mods; después pulsá 'Run' dentro de MO2 para jugar."
+  if [[ -f "$MO2_INSTANCE/ModOrganizer.exe" ]]; then
+    if command -v steam >/dev/null 2>&1 || command -v steam-native >/dev/null 2>&1; then
+      info "  (abriendo Steam...)"
+      nohup steam steam://rungameid/22380 >/dev/null 2>&1 &
+    fi
   else
     fail "MO2 no está instalado — corré ./vnv.sh install"
   fi
@@ -286,7 +317,11 @@ case "${1:-}" in
     necesita_setup
     buscar_juego
     instalar_mo2
-    dependencias_wine
+    if [[ ! -f "$MO2_INSTANCE/ModOrganizer.exe" ]]; then
+      crear_instancia_mo2
+    else
+      ok "Instancia MO2 ya existe: $MO2_INSTANCE"
+    fi
     importar_mods
     tweaks_ini
     correr_loot

@@ -57,7 +57,8 @@ def estado_actual():
         if (cand / "FalloutNV.exe").exists():
             juego = True
             break
-    mo2 = shutil.which("mo2-installer") is not None
+    mo2 = shutil.which("mo2-lint") is not None \
+        or (pathlib.Path.home() / ".local/bin/mo2-lint").exists()
     return {
         "setup": setup,
         "sesion": sesion,

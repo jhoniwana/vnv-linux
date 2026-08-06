@@ -22,8 +22,8 @@ Instalador **100% automático** del Core de Viva New Vegas (53 mods) para Fallou
 | 1 · Entorno | Instala Python + Camoufox + librerías (funciona en Debian, Ubuntu, Arch, Fedora, openSUSE) |
 | 2 · Cuenta Nexus | Login automático (gratis, una vez) — pasa el captcha solo |
 | 3 · Descargas | Baja los 53 mods con reintentos automáticos y verificación de integridad |
-| 4 · Instalación | Detecta el juego en Steam, instala MO2, aplica los INI tweaks, prepara LOOT |
-| 5 · Jugar | Lanza Fallout New Vegas con todo cargado |
+| 4 · Instalación | Detecta el juego en Steam, crea la instancia MO2 (MO2-LINT), importa los 53 mods, aplica los INI tweaks, prepara LOOT |
+| 5 · Jugar | Abre Steam → "Launch Mod Organizer" → Run, y FNV arranca con todo cargado |
 
 ## 🚀 Empezar
 
@@ -33,7 +33,9 @@ cd vnv-linux
 ./vnv.sh ui
 ```
 
-Requisitos: Steam con Fallout New Vegas instalado · Python 3.10+ · ~4 GB de espacio.
+Requisitos: Steam con **Fallout New Vegas** instalado y corrido una vez con Proton (crea el prefix) · Python 3.10+ · ~4 GB de espacio.
+
+> ⚠️ **Una vez, a mano:** FNV → Propiedades → Compatibilidad → forzar **Proton** → Jugar 1 vez (MO2-LINT lo recomienda con Proton 10, pero funciona con cualquiera reciente).
 
 ## 🛠️ Comandos útiles (opcional — la UI ya hace todo)
 
