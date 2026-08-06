@@ -205,7 +205,7 @@ El usuario insistió: "al estar en la página del mod tienes que darle a files y
 # 🧩 SEGUNDA FASE — ROOT MODS, NATIVO Y REPOS POR MOD (5 ago 2026)
 
 ## 🧰 BSA DECOMPRESSOR — PORT NATIVO LISTO (5 ago, noche)
-- **Repo**: `repos/bsa/` (git `6a95a62`) — `decompress.py` (Python puro, stdlib, sin wine).
+- **Repo**: `repos/fnv-bsa-decompressor-linux/` (git `6a95a62`) — `decompress.py` (Python puro, stdlib, sin wine).
 - **Formato FNV BSA v104/v105 real (difiere del UESP estándar)**: header 36B ("BSA\0"+version+folderRecOff+fileRecOff+counts+lengths+flags) → folder records [hash(8)][count(4)][nameOff(4)] → **por carpeta: [nameLen(1)][nombre][file records count×16: hash(8)+size(4)+off(4)]** → file names (fileNameLen, NUL-terminated) → datos. `fileRecOff` del header = 7 en los BSAs vanilla (valor aparentemente ignorado). Los folder nameOff apuntan al primer FILE NAME de la carpeta en la sección de names.
 - Compresión: flag header 0x100 → cada archivo = `[u32 size sin comprimir][zlib]`; size del record = tamaño comprimido (incluye el prefijo).
 - `reescribir()`: header flags sin 0x100 + records con size=raw y offsets recomputados + names intactos + datos en crudo.
@@ -214,7 +214,7 @@ El usuario insistió: "al estar en la página del mod tienes que darle a files y
 - BSAs vanilla comprimidos: DeadMoney-Main, Fallout-Misc, GRA-Main, HH-Main, LR-Main, MercenaryPack, OWB-Main, CaravanPack, ClassicPack, TribalPack, Update.bsa (11). Los Sounds/Meshes/Textures ya no → se omiten.
 
 ## 💎 UE ESM FIXES — PORT NATIVO RESUELTO (5 ago, noche)
-- **Repo**: `repos/uefix-linux-port/` (git `89cfef1`) — `port.py` + `build_xdelta3.sh` + `Installer.exe`/`.mpi` originales.
+- **Repo**: `repos/ue-esm-fixes-linux/` (git `89cfef1`) — `port.py` + `build_xdelta3.sh` + `Installer.exe`/`.mpi` originales.
 - **El secreto del `.mpi`**: los 6 parches `.xd3` están envueltos en **LZ4 Frame** (magic `04 22 4D 18`, 13 bytes antes de cada magic VCDIFF `D6 C3 C4 00`). Por eso los "magics falsos" y los streams ilegibles: eran bloques LZ4 comprimidos. Los errores `ERROR_blockMode_invalid` del .exe son códigos de `lz4frame`.
 - **Manifiesto real** (`_package/index.json`, comprimido LZ4, 4048 bytes): `Assets` = [0,2,"",3,1,3,"<esm>","./<esm>"] mapea 1:1 `%FNVDATA%\<esm>` → destino. `Checks` SOLO valida `FalloutNV.exe` (8 SHA1: Steam/GOG/EGS parcheados o no; el nuestro = `0021023E37B1AF143305A61B7B29A1811CC7C5FB` ✓). Los esm NO se validan → van crudos a `xd3_decode_memory`. No hay cadena de parches ni esm pre-generados.
 - **Flujo nativo** (port.py): scan magics LZ4 → descomprimir (python-lz4) → descartar no-VCDIFF (index.json/html/css) → leer cpylen del primer window (== tamaño esm vanilla, puede ser ≤ tamaño del archivo — los −20/−8045 nunca fueron problema) → match contra `Data/*.esm` → `xdelta3 -d -s <vanilla> <patch> <out>`.
@@ -224,11 +224,18 @@ El usuario insistió: "al estar en la página del mod tienes que darle a files y
   - Instalador requiere `xdelta3.dll` al lado del exe (commit b7ebdbf lo agregó).
 - **Lecciones**: (1) el error anterior "address too large" era porque alimentaba a xdelta3 los bytes crudos sin descomprimir (p1c.xd3 ≠ full_4735.xd3); (2) `xdelta3 test` cuelga el shell — no usarlo; (3) protontricks-launch de este sistema usa `--appid` y necesita `vdf` (instalado en venv) + `winetricks` (descargado a ~/.local/bin); (4) `import`/`magick import` de ImageMagick falla con "missing an image filename" (usar ffmpeg x11grab o gnome-screenshot); (5) `xdelta3 printdelta` con streams VCD_SOURCE falla sin source — usar `-d -s` real; (6) flags VCDIFF reales: VCD_SOURCE=1, VCD_TARGET=2, VCD_ADLER32=4.
 
+## 🗂️ REPOS POR MOD (nombres: <mod>-linux)
+| Mod | Repo | Contenido |
+|---|---|---|
+| UE ESM Fixes Remastered | `repos/ue-esm-fixes-linux` | port.py (LZ4+xdelta3), build_xdelta3.sh, Installer.exe, .mpi |
+| FNV BSA Decompressor | `repos/fnv-bsa-decompressor-linux` | decompress.py (BSA v104/v105 → sin zlib) |
+| xNVSE | `repos/xnvse-linux` | port.py (copia al Root) |
+| FNV 4GB Patcher | `repos/fnv-4gb-patch-linux` | port.py + FalloutNVPatcher (ELF nativo) |
+| Epic Games Patcher | `repos/epic-games-patcher-linux` | port.py (xdelta3 nativo, EGS-only) + patch.xdelta |
+
 ## 🚧 PENDIENTE de la fase 2
-- [ ] Port nativo **BSA Decompressor** (repos/bsa): reescribir BSAs v105 sin zlib en Python + probar contra copia
-- [ ] Repos git: `xnvse`, `4gb`, `epic` (xnvse/4gb ya probados, epic skip en Steam)
-- [ ] Reescribir `root_mods.py` → usar los ports nativos (bsa/uefix sin wine; `_wine()` muere)
-- [ ] Integrar root_mods en `vnv.sh install` + commit en vnv
+- [ ] Integrar los 5 ports en `root_mods.py` (reemplazar pasos wine; `_wine()` muere) + `vnv.sh install` + commit en vnv
+- [ ] Probar `install` completo en máquina real (MO2-LINT, LOOT, primer lanzamiento)
 
 ## Qué son los "root mods" (paso de la guía VNV)
 - Mods que van **directo al directorio del juego** (no al VFS de MO2). En MO2 quedan desactivados a propósito (importar_mo2.py les pone `-` + `validated=true`, instalados al "Root").
@@ -270,7 +277,7 @@ El usuario insistió: "al estar en la página del mod tienes que darle a files y
 - `/tmp/opencode/rootmods/4gb/FalloutNVPatcher` (ELF extraído), `/tmp/opencode/rootmods/uefix/` (Installer.exe + .mpi 220MB + xdelta3.dll), `/tmp/opencode/bsadec/` (decompresor + logs wine/proton).
 - Intento `protontricks-launch 22380 ".../FNV BSA Decompressor.exe"`: arrancó, timeout del shell; GUI no verificada; sin procesos colgados (verificado con pgrep).
 - `/tmp/opencode/uefix-patches/`: streams LZ4 descomprimidos (full_*.xd3) + outputs (out_*.esm) — basura temporal, ya no hace falta (el port.py lo hace todo).
-- `/home/jhon/vivanewvegas/vnv/repos/uefix-linux-port/`: Installer.exe + .mpi (commit `89cfef1`), `xdelta3` compilado en `~/.local/bin/xdelta3` (v3.1.0).
+- `/home/jhon/vivanewvegas/vnv/repos/ue-esm-fixes-linux/`: Installer.exe + .mpi (commit `89cfef1`), `xdelta3` compilado en `~/.local/bin/xdelta3` (v3.1.0).
 
 ## 🗺️ Próximos pasos
 1. Probar formato BSA v105 contra el `.mpi` real (sonda Python corta).
