@@ -224,6 +224,18 @@ El usuario insistió: "al estar en la página del mod tienes que darle a files y
   - Instalador requiere `xdelta3.dll` al lado del exe (commit b7ebdbf lo agregó).
 - **Lecciones**: (1) el error anterior "address too large" era porque alimentaba a xdelta3 los bytes crudos sin descomprimir (p1c.xd3 ≠ full_4735.xd3); (2) `xdelta3 test` cuelga el shell — no usarlo; (3) protontricks-launch de este sistema usa `--appid` y necesita `vdf` (instalado en venv) + `winetricks` (descargado a ~/.local/bin); (4) `import`/`magick import` de ImageMagick falla con "missing an image filename" (usar ffmpeg x11grab o gnome-screenshot); (5) `xdelta3 printdelta` con streams VCD_SOURCE falla sin source — usar `-d -s` real; (6) flags VCDIFF reales: VCD_SOURCE=1, VCD_TARGET=2, VCD_ADLER32=4.
 
+## ✅ VALIDACIÓN LOOT + MO2 (6 ago)
+- **LOOT real**: `lootcli.exe` de la instancia MO2 (`loot/lootcli.exe`) corre en el prefix con `WINEPATH=<MO2>/dlls` (Qt6 está ahí) + `--game FalloutNV --gamePath <game> --pluginListPath <profile>/plugins.txt --out <reporte> --auto-sort`. Descarga el masterlist de GitHub y ordena. **El orden LOOT == el orden de la guía (20 plugins idénticos).**
+  - ⚠️ lootcli standalone NO ve el VFS de MO2 → descarta los esps de los mods (solo resuelve los esm del Data real) y **re-escribe plugins.txt** dejándolo en 10 → no usarlo para el perfil (solo como validación); el Sort real se hace con MO2 GUI.
+  - ⚠️ `--out` ES obligatorio (sin él: "argument missing out") y SOBREESCRIBE el archivo destino — apuntarlo a un reporte aparte.
+- **MO2 GUI**: carga el perfil Default con los 53 mods + los 20 plugins resueltos (verificado por OCR del panel derecho). El `*DLC: X` del modlist lo agrega MO2 (virtuales, sin folders).
+- **CLI de MO2**: `--profile=Default` abre el GUI; `-e=NVSE` (con `=`, NO `-e NVSE` que da `"-e" not set up as executable`) lanza el ejecutable NVSE pero muestra el diálogo "Launch Steam" (no automatizable con input roto).
+- **Bug real encontrado y arreglado**: los INIs del perfil quedaban **read-only** (`-r--r--r--`) → el juego no puede escribirlos → diálogo "INI file is read-only". Fix: `chmod u+w` (agregado a `lanzar()` en vnv.sh).
+- **Otro bug**: el re-import borraba el `+Fixed ESMs` del modlist (root_mods lo agrega después) → fix en importar_mo2.py: lo re-agrega si el folder existe.
+- **Input automation ROTO en este estado de sesión**: XTest no mueve el puntero ni teclea (display cambió 1368x768→2560x1440; puntero pegado). xdotool `--window` con XSendEvent: funciona solo en algunos diálogos nativos (Return en el file dialog sí; dialogs MO2 no). → el boot final del juego necesita click físico del usuario.
+- **Juego**: lanzado directo (protontricks) da DRM error si Steam no corre; con Steam corriendo, nvse_loader directo crashea ("page fault") porque falta el entorno Steam; el lanzamiento correcto = Steam (`steam://rungameid/22380`) o MO2 GUI → Run. El juego SÍ corrió ayer (log de Steam 22380).
+- `plugins.txt` de MO2 usa `*` = plugin ACTIVO (formato correcto). El loadorder generado == orden LOOT ✓.
+
 ## ✅ ROOT MODS INTEGRADO (5 ago, noche)
 - `scripts/root_mods.py` reescrito: **orquestador** que delega en los 5 repos (`repos/<mod>-linux/`) vía subprocess — sin wine, sin proton. `--solo`, `--game-dir`, `--mo2-dir`; uefix → `mods/Fixed ESMs` y activa `+Fixed ESMs` en modlist.txt.
 - `vnv.sh install` ahora corre: instalar_mo2 → crear_instancia_mo2 → importar_mods → **root_mods** → tweaks_ini → correr_loot.

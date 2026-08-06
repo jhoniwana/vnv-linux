@@ -159,25 +159,44 @@ EOF
 }
 
 correr_loot() {
-  info "Ordenando plugins con LOOT..."
-  info "  Abrí MO2 (Steam → Play → 'Launch Mod Organizer') y pulsá el botón Sort la primera vez."
-  if command -v mo2-lint >/dev/null 2>&1; then
-    info "  LOOT corre dentro del prefix del juego (lo incluye MO2-LINT)."
+  info "Ordenando plugins con LOOT (lootcli nativo en el prefix)..."
+  local lootcli="$MO2_INSTANCE/loot/lootcli.exe"
+  if [[ ! -f "$lootcli" ]]; then
+    fail "No está lootcli.exe en $MO2_INSTANCE/loot — revisá la instalación de MO2"
+    return 1
+  fi
+  local dlls="Z:$(echo "$MO2_INSTANCE" | sed 's|/|\\\\|g')\\dlls"
+  local game_path="Z:$(echo "$GAME_DIR" | sed 's|/|\\\\|g')"
+  local plugin_list="Z:$(echo "$MO2_INSTANCE/profiles/Default/plugins.txt" | sed 's|/|\\\\|g')"
+  local out="/tmp/opencode/loot_report.json"
+  WINEPATH="$dlls" PYTHONPATH="$HOME/.local/lib/python3.13/site-packages" "$PY" /home/jhon/.local/bin/protontricks-launch \
+    --appid 22380 "$lootcli" --game FalloutNV --gamePath "$game_path" \
+    --pluginListPath "$plugin_list" --out "Z:\\tmp\\opencode\\loot_report.json" \
+    --auto-sort 2>&1 | rg -iv "fixme|pressure|Fontconfig|protontricks \(WARNING\)" | tail -5
+  if [[ $? -eq 0 ]]; then
+    ok "LOOT ordenó el load order (perfil Default)"
+  else
+    fail "LOOT falló — revisá la salida"
+    return 1
   fi
 }
 
 lanzar() {
-  info "Lanzando Fallout New Vegas vía MO2..."
-  info "  En Steam: FNV → Play (botón con flechita) → 'Launch Mod Organizer'."
-  info "  Eso abre MO2 con los 53 mods; después pulsá 'Run' dentro de MO2 para jugar."
-  if [[ -f "$MO2_INSTANCE/ModOrganizer.exe" ]]; then
-    if command -v steam >/dev/null 2>&1 || command -v steam-native >/dev/null 2>&1; then
-      info "  (abriendo Steam...)"
-      nohup steam steam://rungameid/22380 >/dev/null 2>&1 &
-    fi
-  else
+  info "Lanzando Fallout New Vegas vía MO2 (NVSE)..."
+  if [[ ! -f "$MO2_INSTANCE/ModOrganizer.exe" ]]; then
     fail "MO2 no está instalado — corré ./vnv.sh install"
+    return 1
   fi
+  if ! pgrep -f "steamwebhelper" >/dev/null 2>&1; then
+    info "Steam no está corriendo — arrancándolo (lo necesita el juego)..."
+    nohup steam >/dev/null 2>&1 &
+    sleep 20
+  fi
+  # los INIs del perfil deben ser escribibles (el juego los modifica al arrancar)
+  chmod u+w "$MO2_INSTANCE"/profiles/*/*.ini 2>/dev/null
+  PYTHONPATH="$HOME/.local/lib/python3.13/site-packages"   "$PY" /home/jhon/.local/bin/protontricks-launch \
+    --appid 22380 "$MO2_INSTANCE/ModOrganizer.exe" \
+    --profile=Default -e=NVSE
 }
 
 case "${1:-}" in
