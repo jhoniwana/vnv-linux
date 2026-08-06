@@ -16,9 +16,14 @@ tags: [proyecto, estado]
 | UI web (wizard 6 pasos, logs en vivo SSE) | ✅ |
 | Importador automático a MO2 (53/53) | ✅ |
 | Comando `steam` (diagnóstico Proton) | ✅ |
+| Root mods: xNVSE + 4GB (nativos) en juego real | ✅ |
+| Epic Games Patcher (omisión en Steam) | ✅ |
 
 ## 🟡 Pendiente (requiere hardware real con el juego)
 
+- Root mods nativos: BSA Decompressor + extractor UE ESM Fixes (sin Wine) + `_wine()`→protontricks
+- Git repo por cada root mod (xnvse, 4gb, epic, bsa, uefix)
+- Integrar `root_mods.py` en `vnv.sh install` y commitear
 - Probar `install` completo en máquina con Steam + FNV (MO2-LINT, Wine, LOOT)
 - Primer lanzamiento del juego con los mods
 - Probar el setup en Debian real (solo probado en Arch)

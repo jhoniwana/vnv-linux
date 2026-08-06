@@ -3,6 +3,14 @@ tags: [bitacora]
 ---
 # Cronología
 
+## 5 agosto 2026 — Fase 2: Root mods + plan nativo
+
+- **Commit `08ca4d5`**: `importar_mo2.py` con raíces de datos válidas FNV + motor FOMOD + loadorder de la guía (20 plugins); `vnv.sh` con MO2-LINT; reimport completo 53/53 mods válidos.
+- **`scripts/root_mods.py`** (paso "root mods" de la guía): xnvse + 4GB probados en juego real OK; epic omitido correctamente en Steam; bsa/uefix rotos con `wine` plano (ver BRAIN.md).
+- **Descubrimiento**: `wine` no corre GUIs en el prefix Proton (errores setupapi) → hay que usar `protontricks-launch 22380`.
+- **Decisión del usuario**: reimplementar nativo en Linux el BSA Decompressor y el extractor del `.mpi` de UE ESM Fixes (formato BSA v105) + **crear un git repo por cada root mod** (xnvse, 4gb, epic, bsa, uefix).
+- **Lección shell**: `pkill -f` con patrón presente en la propia línea de comando se mata a sí mismo → timeout.
+
 ## 5 agosto 2026 — Día grande
 
 - **Descarga FREE resuelta**: endpoint `/Download/` descubierto (tras insistencia del usuario con "Manual download")

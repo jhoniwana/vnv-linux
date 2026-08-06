@@ -17,6 +17,10 @@ tags: [proyecto, roadmap]
 - [x] UI web sin terminal
 - [x] Importador MO2 automático
 - [x] Diagnóstico Steam/Proton (`vnv.sh steam`)
+- [x] Root mods xNVSE + 4GB (nativos, probados en juego real)
+- [ ] Root mods nativos: BSA Decompressor + extractor UE ESM Fixes (sin Wine) + `_wine()`→protontricks
+- [ ] Git repo por cada root mod (xnvse, 4gb, epic, bsa, uefix)
+- [ ] Integrar root mods en `vnv.sh install` + commit
 - [ ] Probar `install` real (MO2-LINT en máquina con el juego)
 - [ ] LOOT + primer lanzamiento validado
 - [ ] Probar en Debian

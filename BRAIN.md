@@ -199,3 +199,54 @@ El usuario insistió: "al estar en la página del mod tienes que darle a files y
 - El flujo anterior (DownloadPopUp, /api/files/, slow-download-prompt) estaba MUERTO o incompleto
 - El consentimiento de cookies (Cookiebot) bloquea TODAS las páginas — hay que aceptarlo primero
 - El botón "Download" no tiene href (dispara JS) — `a:has-text('Download')` genérico encuentra el de la nav (invisible); hay que anclarse al texto "served via CDN"
+
+---
+
+# 🧩 SEGUNDA FASE — ROOT MODS, NATIVO Y REPOS POR MOD (5 ago 2026)
+
+## Qué son los "root mods" (paso de la guía VNV)
+- Mods que van **directo al directorio del juego** (no al VFS de MO2). En MO2 quedan desactivados a propósito (importar_mo2.py les pone `-` + `validated=true`, instalados al "Root").
+- Los 5: **xnvse=67883, 4gb=62552, epic=81281, uefix=92289, bsa=65854**.
+- Instancia MO2: `~/.local/share/modorganizer2` (symlink con `~/.config/mo2-lint/instances/newvegas`).
+- Juego: `~/.steam/steam/steamapps/common/Fallout New Vegas/` (STEAM_LIBRARIES[0]).
+- Prefix Proton: `~/.steam/steam/steamapps/compatdata/22380/pfx`; registry → `installed path = S:\common\Fallout New Vegas\` (los GUIs Wine auto-completan rutas).
+
+## 🔬 Hechos técnicos duros (verificados en juego real)
+- **`wine` plano NO corre GUIs en el prefix Proton** (errores setupapi, no abre ventana). Hay que usar `protontricks-launch 22380 <exe>`. Disponibles: protontricks, wine, xdotool, ImageMagick `import`; DISPLAY=:0, WAYLAND_DISPLAY=wayland-0.
+- **4GB Patcher (`FalloutNVPatcher`) es ELF nativo Linux** (build "for Proton"). Corre desde el root, imprime `Patching FalloutNV.exe [US]... FalloutNV.exe patched!` y crea `FalloutNV_backup.exe`. ⚠️ El ELF sale con código 0 AUNQUE falle ("FalloutNV.exe not found!") → detectar éxito por existencia del backup.
+- **Epic Games Patcher**: xdelta (patch.xdelta + xdelta3.exe), SOLO para versión EGS → se omite en Steam (el guía lo dice).
+- **BSA Decompressor**: GUI Wine (`FNV BSA Decompressor.exe`) — el usuario debe clickear "Decompress"; no automatizable.
+- **UE ESM Fixes `Installer.exe`**: GUI Wine; su payload `.mpi` es un **BSA v105** (220.334.500 bytes; 7z NO puede abrirlo) → sin extracción posible por GUI-tools → candidato natural a reescritura nativa.
+- **xNVSE**: el archivo trae carpeta interna `nvse_6_4_8/`; 9 archivos (dll/pdb/exe + `Data/NVSE/nvse_config.ini`). Probado: 9 copiados al Root OK.
+- **4GB probado en juego real**: `FalloutNV.exe patched!` + backup creado. **xnvse probado**: OK.
+
+## 📜 Formato BSA v105 (referencia para los extractores nativos)
+- Header: `BSA\0`(4) + version u32 + folderRecordOffset u32 + fileRecordOffset u32 + folderCount u32 + fileCount u32 + totalFolderNameLen u32 + totalFileNameLen u32 + fileFlags u32.
+- File records: hash u64 + size u32 + offset u32; bit 30 del size = comprimido (zlib).
+- ⚠️ Verificación de layout pendiente de probar contra el `.mpi` real (la sonda anterior se cortó).
+
+## 🏗️ `scripts/root_mods.py` (escrito, NO commiteado aún)
+- `--solo {xnvse,4gb,epic,bsa,uefix}`, `--game-dir`, `--prefix`, `--mo2-dir`; busca el juego en STEAM_LIBRARIES; extrae desde `downloads/`.
+- Estado: xnvse ✅, 4gb ✅, epic ✅ (omisión correcta), **bsa/uefix ⚠️ ROTOS** (usan `_wine()` con wine plano → falla en prefix).
+- Plan: reescribir `_wine()` con `protontricks-launch 22380` (ubicar su binario).
+
+## 🎯 DECISIÓN DEL USUARIO (5 ago 2026)
+1. **Hacer nativos en Linux los pasos Wine**:
+   - BSA Decompressor → reescribir los `.bsa` del Data sin compresión (zlib) en Python.
+   - UE ESM Fixes → extraer el `.mpi` (BSA v105) con Python → mod "Fixed ESMs".
+   - 4GB ya es nativo; Epic se omite en Steam.
+2. **Crear UN GIT REPO POR CADA root mod** (`xnvse`, `4gb`, `epic`, `bsa`, `uefix`) — cada uno con su herramienta nativa.
+
+## 🐛 Footgun del shell (lección)
+- `pkill -f 'protontricks'` (o patrón que aparezca en la propia línea de comando) **se mata a sí mismo** → el comando cuelga hasta timeout. Usar `pkill -x` (nombre exacto) o patrones que no coincidan con el shell.
+
+## 📦 Estado de artefactos en /tmp
+- `/tmp/opencode/rootmods/4gb/FalloutNVPatcher` (ELF extraído), `/tmp/opencode/rootmods/uefix/` (Installer.exe + .mpi 220MB + xdelta3.dll), `/tmp/opencode/bsadec/` (decompresor + logs wine/proton).
+- Intento `protontricks-launch 22380 ".../FNV BSA Decompressor.exe"`: arrancó, timeout del shell; GUI no verificada; sin procesos colgados (verificado con pgrep).
+
+## 🗺️ Próximos pasos
+1. Probar formato BSA v105 contra el `.mpi` real (sonda Python corta).
+2. Escribir herramientas nativas (bsa decompressor + uefix extractor) en los repos por mod.
+3. `git init` en `repos/xnvse|4gb|epic|bsa|uefix` con scripts + tests.
+4. Reescribir `_wine()` → protontricks; testear `--solo bsa/uefix`.
+5. Integrar root_mods en `vnv.sh install` (después de importar_mods, antes de tweaks_ini) + commit.
