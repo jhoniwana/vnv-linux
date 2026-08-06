@@ -18,12 +18,13 @@ tags: [proyecto, estado]
 | Comando `steam` (diagnóstico Proton) | ✅ |
 | Root mods: xNVSE + 4GB (nativos) en juego real | ✅ |
 | Epic Games Patcher (omisión en Steam) | ✅ |
+| UE ESM Fixes: port nativo (repo `uefix-linux-port`) | ✅ 6 esm generados |
 
 ## 🟡 Pendiente (requiere hardware real con el juego)
 
-- Root mods nativos: BSA Decompressor + extractor UE ESM Fixes (sin Wine) + `_wine()`→protontricks
-- Git repo por cada root mod (xnvse, 4gb, epic, bsa, uefix)
-- Integrar `root_mods.py` en `vnv.sh install` y commitear
+- Root mods nativos: BSA Decompressor (rewrite BSAs v105) — único pendiente
+- Git repo por cada root mod restante (bsa, xnvse, 4gb, epic)
+- Integrar `root_mods.py` con los ports nativos y en `vnv.sh install` + commitear
 - Probar `install` completo en máquina con Steam + FNV (MO2-LINT, Wine, LOOT)
 - Primer lanzamiento del juego con los mods
 - Probar el setup en Debian real (solo probado en Arch)

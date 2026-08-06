@@ -3,6 +3,14 @@ tags: [bitacora]
 ---
 # Cronología
 
+## 5 agosto 2026 — UE ESM Fixes: port nativo RESUELTO
+
+- **Breakthrough**: los parches `.xd3` del `.mpi` están **comprimidos con LZ4 Frame** (magic `04 22 4D 18`) — por eso los streams se veían ilegibles/corruptos
+- **Manifiesto real** `_package/index.json` (LZ4): valida solo `FalloutNV.exe` (8 SHA1), los esm van crudos a xdelta3; sin cadena de parches
+- **Repo `repos/uefix-linux-port/`** (commit `89cfef1`): `port.py` (LZ4 + xdelta3 nativo) probado end-to-end → 6 esm corregidos (FalloutNV 330MB, etc.), adler32 verificado
+- `xdelta3` 3.1.0 compilado desde fuente a `~/.local/bin`
+- FalloutNV.exe local matchea el hash soportado `0021023E...`
+
 ## 5 agosto 2026 — Fase 2: Root mods + plan nativo
 
 - **Commit `08ca4d5`**: `importar_mo2.py` con raíces de datos válidas FNV + motor FOMOD + loadorder de la guía (20 plugins); `vnv.sh` con MO2-LINT; reimport completo 53/53 mods válidos.

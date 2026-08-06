@@ -204,6 +204,20 @@ El usuario insistió: "al estar en la página del mod tienes que darle a files y
 
 # 🧩 SEGUNDA FASE — ROOT MODS, NATIVO Y REPOS POR MOD (5 ago 2026)
 
+## 💎 UE ESM FIXES — PORT NATIVO RESUELTO (5 ago, noche)
+- **Repo**: `repos/uefix-linux-port/` (git `89cfef1`) — `port.py` + `build_xdelta3.sh` + `Installer.exe`/`.mpi` originales.
+- **El secreto del `.mpi`**: los 6 parches `.xd3` están envueltos en **LZ4 Frame** (magic `04 22 4D 18`, 13 bytes antes de cada magic VCDIFF `D6 C3 C4 00`). Por eso los "magics falsos" y los streams ilegibles: eran bloques LZ4 comprimidos. Los errores `ERROR_blockMode_invalid` del .exe son códigos de `lz4frame`.
+- **Manifiesto real** (`_package/index.json`, comprimido LZ4, 4048 bytes): `Assets` = [0,2,"",3,1,3,"<esm>","./<esm>"] mapea 1:1 `%FNVDATA%\<esm>` → destino. `Checks` SOLO valida `FalloutNV.exe` (8 SHA1: Steam/GOG/EGS parcheados o no; el nuestro = `0021023E37B1AF143305A61B7B29A1811CC7C5FB` ✓). Los esm NO se validan → van crudos a `xd3_decode_memory`. No hay cadena de parches ni esm pre-generados.
+- **Flujo nativo** (port.py): scan magics LZ4 → descomprimir (python-lz4) → descartar no-VCDIFF (index.json/html/css) → leer cpylen del primer window (== tamaño esm vanilla, puede ser ≤ tamaño del archivo — los −20/−8045 nunca fueron problema) → match contra `Data/*.esm` → `xdelta3 -d -s <vanilla> <patch> <out>`.
+- **Outputs verificados** (adler32 de los windows confirmado por xdelta3, headers TES4 ✓): FalloutNV 330,921,877 / DeadMoney 7,303,362 / HonestHearts 35,736,867 / OWB 32,923,146 / LR 40,265,999 / GRA 252,293.
+- **Lecciones**: (1) el error anterior "address too large" era porque alimentaba a xdelta3 los bytes crudos sin descomprimir (p1c.xd3 ≠ full_4735.xd3); (2) `xdelta3 test` cuelga el shell — no usarlo; (3) protontricks-launch de este sistema usa `--appid` y necesita `vdf` (instalado en venv) + `winetricks` (descargado a ~/.local/bin); (4) `import`/`magick import` de ImageMagick falla con "missing an image filename" (usar ffmpeg x11grab o gnome-screenshot); (5) `xdelta3 printdelta` con streams VCD_SOURCE falla sin source — usar `-d -s` real; (6) flags VCDIFF reales: VCD_SOURCE=1, VCD_TARGET=2, VCD_ADLER32=4.
+
+## 🚧 PENDIENTE de la fase 2
+- [ ] Port nativo **BSA Decompressor** (repos/bsa): reescribir BSAs v105 sin zlib en Python + probar contra copia
+- [ ] Repos git: `xnvse`, `4gb`, `epic` (xnvse/4gb ya probados, epic skip en Steam)
+- [ ] Reescribir `root_mods.py` → usar los ports nativos (bsa/uefix sin wine; `_wine()` muere)
+- [ ] Integrar root_mods en `vnv.sh install` + commit en vnv
+
 ## Qué son los "root mods" (paso de la guía VNV)
 - Mods que van **directo al directorio del juego** (no al VFS de MO2). En MO2 quedan desactivados a propósito (importar_mo2.py les pone `-` + `validated=true`, instalados al "Root").
 - Los 5: **xnvse=67883, 4gb=62552, epic=81281, uefix=92289, bsa=65854**.
@@ -243,6 +257,8 @@ El usuario insistió: "al estar en la página del mod tienes que darle a files y
 ## 📦 Estado de artefactos en /tmp
 - `/tmp/opencode/rootmods/4gb/FalloutNVPatcher` (ELF extraído), `/tmp/opencode/rootmods/uefix/` (Installer.exe + .mpi 220MB + xdelta3.dll), `/tmp/opencode/bsadec/` (decompresor + logs wine/proton).
 - Intento `protontricks-launch 22380 ".../FNV BSA Decompressor.exe"`: arrancó, timeout del shell; GUI no verificada; sin procesos colgados (verificado con pgrep).
+- `/tmp/opencode/uefix-patches/`: streams LZ4 descomprimidos (full_*.xd3) + outputs (out_*.esm) — basura temporal, ya no hace falta (el port.py lo hace todo).
+- `/home/jhon/vivanewvegas/vnv/repos/uefix-linux-port/`: Installer.exe + .mpi (commit `89cfef1`), `xdelta3` compilado en `~/.local/bin/xdelta3` (v3.1.0).
 
 ## 🗺️ Próximos pasos
 1. Probar formato BSA v105 contra el `.mpi` real (sonda Python corta).
