@@ -6,3 +6,4 @@ downloads/*.7z
 *.pyc
 downloaded_files/
 downloads/*.rar
+repos/
