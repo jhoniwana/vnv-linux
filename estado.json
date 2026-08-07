@@ -306,6 +306,20 @@
     "estado": "fallo",
     "error": "descarga URL falló",
     "intentos": 1,
-    "ts": 1786078195.488138
+    "ts": 1786081413.6390188
+  },
+  "98514": {
+    "file_id": 1000179156,
+    "estado": "ok",
+    "archivo": "Supplementary Fixes And Tweaks 98514 1.0.4 2026-08-04T19-06Z snU1b0oV.7z",
+    "intentos": 1,
+    "ts": 1786081189.1312737
+  },
+  "66666:1000132850": {
+    "file_id": 1000132850,
+    "estado": "ok",
+    "archivo": "JAM - VNV Configuration-79358-1-0-1717026063.7z",
+    "intentos": 1,
+    "ts": 1786081443.7354202
   }
 }

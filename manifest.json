@@ -456,9 +456,17 @@
     "version": "4.6",
     "extra": [
       {
-        "url": "https://github.com/VivaNewVegas/Viva-New-Vegas-Patch-Emporium/raw/master/Just%20Mods%20Assorted%20Custom%20INI.7z",
-        "nombre": "JAM Custom INI (VNV Patch Emporium)"
+        "file_id": 1000132850,
+        "nombre": "JAM - VNV Configuration"
       }
     ]
+  },
+  {
+    "mod_id": 98514,
+    "seccion": "bugfix",
+    "nombre": "Supplementary Fixes And Tweaks (YUPDate)",
+    "file_id": 1000179156,
+    "checksum": null,
+    "version": "1.0.4"
   }
 ]
