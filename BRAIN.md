@@ -30,6 +30,17 @@ Pipeline completo verificado de punta a punta en la máquina del usuario (Steam 
 1. **MO2 2.5.2 trunca `plugins.txt` al apagar** tras sesión de juego (deja `FalloutNV.esm` solo; `loadorder.txt` intacto). Reproducido 2×. Fix en `lanzar()`: regenera `plugins.txt` = cabecera + `*` por línea del `loadorder.txt` si difieren (vnv.sh:214-226).
 2. **lootcli standalone no ve el VFS de MO2** → re-escribe `plugins.txt` con ~10 plugins si se apunta al perfil real. Fix: `./vnv.sh loot` valida sobre copia `/tmp/opencode/loot_plugins.txt`; LOOT sacado del `install` (vnv.sh:172-192).
 
+### Segunda oleada de bugs (7 ago 2026, todos con fix — juego jugando con partida nueva)
+1. **MO2 2.5.2 plugins.txt SIN `*`**: el archivo = plugins activos SIN asterisco (CRLF, header). Con `*` → `Plugin not found: *FalloutNV.esm` (el `*` pasa a ser parte del nombre) → MO2 no reconoce NINGÚN plugin. Fix en importar_mo2.py + preparar_lanzamiento().
+2. **`--solo` de importar_mo2.py pisaba las listas del perfil** → modlist con 1 mod → MO2 "directory update" desactiva los demás → juego sin mods ("no estan configurados"). Fix: listas SIEMPRE con manifest completo.
+3. **JIP LN sin dll**: estado.json de 58277 apuntaba al INI en vez del main → jip_nvse.dll nunca se extrajo. Fix: estado.json + re-import (JIP v57.30 carga).
+4. **LOD Fixes sin INI**: extra 84171:1000150631 apuntaba al main. Fix: estado.json + re-import.
+5. **Fixed ESMs CORRUPTOS (crash determinista al inicio, stack idéntico 0x00AA991C)**: los parches xdelta3 del .mpi no matchean el vanilla del juego (cpylen FalloutNV=245,642,722 vs vanilla 245,650,747; DeadMoney 6,274,831 vs 6,274,851 — el Data es vanilla legítimo según verify de Steam) → xdelta3 con fuente ±bytes → esm con TES4 válido pero records faltantes (00115C5F, 00094EB8 ausentes) → `MASTERFILE: Could not find reference` → crash. **Estado**: mod desactivado, esms vanilla. Pendiente: fuente exacta del .mpi.
+6. **SArchiveList incompleto** (solo 6 BSAs base) en los 3 inis → BSAs DLC sin registrar. Fix: 21 BSAs orden vanilla, Update.bsa último.
+7. **Saves incompatibles**: partidas creadas con otra era de esms → formids rotos al cargar → "!" (statics), armas DLC rosadas, texturas de cuerpo (`00000007modbodyfemale` vs BSA `00118e86`). Fix: backup de saves; partida nueva = todo OK. OJO: el juego AUTO-CARGA el último save al iniciar (nvse.log DoLoadGameHook sin interacción) — vaciar Saves/ para tests limpios.
+8. **BSAs verificadas a fondo**: las 11 comprimidas tienen bit30 en TODOS los records (sin-bit30=0), data raw válida (nif `Gamebryo`, dds `DDS `); las raw (Meshes/Textures/etc.) son vanilla intactas. El decompresor NO fue la causa de ningún error visible.
+9. **Formato BSA record**: records de 16 bytes `<QII` (hash, size, off); carpeta = hash de carpeta; file-hash = hash del NOMBRE SOLO (todos los skeleton.nif comparten hash). El sum-hash NO matchea nada en FNV (el hash real del motor es otro — no resuelto, no hizo falta).
+
 ### Repos post-push
 - `jhoniwana/vnv-linux` **público** (rama main, `a5ea1a7`); 5 root repos **privados** por decisión del usuario.
 - `.mpi` de UEM Fixes (220 MB) fuera del repo (límite GitHub 100 MB); `port.py` lo extrae del `.7z` con 7z a `~/.cache/vnv-uefix/`.
