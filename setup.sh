@@ -82,10 +82,64 @@ deps_sistema() {
   fi
 }
 
+garantizar_python() {
+  # Ubuntu/Debian minimal no trae python3 — intentar instalarlo automáticamente.
+  if command -v python3 >/dev/null 2>&1; then
+    return 0
+  fi
+  info "python3 not found — installing it (apt/pacman/dnf/zypper)..."
+  local cmd_prefix=""
+  if [[ "$(id -u)" -ne 0 ]] && command -v sudo >/dev/null 2>&1; then
+    cmd_prefix="sudo "
+  fi
+  case "$DISTRO" in
+    debian|ubuntu|linuxmint|pop)
+      ${cmd_prefix}apt update -qq 2>/dev/null || true
+      ${cmd_prefix}apt install -y -qq python3 python3-venv >/dev/null 2>&1 || true
+      ;;
+    arch|manjaro|endeavouros)
+      ${cmd_prefix}pacman -S --needed --noconfirm python >/dev/null 2>&1 || true
+      ;;
+    fedora|rhel|centos|rocky|almalinux)
+      ${cmd_prefix}dnf install -y -q python3 >/dev/null 2>&1 || true
+      ;;
+    opensuse*|suse)
+      ${cmd_prefix}zypper install -y -q python3 python311 >/dev/null 2>&1 || true
+      ;;
+    *)
+      fail "python3 not found and distro unknown — install Python 3.10+ manually"
+      return 1
+      ;;
+  esac
+  if command -v python3 >/dev/null 2>&1; then
+    ok "python3 installed"
+    return 0
+  fi
+  fail "could not install python3 (need root/sudo? no network?) — install Python 3.10+ manually"
+  return 1
+}
+
 crear_venv() {
+  garantizar_python || return 1
   if [[ ! -x "$VENV/bin/python" ]]; then
     info "Creando venv..."
-    python3 -m venv "$VENV"
+    if ! python3 -m venv "$VENV" 2>/dev/null; then
+      # python3-venv suele faltar en Ubuntu minimal → instalarlo y reintentar
+      info "python3 -m venv failed (python3-venv missing?) — installing and retrying..."
+      local cmd_prefix=""
+      if [[ "$(id -u)" -ne 0 ]] && command -v sudo >/dev/null 2>&1; then
+        cmd_prefix="sudo "
+      fi
+      case "$DISTRO" in
+        debian|ubuntu|linuxmint|pop)
+          ${cmd_prefix}apt install -y -qq python3-venv >/dev/null 2>&1 || true
+          ;;
+      esac
+      if ! python3 -m venv "$VENV" 2>/dev/null; then
+        fail "python3 -m venv still failing — install python3-venv manually and re-run ./setup.sh"
+        return 1
+      fi
+    fi
   fi
   "$VENV/bin/pip" install -q --upgrade pip 2>/dev/null || true
   if ! "$VENV/bin/python" -c "import camoufox" 2>/dev/null; then
