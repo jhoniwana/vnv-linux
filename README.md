@@ -60,6 +60,26 @@ Requisitos: Steam con **Fallout New Vegas** instalado y corrido una vez con Prot
 - `./vnv.sh estado` verifica archivo por archivo.
 - La bitácora técnica completa está en **`BRAIN.md`** (APIs, endpoints, bugs resueltos).
 
+## 🔧 Herramientas porteadas a Linux (repos raíz)
+
+El instalador delega en 5 repos nativos (sin Wine para el trabajo pesado), todos
+**privados** por decisión del usuario (contienen binarios con copyright):
+
+| Herramienta | Repo | Qué hace |
+|---|---|---|
+| **NVSE / xNVSE** | `fnv-4gb-patch-linux` | parche 4GB/LAA + auto-load de NVSE vía `nvse_steam_loader` |
+| **FNV BSA Decompressor** | `fnv-bsa-decompressor-linux` | descomprime las 11 BSAs con flag 0x100 (bit30 + raw, juego-compatible) |
+| **UE ESM Fixes** | `ue-esm-fixes-linux` | extrae y aplica los parches xdelta3 del `.mpi` (LZ4 frames) → Fixed ESMs |
+| **Epic Games Patcher** | `epic-games-patcher-linux` | parcheo EGS (no-op en Steam: detecta LAA ya aplicado) |
+| **xNVSE** | `xnvse-linux` | instalación de los DLLs de NVSE xNVSE en el juego |
+
+Notas:
+- Cada uno acepta `VNV_STEAM_LIBRARY` (env) para bibliotecas Steam alternativas.
+- **`ue-esm-fixes-linux`**: los ESMs deben ser los del depot actual — si vienen de
+  otra máquina, correr `steam steam://validate/22380` antes (ver su README: parches
+  con fuente distinta → ESMs corruptos que crashean el juego en el init de diálogos).
+- El verify de Steam revierte 4GB/BSAs/ESMs → correr `./vnv.sh root` después.
+
 ## 📜 Legal
 
 Los mods se descargan desde Nexus con TU sesión (gratis). Este proyecto no redistribuye mods — solo los baja y los instala. Requiere tener el juego en Steam.
