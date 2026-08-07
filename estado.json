@@ -293,5 +293,19 @@
     "archivo": "LOD Fixes and Improvements - INI-84171-1-33-1745246007.7z",
     "intentos": 1,
     "ts": 1786063083.1978202
+  },
+  "66666": {
+    "file_id": 1000133586,
+    "estado": "ok",
+    "archivo": "Just Assorted Mods-66666-4-6-1717763151.7z",
+    "intentos": 1,
+    "ts": 1786078186.9639273
+  },
+  "66666:url:JAM Custom INI (VNV Patch Emporium)": {
+    "file_id": null,
+    "estado": "fallo",
+    "error": "descarga URL falló",
+    "intentos": 1,
+    "ts": 1786078195.488138
   }
 }

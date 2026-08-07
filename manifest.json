@@ -446,5 +446,19 @@
     "file_id": 1000177683,
     "checksum": null,
     "version": "1.2.1"
+  },
+  {
+    "mod_id": 66666,
+    "seccion": "utilities",
+    "nombre": "Just Assorted Mods",
+    "file_id": 1000133586,
+    "checksum": null,
+    "version": "4.6",
+    "extra": [
+      {
+        "url": "https://github.com/VivaNewVegas/Viva-New-Vegas-Patch-Emporium/raw/master/Just%20Mods%20Assorted%20Custom%20INI.7z",
+        "nombre": "JAM Custom INI (VNV Patch Emporium)"
+      }
+    ]
   }
 ]
