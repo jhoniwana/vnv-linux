@@ -1,6 +1,6 @@
-# Lista de descarga — Viva New Vegas Core (54 mods)
+# Download list — Viva New Vegas Core (54 mods)
 
-Abrí cada link, click en el archivo MAIN, luego 'Slow Download'.
+Open each link, click on the MAIN file, then 'Slow Download'.
 
 
 ## UTILITIES

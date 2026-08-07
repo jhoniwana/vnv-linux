@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Actualizador del manifest: chequea la última versión de cada mod en Nexus.
+"""Manifest updater: checks the latest version of each mod on Nexus.
 
-Uso:
-    export NEXUS_API_KEY="tu-key"
-    ./scripts/actualizar.py            # chequea los 54 mods (lento: rate limits)
-    ./scripts/actualizar.py --solo 57174   # chequea uno
+Usage:
+    export NEXUS_API_KEY="your-key"
+    ./scripts/actualizar.py            # checks the 54 mods (slow: rate limits)
+    ./scripts/actualizar.py --solo 57174   # checks one
 
-Para cada mod actualiza: nombre, file_id (si cambió la versión) y deja el
-checksum pendiente hasta la próxima descarga. También genera mods/actualizados.md
-con el reporte de cambios.
+For each mod it updates: name, file_id (if the version changed) and leaves the
+checksum pending until the next download. It also generates mods/actualizados.md
+with the change report.
 """
 import argparse, json, os, pathlib, sys, time, urllib.request
 from datetime import datetime
@@ -29,15 +29,15 @@ def get_files(mod_id, api_key):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--solo", type=int, help="solo un mod_id")
+    ap.add_argument("--solo", type=int, help="only one mod_id")
     args = ap.parse_args()
 
     api_key = os.environ.get("NEXUS_API_KEY")
     if not api_key:
-        sys.exit("❌ Falta NEXUS_API_KEY")
+        sys.exit("❌ Missing NEXUS_API_KEY")
 
     mods = json.load(open(MANIFEST))
-    todos = mods  # guardamos referencia a la lista COMPLETA (fix bug --solo)
+    todos = mods  # keep a reference to the FULL list (fix bug --solo)
     if args.solo:
         mods = [m for m in mods if m["mod_id"] == args.solo]
 
@@ -50,7 +50,7 @@ def main():
             nombre = info.get("name", "")
             version = info.get("version", "")
             if nombre and nombre != m.get("nombre"):
-                cambios.append(f"  {mid}: nombre -> {nombre}")
+                cambios.append(f"  {mid}: name -> {nombre}")
                 m["nombre"] = nombre
             m["version"] = version
 
@@ -73,9 +73,9 @@ def main():
         with open(reporte, "a") as f:
             f.write(f"## {fecha}\n")
             f.write("\n".join(cambios) + "\n\n")
-        print(f"\n📝 {len(cambios)} cambios -> {reporte}")
+        print(f"\n📝 {len(cambios)} changes -> {reporte}")
     else:
-        print("\n✅ Todo al día.")
+        print("\n✅ All up to date.")
 
 if __name__ == "__main__":
     main()

@@ -1,106 +1,106 @@
-# 🔁 HANDOFF — VNV Linux Installer (guía de automatización)
+# 🔁 HANDOFF — VNV Linux Installer (automation guide)
 
-Mensaje para el agente que continúe este proyecto. Léelo completo antes de actuar.
-
----
-
-## 1. QUÉ ES ESTO
-
-**vnv-linux**: instalador 100% automático del Core de **Viva New Vegas** para **Linux + Steam**.
-- 55 mods (Core VNV + JAM como extra solicitado), root mods nativos (sin Wine), lanzamiento vía MO2 CLI.
-- Repo público: `https://github.com/jhoniwana/vnv-linux` (rama `main`)
-- Código local: la carpeta donde se clonó el repo (portable — sin rutas absolutas)
-- Docs: `BRAIN.md` (bitácora técnica) + `obsidian/` + este HANDOFF.
+Message for the agent that continues this project. Read it completely before acting.
 
 ---
 
-## 2. ESTADO ACTUAL — VERIFICADO AL 100% (7 ago 2026)
+## 1. WHAT THIS IS
 
-| Componente | Estado |
+**vnv-linux**: 100% automatic installer of the **Viva New Vegas** Core for **Linux + Steam**.
+- 55 mods (Core VNV + JAM as requested extra), native root mods (no Wine), launch via MO2 CLI.
+- Public repo: `https://github.com/jhoniwana/vnv-linux` (branch `main`)
+- Local code: the folder where the repo was cloned (portable — no absolute paths)
+- Docs: `BRAIN.md` (technical log) + `obsidian/` + this HANDOFF.
+
+---
+
+## 2. CURRENT STATE — 100% VERIFIED (7 aug 2026)
+
+| Component | State |
 |---|---|
-| **55 mods descargados** + 5 extras, 0 HTML | ✅ (incluye JAM 66666 + YUPDate/supplement 98514) |
-| **55 mods importados** a MO2 | ✅ 50 activos + 5 root (desactivados, correcto) + Fixed ESMs activo |
-| **Load order canónico VNV Core** | ✅ 23 plugins: base esms → YUP → d20Fixes → UPNVSE+ → NVMIM(-YUP) → FaceGen → Strip Lights → LDF → LTI(-YUP) → fixy → Placements → JAM |
-| **Root mods** | ✅ xNVSE (nvse_1_4 + steam_loader), 4GB (LAA=0x20 + import), BSAs descomprimidas (21, bit30 en todos), UE ESM Fixes rebuild CORRECTO |
-| **Fixed ESMs (rebuild 7 ago)** | ✅ **465.054 records, DIALOG 18.215, INFO 23.247** (la build vieja tenía 233K records y 0 diálogos → crash) |
-| **INIs** | ✅ nvtf.ini (heap 400 + 4GB + VRAM, en juego y en mod), FalloutCustom.ini (perfil Default) |
-| **Extras de la guía** | ✅ JIP Settings INI, Stewie INI, JohnnyGuitar INI Presets, LOD Fixes INI, **JAM - VNV Configuration** (JustMods.ini) |
-| **Juego** | ✅ corre estable, 28 plugins NVSE cargados, partida nueva jugando sin errores visibles |
-| **Log de errores** | ✅ 1.5 KB = solo ruido vanilla benigno (rdt, misnamed BSA, swaps de textura opcionales) |
-| **JGNVSE "EDIDs conflicting"** | ✅ 1 solo conflicto benigno (UPNVSE+ vs YUP: `UPNVSEPVendorQuestItemSCRIPT`) — los conflictos DLC vanilla desaparecieron con los Fixed ESMs correctos |
+| **55 mods downloaded** + 5 extras, 0 HTML | ✅ (includes JAM 66666 + YUPDate/supplement 98514) |
+| **55 mods imported** into MO2 | ✅ 50 active + 5 root (disabled, correct) + Fixed ESMs active |
+| **Canonical VNV Core load order** | ✅ 23 plugins: base esms → YUP → d20Fixes → UPNVSE+ → NVMIM(-YUP) → FaceGen → Strip Lights → LDF → LTI(-YUP) → fixy → Placements → JAM |
+| **Root mods** | ✅ xNVSE (nvse_1_4 + steam_loader), 4GB (LAA=0x20 + import), decompressed BSAs (21, bit30 on all), UE ESM Fixes CORRECT rebuild |
+| **Fixed ESMs (rebuild 7 aug)** | ✅ **465,054 records, DIALOG 18,215, INFO 23,247** (the old build had 233K records and 0 dialogues → crash) |
+| **INIs** | ✅ nvtf.ini (heap 400 + 4GB + VRAM, in-game and in mod), FalloutCustom.ini (Default profile) |
+| **Guide extras** | ✅ JIP Settings INI, Stewie INI, JohnnyGuitar INI Presets, LOD Fixes INI, **JAM - VNV Configuration** (JustMods.ini) |
+| **Game** | ✅ runs stable, 28 NVSE plugins loaded, new game playing without visible errors |
+| **Error log** | ✅ 1.5 KB = only benign vanilla noise (rdt, misnamed BSA, optional texture swaps) |
+| **JGNVSE "EDIDs conflicting"** | ✅ only 1 benign conflict (UPNVSE+ vs YUP: `UPNVSEPVendorQuestItemSCRIPT`) — the vanilla DLC conflicts disappeared with the correct Fixed ESMs |
 
 ---
 
-## 3. EL PIPELINE (paso a paso, comandos + lógica)
+## 3. THE PIPELINE (step by step, commands + logic)
 
-### 3.1 Setup e instalación
+### 3.1 Setup and installation
 ```bash
-./vnv.sh setup            # deps del sistema + venv + Camoufox (multi-distro)
-./vnv.sh login            # cookies Nexus (Camoufox pasa Turnstile)
+./vnv.sh setup            # system deps + venv + Camoufox (multi-distro)
+./vnv.sh login            # Nexus cookies (Camoufox passes Turnstile)
 ./vnv.sh config           # API key (metadata)
-./vnv.sh credenciales     # email+pass (re-login automático)
-./vnv.sh download         # actualizar.py (metadata) + gestor_descargas.py (descarga todo)
+./vnv.sh credenciales     # email+pass (automatic re-login)
+./vnv.sh download         # actualizar.py (metadata) + gestor_descargas.py (downloads everything)
 ./vnv.sh install          # importar_mo2.py + root_mods.py + tweaks_ini
-./vnv.sh estado           # verifica descargas vs manifest
-./vnv.sh run              # lanza el juego vía MO2 CLI (NVSE)
-./vnv.sh mo2              # abre el gestor MO2 (GUI) — también desde Steam (lanzar-mo2.sh)
-./vnv.sh steam-add        # agrega "Fallout New Vegas (VNV)" a la biblioteca Steam (non-Steam)
+./vnv.sh estado           # verifies downloads vs manifest
+./vnv.sh run              # launches the game via MO2 CLI (NVSE)
+./vnv.sh mo2              # opens the MO2 manager (GUI) — also from Steam (lanzar-mo2.sh)
+./vnv.sh steam-add        # adds "Fallout New Vegas (VNV)" to the Steam library (non-Steam)
 ```
 
-### 3.2 Lógica de cada script (estado final — NO romper)
-- **`scripts/actualizar.py`** — actualiza `manifest.json` (nombres/versiones/file_ids) eligiendo el **MAIN más reciente** (`max(uploaded_timestamp)`). ⚠️ OJO: si el mod tiene versiones por variante (ej. "Placement Fixes TTW" vs "Placement Fixes"), el MAIN más reciente puede ser la variante equivocada → verificar masters (bug histórico 90593 → TTW).
-- **`scripts/gestor_descargas.py`** — estados en `estado.json` (pendiente/descargando/ok/fallo), retries con backoff, re-login automático. **Los extras con `url` usan descarga directa** (GitHub); los extras con `file_id` van por Nexus. ⚠️ Validar que `estado.json` apunte al archivo CORRECTO (hubo casos donde main↔extra quedaron cruzados: 58277 JIP dll, 84171 LOD INI).
-- **`scripts/importar_mo2.py`** — descomprime cada mod a `mods/<Nombre>/` (FOMOD con elecciones explícitas por mod), fusiona extras, y **regenera las listas del perfil SIEMPRE con el manifest completo**:
-  - `modlist.txt`: **preserva el estado +/- previo** (toggles manuales sobreviven — fix 0ffc8ce).
-  - `loadorder.txt`/`plugins.txt`: orden canónico VNV Core (GUIAS_PLUGINS) — formato MO2 2.5.2: **SIN `*`**, CRLF, header.
-  - `--solo MOD_ID`: re-importa UN mod **sin tocar las listas** (preserva loadorder exacto e inserta el plugin nuevo tras su master — fix b7782f3).
-- **`scripts/root_mods.py`** — delega en los 5 root repos: `xnvse` (copia dlls + steam_loader), `4gb` (parche LAA nativo), `epic` (no-op en Steam), `bsa` (decompress.py — las 11 BSAs con 0x100 → bit30 + raw), `uefix` (port.py — parches xdelta3 del .mpi).
-  - ⚠️ **ORDEN CRÍTICO**: el verify de Steam revierte el 4GB y los esms → si se corre `steam steam://validate/22380`, hay que re-correr `./vnv.sh root` (4gb + bsa + uefix) DESPUÉS.
-- **`repos/ue-esm-fixes-linux/port.py`** — extrae los parches LZ4/xdelta3 del `.mpi` y los aplica a los esms del Data. ⚠️ **Los parches exigen los esms vanilla EXACTOS del depot actual** (los del usuario copiados de otra máquina NO matchean → esms corruptos con cabecera TES4 válida pero records faltantes → crash de diálogos). Tras un verify de Steam los esms quedan correctos y el rebuild sale bien.
-- **`vnv.sh preparar_lanzamiento()`** — re-sincroniza `plugins.txt` desde `loadorder.txt` si MO2 los desincronizó (MO2 2.5.2 los reescribe al cerrar).
-- **`vnv.sh correr_loot()`** — LOOT valida sobre una COPIA (lootcli no ve el VFS de MO2) — nunca toca el perfil.
-- **`tweaks_ini`** — nvtf.ini (heap 400MB, 4GB, VRAM) en `Data/NVSE/Plugins/` + copia en el mod NVTF; FalloutCustom.ini en `profiles/Default/`.
+### 3.2 Logic of each script (final state — DO NOT break)
+- **`scripts/actualizar.py`** — updates `manifest.json` (names/versions/file_ids) choosing the most recent **MAIN** (`max(uploaded_timestamp)`). ⚠️ CAUTION: if the mod has per-variant versions (e.g. "Placement Fixes TTW" vs "Placement Fixes"), the most recent MAIN may be the wrong variant → verify masters (historical bug 90593 → TTW).
+- **`scripts/gestor_descargas.py`** — states in `estado.json` (pending/downloading/ok/failed), retries with backoff, automatic re-login. **Extras with `url` use direct download** (GitHub); extras with `file_id` go through Nexus. ⚠️ Validate that `estado.json` points to the CORRECT file (there were cases where main↔extra got crossed: 58277 JIP dll, 84171 LOD INI).
+- **`scripts/importar_mo2.py`** — decompresses each mod to `mods/<Nombre>/` (FOMOD with explicit per-mod choices), merges extras, and **always regenerates the profile lists with the full manifest**:
+  - `modlist.txt`: **preserves the previous +/- state** (manual toggles survive — fix 0ffc8ce).
+  - `loadorder.txt`/`plugins.txt`: canonical VNV Core order (GUIAS_PLUGINS) — MO2 2.5.2 format: **WITHOUT `*`**, CRLF, header.
+  - `--solo MOD_ID`: re-imports ONE mod **without touching the lists** (preserves exact loadorder and inserts the new plugin after its master — fix b7782f3).
+- **`scripts/root_mods.py`** — delegates to the 5 root repos: `xnvse` (copies dlls + steam_loader), `4gb` (native LAA patch), `epic` (no-op on Steam), `bsa` (decompress.py — the 11 BSAs with 0x100 → bit30 + raw), `uefix` (port.py — xdelta3 patches from the .mpi).
+  - ⚠️ **CRITICAL ORDER**: Steam verify reverts the 4GB and the esms → if `steam steam://validate/22380` is run, `./vnv.sh root` (4gb + bsa + uefix) must be re-run AFTERWARDS.
+- **`repos/ue-esm-fixes-linux/port.py`** — extracts the LZ4/xdelta3 patches from the `.mpi` and applies them to the Data esms. ⚠️ **The patches demand the EXACT vanilla esms of the current depot** (esms copied by the user from another machine do NOT match → corrupted esms with a valid TES4 header but missing records → dialogue crash). After a Steam verify the esms are correct and the rebuild succeeds.
+- **`vnv.sh preparar_lanzamiento()`** — re-syncs `plugins.txt` from `loadorder.txt` if MO2 desynced them (MO2 2.5.2 rewrites them on close).
+- **`vnv.sh correr_loot()`** — LOOT validates against a COPY (lootcli can't see MO2's VFS) — never touches the profile.
+- **`tweaks_ini`** — nvtf.ini (heap 400MB, 4GB, VRAM) in `Data/NVSE/Plugins/` + a copy in the NVTF mod; FalloutCustom.ini in `profiles/Default/`.
 
-### 3.3 Lanzamiento
-- CLI MO2 correcto: `ModOrganizer.exe --profile=Default run -e NVSE` (`-e` sin valor; `-e=NVSE` NO funciona).
-- El juego **AUTO-CARGA el último save** al iniciar → al testear configuraciones, vaciar `Saves/` del prefix o el test carga la partida vieja.
-- Los saves viejos de otra instalación son **incompatibles** (formids de los UE fixes reenumerados) → "!"/texturas rosadas. Partida nueva = todo OK.
-
----
-
-## 4. BUGS HISTÓRICOS (todos resueltos — no reintroducir)
-
-1. **Mod 90593 TTW** — actualizar.py eligió la variante TTW → master `TaleOfTwoWastelands.esm` → crash. Fix: file_id manual `1000152138` + verificación de masters.
-2. **plugins.txt con `*`** — MO2 2.5.2 no usa `*` (lo trata como parte del nombre → ningún plugin reconocido).
-3. **`--solo` pisaba las listas** → modlist de 1 mod → MO2 desactivaba todo ("mods no configurados").
-4. **estado.json cruzado** (58277 main→INI, 84171 extra→main) → faltaban `jip_nvse.dll` y `LOD Fixes.ini`.
-5. **Fixed ESMs corruptos** (fuente esm vieja del usuario) → records faltantes → crash determinista `0x00AA991C` en init de diálogos (contexto: records YUP "Doctors"). Rebuild correcto post-verify.
-6. **SArchiveList incompleto** (solo 6 BSAs base) en los 3 inis → DLC sin assets. Fix: 21 BSAs, `Update.bsa` al final.
-7. **Load order incorrecto** (YUP 8º) → crash intermitente de diálogos. Fix: orden canónico.
-8. **Re-activación de mods desactivados** por el regenerado del modlist → preservar estados.
-9. **Verify de Steam revierte 4GB/BSAs/esms** → re-correr root_mods después.
+### 3.3 Launch
+- Correct MO2 CLI: `ModOrganizer.exe --profile=Default run -e NVSE` (`-e` with no value; `-e=NVSE` does NOT work).
+- The game **AUTO-LOADS the last save** on start → when testing configurations, empty `Saves/` in the prefix or the test loads the old game.
+- Old saves from another installation are **incompatible** (formids renumbered by the UE fixes) → "!"/pink textures. New game = everything OK.
 
 ---
 
-## 5. LO QUE FALTA (pulido, nada del pipeline)
+## 4. HISTORICAL BUGS (all resolved — do not reintroduce)
 
-- Probar `./vnv.sh setup` en Debian/Ubuntu real (solo probado en Arch).
-- Social preview del repo (`assets/gecko.png` en GitHub settings).
-- Seguridad: regenerar contraseña Nexus + API key (`./vnv.sh config`) + `./vnv.sh credenciales`.
-- Verificar `./vnv.sh install` completo en una máquina limpia (recrear el estado desde cero).
+1. **Mod 90593 TTW** — actualizar.py chose the TTW variant → master `TaleOfTwoWastelands.esm` → crash. Fix: manual file_id `1000152138` + master verification.
+2. **plugins.txt with `*`** — MO2 2.5.2 doesn't use `*` (treats it as part of the name → no plugin recognized).
+3. **`--solo` overwrote the lists** → modlist of 1 mod → MO2 disabled everything ("mods not configured").
+4. **Crossed estado.json** (58277 main→INI, 84171 extra→main) → `jip_nvse.dll` and `LOD Fixes.ini` were missing.
+5. **Corrupted Fixed ESMs** (old esm source from the user) → missing records → deterministic crash `0x00AA991C` during dialogue init (context: YUP "Doctors" records). Correct rebuild post-verify.
+6. **Incomplete SArchiveList** (only 6 base BSAs) in the 3 inis → DLC without assets. Fix: 21 BSAs, `Update.bsa` last.
+7. **Incorrect load order** (YUP 8th) → intermittent dialogue crash. Fix: canonical order.
+8. **Re-activation of disabled mods** by the modlist regeneration → preserve states.
+9. **Steam verify reverts 4GB/BSAs/esms** → re-run root_mods afterwards.
 
-## 6. REGLAS IMPORTANTES
+---
 
-- **NO subir credenciales**; `downloads/`, `venv/`, `~/.config/` fuera del repo.
-- **Siempre** usar `./venv/camoufox-python` (nunca `python3`) para los scripts de Nexus.
-- **Rate limits Nexus**: 5s entre API, 8-15s entre descargas.
-- Root repos **privados** (binarios con copyright) — no volverlos públicos.
-- `.mpi` de UE fixes (220 MB) fuera del repo; `port.py` lo extrae del `.7z` a `~/.cache/vnv-uefix/` con 7z.
-- El repo NO redistribuye mods (se descargan con la sesión del usuario).
+## 5. WHAT'S LEFT (polish, nothing in the pipeline)
 
-## 7. REFERENCIAS
+- Test `./vnv.sh setup` on a real Debian/Ubuntu (only tested on Arch).
+- Social preview of the repo (`assets/gecko.png` in GitHub settings).
+- Security: regenerate Nexus password + API key (`./vnv.sh config`) + `./vnv.sh credenciales`.
+- Verify a full `./vnv.sh install` on a clean machine (recreate the state from scratch).
 
-- `BRAIN.md` — detalle técnico completo.
-- `obsidian/` — bóveda documental (`Inicio.md` es el hub).
-- `README.md` — guía de usuario.
-- Comandos: `./vnv.sh {setup|login|config|credenciales|download|estado|install|loot|run|mo2|steam-add|ui}`
+## 6. IMPORTANT RULES
+
+- **NEVER upload credentials**; keep `downloads/`, `venv/`, `~/.config/` out of the repo.
+- **Always** use `./venv/camoufox-python` (never `python3`) for the Nexus scripts.
+- **Nexus rate limits**: 5s between API calls, 8-15s between downloads.
+- Root repos **private** (copyrighted binaries) — do not make them public.
+- The UE fixes `.mpi` (220 MB) stays out of the repo; `port.py` extracts it from the `.7z` to `~/.cache/vnv-uefix/` with 7z.
+- The repo does NOT redistribute mods (they are downloaded with the user's session).
+
+## 7. REFERENCES
+
+- `BRAIN.md` — full technical detail.
+- `obsidian/` — documentation vault (`Inicio.md` is the hub).
+- `README.md` — user guide.
+- Commands: `./vnv.sh {setup|login|config|credenciales|download|estado|install|loot|run|mo2|steam-add|ui}`

@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""Instala los mods raíz en el directorio del juego (paso "root mods" de la guía VNV).
+"""Installs the root mods into the game directory (the "root mods" step of the VNV guide).
 
-Root mods = los que van DIRECTAMENTE al directorio del juego (no al VFS de MO2).
-En MO2 quedan desactivados a propósito (importar_mo2.py les pone '-').
+Root mods = the ones that go DIRECTLY into the game directory (not into MO2's VFS).
+In MO2 they are disabled on purpose (importar_mo2.py marks them with '-').
 
-Cada paso delega en su port nativo Linux (repos/):
+Each step delegates to its native Linux port (repos/):
   xnvse   → repos/xnvse-linux/port.py
   4gb     → repos/fnv-4gb-patch-linux/port.py
-  epic    → repos/epic-games-patcher-linux/port.py (no-op en Steam: detecta LAA ya aplicado)
+  epic    → repos/epic-games-patcher-linux/port.py (no-op on Steam: detects LAA already applied)
   bsa     → repos/fnv-bsa-decompressor-linux/decompress.py
   uefix   → repos/ue-esm-fixes-linux/port.py (mod "Fixed ESMs")
-  all     → xnvse + 4gb + bsa + uefix (epic es no-op en Steam)
+  all     → xnvse + 4gb + bsa + uefix (epic is a no-op on Steam)
 
-Sin Wine/Proton: todo corre nativo en Linux.
+No Wine/Proton: everything runs natively on Linux.
 """
 from __future__ import annotations
 
@@ -76,34 +76,34 @@ def main():
 
     game_dir = Path(args.game_dir) if args.game_dir else buscar_juego()
     if game_dir is None:
-        return fail("no encontré el juego — edité STEAM_LIBRARIES o instalalo en Steam")
+        return fail("game not found — edit STEAM_LIBRARIES or install it in Steam")
     mo2_dir = Path(args.mo2_dir)
     fixed = mo2_dir / "mods" / "Fixed ESMs"
 
-    print(f"Juego:  {game_dir}")
-    print(f"MO2:    {mo2_dir}")
+    print(f"Game:  {game_dir}")
+    print(f"MO2:   {mo2_dir}")
 
     pasos = [args.solo] if args.solo else ORDEN
     for p in pasos:
         script = PASOS[p]
         if not script.exists():
-            return fail(f"falta el port {script}")
+            return fail(f"missing port {script}")
         cmd = [str(PY), str(script), "--game-dir", str(game_dir)]
         if p == "uefix":
             cmd += ["--dest", str(fixed)]
-        info(f"== paso {p}: {script.name} ==")
+        info(f"== step {p}: {script.name} ==")
         r = subprocess.run(cmd)
         if r.returncode != 0:
-            return fail(f"paso {p} falló (rc={r.returncode})")
-        ok(f"paso {p} completado")
+            return fail(f"step {p} failed (rc={r.returncode})")
+        ok(f"step {p} completed")
 
     if "uefix" in pasos and fixed.exists():
         modlist = mo2_dir / "profiles" / "Default" / "modlist.txt"
         if modlist.exists() and "+Fixed ESMs" not in modlist.read_text():
             with open(modlist, "a") as f:
                 f.write("+Fixed ESMs\n")
-            ok("mod 'Fixed ESMs' activado en modlist.txt")
-    ok("Root mods listos")
+            ok("mod 'Fixed ESMs' enabled in modlist.txt")
+    ok("Root mods ready")
     return 0
 
 

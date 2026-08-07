@@ -1,57 +1,57 @@
-# 🎁 VNV Linux — Guía para un amigo
+# 🎁 VNV Linux — Guide for a friend
 
-Instalador 100% automático del Core de **Viva New Vegas** en Linux + Steam.
+100% automatic installer of the **Viva New Vegas** Core on Linux + Steam.
 
-## Qué necesitás
+## What you need
 
 - Linux (Arch, Debian/Ubuntu, Fedora, openSUSE)
-- Fallout: New Vegas comprado en Steam (instalado)
-- Una cuenta gratis de Nexus Mods (para descargar los mods)
+- Fallout: New Vegas bought on Steam (installed)
+- A free Nexus Mods account (to download the mods)
 
-## Pasos (en orden)
+## Steps (in order)
 
 ```bash
-# 1. Cloná el repo
+# 1. Clone the repo
 git clone https://github.com/jhoniwana/vnv-linux
 cd vnv-linux
 
-# 2. Setup del entorno (deps del sistema + Python + Camoufox)
+# 2. Environment setup (system deps + Python + Camoufox)
 ./vnv.sh setup
 
-# 3. Login a Nexus (se abre un navegador anti-detección; entrá con TU cuenta)
+# 3. Nexus login (an anti-detection browser opens; log in with YOUR account)
 ./vnv.sh login
 
-# 4. Guardá tu API key de Nexus (https://www.nexusmods.com/settings/api-keys)
+# 4. Save your Nexus API key (https://www.nexusmods.com/settings/api-keys)
 ./vnv.sh config
 
-# 5. Guardá tu email+contraseña (para el re-login automático)
+# 5. Save your email+password (for automatic re-login)
 ./vnv.sh credenciales
 
-# 6. Descargá los 55 mods (1.1 GB — tarda un rato, es automático)
+# 6. Download the 55 mods (1.1 GB — takes a while, it's automatic)
 ./vnv.sh download
 
-# 7. Verificá que todo esté OK
+# 7. Verify everything is OK
 ./vnv.sh estado
 
-# 8. Instalá todo (MO2 + mods + root mods + INIs) — necesita Steam cerrado
+# 8. Install everything (MO2 + mods + root mods + INIs) — Steam must be closed
 ./vnv.sh install
 
-# 9. ¡A jugar!
+# 9. Let's play!
 ./vnv.sh run
 ```
 
-## Opcional (cómodo)
+## Optional (handy)
 
-- **Desde Steam**: `./vnv.sh steam-add` agrega "Fallout New Vegas (VNV)" a tu biblioteca
-  (abre el gestor MO2 → botón Run → juego).
-- **Interfaz web**: `./vnv.sh ui` (wizard sin terminal).
+- **From Steam**: `./vnv.sh steam-add` adds "Fallout New Vegas (VNV)" to your library
+  (opens the MO2 manager → Run button → game).
+- **Web interface**: `./vnv.sh ui` (terminal-free wizard).
 
-## Notas importantes
+## Important notes
 
-- **Los mods NO están en el repo** (copyright de sus autores). Se descargan con TU
-  cuenta de Nexus automáticamente.
-- El juego corre en **partida nueva** — los saves de otra instalación no son compatibles.
-- Si Steam actualiza el juego (verify), corré `./vnv.sh root` después (re-aplica 4GB,
-  BSAs y Fixed ESMs).
-- Sprint y QOL: JAM se configura en el juego (ESC → Mod Configuration → Just Assorted Mods).
-- Cualquier duda: el log de errores está en `HANDOFF.md` y `BRAIN.md`.
+- **The mods are NOT in the repo** (copyright of their authors). They are downloaded
+  automatically with YOUR Nexus account.
+- The game runs on a **new game** — saves from another installation are not compatible.
+- If Steam updates the game (verify), run `./vnv.sh root` afterwards (re-applies 4GB,
+  BSAs and Fixed ESMs).
+- Sprint and QOL: JAM is configured in-game (ESC → Mod Configuration → Just Assorted Mods).
+- Any questions: the error log is in `HANDOFF.md` and `BRAIN.md`.

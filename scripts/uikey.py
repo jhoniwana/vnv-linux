@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Inyector de teclado vía uinput (evdev) — funciona en cualquier compositor.
+"""Keyboard injector via uinput (evdev) — works on any compositor.
 
-Uso: uikey.py [key1 key2 ...]   (ej: tab enter ctrl+f5)
-Teclas: tab enter space esc f5 ctrl alt shift up down left right
+Usage: uikey.py [key1 key2 ...]   (e.g. tab enter ctrl+f5)
+Keys: tab enter space esc f5 ctrl alt shift up down left right
 """
 import sys
 import time
@@ -27,7 +27,7 @@ def main():
             down = []
             for p in parts:
                 if p not in KEYS:
-                    print(f"tecla desconocida: {p}")
+                    print(f"unknown key: {p}")
                     return 1
                 down.append(KEYS[p])
             for k in down:

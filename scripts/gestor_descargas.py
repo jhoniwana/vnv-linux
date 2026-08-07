@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-"""Gestor de descargas VNV — estados, retries, verificación de integridad.
+"""VNV download manager — states, retries, integrity verification.
 
-Estados por mod (persistidos en estado.json):
-  pendiente → descargando → ok | fallo
+States per mod (persisted in estado.json):
+  pending → downloading → ok | fail
 
-Comandos:
-  gestor.py                      → descarga lo pendiente/fallido (todo)
-  gestor.py --solo-fallidos      → reintenta solo los fallidos
-  gestor.py --verificar          → verifica archivos vs manifest (sin descargar)
-  gestor.py --solo MOD_ID        → un mod
-  gestor.py --seccion utilities  → una sección
-  gestor.py --forzar             → re-descarga aunque esté ok (si cambió file_id)
-  gestor.py --max-intentos N     → intentos por mod (def 3)
+Commands:
+  gestor.py                      → downloads pending/failed (all)
+  gestor.py --solo-fallidos      → retries only the failed ones
+  gestor.py --verificar          → verifies files vs manifest (no download)
+  gestor.py --solo MOD_ID        → one mod
+  gestor.py --seccion utilities  → one section
+  gestor.py --forzar             → re-downloads even if ok (if file_id changed)
+  gestor.py --max-intentos N     → attempts per mod (default 3)
 
-Cualquier corrida: si el file_id del manifest cambió vs el estado, re-descarga.
+Any run: if the manifest file_id changed vs the state, re-download.
 """
 import argparse
 import json
@@ -45,7 +45,7 @@ def guardar_estado(est):
 
 
 def verificar_archivo(path):
-    """Devuelve True si el archivo parece real (no HTML)."""
+    """Returns True if the file looks real (not HTML)."""
     if not path.exists() or path.stat().st_size == 0:
         return False
     r = subprocess.run(["file", "-b", str(path)], capture_output=True, text=True)
@@ -63,7 +63,7 @@ def archivo_existente(mid):
 
 
 def descargar_url(url, destino):
-    """Descarga directa (no-Nexus, ej. GitHub). Devuelve (ok, nombre_archivo)."""
+    """Direct download (non-Nexus, e.g. GitHub). Returns (ok, filename)."""
     try:
         import requests
     except ImportError:
@@ -86,11 +86,11 @@ def descargar_url(url, destino):
 
 
 def descargar_uno(page, mid, fid, destino, consent_ya):
-    """Descarga un mod vía /Download/. Devuelve (ok, nombre_archivo, error, sin_sesion)."""
+    """Downloads a mod via /Download/. Returns (ok, filename, error, no_session)."""
     url = f"{SITE}/Download/?id={fid}&game_id={GAME_ID}&source=ModPage"
     page.goto(url, timeout=90000, wait_until="domcontentloaded")
     page.wait_for_timeout(4000)
-    # esperar challenge de Cloudflare
+    # wait for the Cloudflare challenge
     for _ in range(12):
         try:
             body = page.locator("body").inner_text(timeout=2000)
@@ -100,16 +100,16 @@ def descargar_uno(page, mid, fid, destino, consent_ya):
             break
         except Exception:
             page.wait_for_timeout(3000)
-    # ¿sesión expirada? (la página muestra el login en vez del contenido)
+    # session expired? (the page shows the login instead of the content)
     try:
         body_txt = page.locator("body").inner_text(timeout=3000)
         if ("Log in" in body_txt or "Sign in" in body_txt) \
                 and "served via CDN" not in body_txt \
                 and "should automatically begin" not in body_txt:
-            return False, None, "sesión expirada (Log in)", True
+            return False, None, "session expired (Log in)", True
     except Exception:
         pass
-    # consentimiento de cookies (una vez)
+    # cookie consent (once)
     if not consent_ya[0]:
         try:
             b = page.locator("#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll").first
@@ -119,7 +119,7 @@ def descargar_uno(page, mid, fid, destino, consent_ya):
                 page.wait_for_timeout(3000)
         except Exception:
             pass
-    # esperar auto-descarga, si no click en Download
+    # wait for the auto-download, otherwise click Download
     dl_event = []
     page.on("download", lambda d: dl_event.append(d))
     for _ in range(12):
@@ -148,18 +148,18 @@ def descargar_uno(page, mid, fid, destino, consent_ya):
                 break
             page.wait_for_timeout(1000)
     if not dl_event:
-        return False, None, "no arrancó la descarga", False
+        return False, None, "download did not start", False
     d = dl_event[0]
     out = destino / d.suggested_filename
     d.save_as(out)
     if not verificar_archivo(out):
         out.unlink(missing_ok=True)
-        return False, None, f"archivo inválido: {d.suggested_filename[:40]}", False
+        return False, None, f"invalid file: {d.suggested_filename[:40]}", False
     return True, d.suggested_filename, None, False
 
 
 def relogin():
-    """Re-login a Nexus vía login_camoufox.py. Devuelve True si quedó sesión."""
+    """Re-login to Nexus via login_camoufox.py. Returns True if a session was left."""
     global cookies_extra
     import os
     import subprocess as sp
@@ -171,13 +171,13 @@ def relogin():
             env["NEXUS_USER"] = lines[0].strip()
             env["NEXUS_PASS"] = lines[1].strip()
     if not env.get("NEXUS_USER"):
-        print("    ✘ no hay credenciales: exportá NEXUS_USER/NEXUS_PASS o corré ./vnv.sh login")
+        print("    ✘ no credentials: export NEXUS_USER/NEXUS_PASS or run ./vnv.sh login")
         return False
     wrapper = BASE / "venv" / "camoufox-python"
     py = str(wrapper) if wrapper.exists() else sys.executable
     r = sp.run([py, str(BASE / "scripts" / "login_camoufox.py")], env=env,
                capture_output=True, text=True, timeout=240)
-    # recargar cookies (login_camoufox las escribió)
+    # reload cookies (login_camoufox wrote them)
     cookies_extra.clear()
     for name, f in [("nexusmods_session", "nexus_session"), ("cf_clearance", "cf_clearance")]:
         p = CONFIG_DIR / f
@@ -208,50 +208,50 @@ def main():
 
     est = cargar_estado()
 
-    # ===== MODO VERIFICAR (sin descargar) =====
+    # ===== VERIFY MODE (no download) =====
     if args.verificar:
-        print("🔍 VERIFICACIÓN vs manifest:")
+        print("🔍 VERIFICATION vs manifest:")
         ok_v, mal_v = 0, []
         for m in mods:
             mid, fid = m["mod_id"], m["file_id"]
             p = archivo_existente(mid)
             if not p:
-                print(f"  ✘ {mid} ({m.get('nombre') or '?'[:30]}): SIN ARCHIVO")
+                print(f"  ✘ {mid} ({m.get('nombre') or '?'[:30]}): NO FILE")
                 mal_v.append(mid)
                 est[str(mid)] = {"file_id": fid, "estado": "pendiente"}
                 continue
             if not verificar_archivo(p):
-                print(f"  ✘ {mid}: archivo inválido {p.name[:45]}")
+                print(f"  ✘ {mid}: invalid file {p.name[:45]}")
                 mal_v.append(mid)
-                est[str(mid)] = {"file_id": fid, "estado": "fallo", "error": "archivo inválido"}
+                est[str(mid)] = {"file_id": fid, "estado": "fallo", "error": "invalid file"}
                 continue
             ok_v += 1
             est[str(mid)] = {"file_id": fid, "estado": "ok", "archivo": p.name}
         guardar_estado(est)
-        print(f"\n✅ {ok_v}/{len(mods)} OK | problemas: {len(mal_v)}")
+        print(f"\n✅ {ok_v}/{len(mods)} OK | problems: {len(mal_v)}")
         return
 
-    # ===== MODO DESCARGA =====
+    # ===== DOWNLOAD MODE =====
     from camoufox.sync_api import Camoufox
 
     pendientes = []
     for m in mods:
         mid, fid = m["mod_id"], m["file_id"]
         e = est.get(str(mid), {})
-        # re-descargar si cambió el file_id
+        # re-download if the file_id changed
         if e.get("estado") == "ok" and e.get("file_id") == fid and not args.forzar:
-            # validar que el archivo del main no sea el de un extra (cruces históricos)
+            # validate that the main file is not one of an extra (historical crossings)
             extra_archivos = [est.get(f"{mid}:{x.get('file_id')}", {}).get("archivo")
                               if x.get("file_id") else None
                               for x in (m.get("extra") or [])]
             if e.get("archivo") in extra_archivos:
-                print(f"    ⚠ {mid}: estado del main cruzado con un extra — re-descargando", flush=True)
+                print(f"    ⚠ {mid}: main state crossed with an extra — re-downloading", flush=True)
                 pendientes.append((mid, fid, m.get("nombre") or f"mod-{mid}", False, None))
         elif args.solo_fallidos and e.get("estado") != "fallo":
             pass
         else:
             pendientes.append((mid, fid, m.get("nombre") or f"mod-{mid}", False, None))
-        # archivos extra del mismo mod
+        # extra files of the same mod
         for x in (m.get("extra") or []):
             key = f"{mid}:{x.get('file_id')}" if x.get('file_id') else f"{mid}:url:{x.get('nombre')}"
             e = est.get(key, {})
@@ -262,10 +262,10 @@ def main():
             pendientes.append((mid, x.get("file_id"), f"{m.get('nombre')} + {x['nombre']}", True, x))
 
     if not pendientes:
-        print("✅ nada pendiente — todo descargado y al día")
+        print("✅ nothing pending — everything downloaded and up to date")
         return
 
-    print(f"🎯 {len(pendientes)} mods pendientes")
+    print(f"🎯 {len(pendientes)} mods pending")
 
     cookies_extra = []
     for name, f in [("nexusmods_session", "nexus_session"), ("cf_clearance", "cf_clearance")]:
@@ -288,26 +288,26 @@ def main():
                 key = f"{mid}:{fid}" if fid else f"{mid}:url:{extra['nombre']}"
             else:
                 key = str(mid)
-            # borrar archivo viejo si el file_id cambió (versión equivocada)
+            # delete the old file if the file_id changed (wrong version)
             if not es_extra:
                 viejo = archivo_existente(mid)
                 if viejo:
                     old_est = est.get(str(mid), {})
                     if old_est.get("file_id") != fid or args.forzar:
                         viejo.unlink(missing_ok=True)
-                        print(f"    🗑 archivo viejo eliminado: {viejo.name[:50]}", flush=True)
+                        print(f"    🗑 old file removed: {viejo.name[:50]}", flush=True)
             else:
-                # borrar archivo extra viejo si existe (mismo fid, forzar)
+                # delete the old extra file if it exists (same fid, force)
                 for p in DEST.glob(f"*{fid}*"):
                     if args.forzar:
                         p.unlink(missing_ok=True)
-                        print(f"    🗑 extra viejo eliminado: {p.name[:50]}", flush=True)
+                        print(f"    🗑 old extra removed: {p.name[:50]}", flush=True)
             print(f"[{i}/{len(pendientes)}] mod {mid} fid {fid} — {nombre}", flush=True)
             est[key] = {"file_id": fid, "estado": "descargando", "intentos": 0}
             guardar_estado(est)
             exito = False
             if es_extra and not fid:
-                # extra con URL directa (no-Nexus, ej. GitHub)
+                # extra with direct URL (non-Nexus, e.g. GitHub)
                 exito, arch = descargar_url(extra["url"], DEST)
                 if exito:
                     est[key] = {"file_id": None, "estado": "ok", "archivo": arch,
@@ -316,9 +316,9 @@ def main():
                     ok += 1
                 else:
                     est[key] = {"file_id": None, "estado": "fallo",
-                                "error": "descarga URL falló", "intentos": 1, "ts": time.time()}
-                    print(f"    ✘ descarga URL falló", flush=True)
-                    fail.append((key, "descarga URL falló"))
+                                "error": "URL download failed", "intentos": 1, "ts": time.time()}
+                    print(f"    ✘ URL download failed", flush=True)
+                    fail.append((key, "URL download failed"))
                 guardar_estado(est)
                 time.sleep(random.uniform(3, 6))
                 continue
@@ -333,23 +333,23 @@ def main():
                         exito = True
                         break
                     if sin_sesion:
-                        print(f"    ⚠ sesión expirada — re-logueando...", flush=True)
+                        print(f"    ⚠ session expired — re-logging in...", flush=True)
                         guardar_estado(est)
-                        # re-login: login_camoufox.py usa NEXUS_USER/NEXUS_PASS del env
-                        # o el archivo de credenciales del setup
+                        # re-login: login_camoufox.py uses NEXUS_USER/NEXUS_PASS
+                        # from the env or the credentials file from setup
                         if not relogin():
-                            raise RuntimeError("re-login falló")
+                            raise RuntimeError("re-login failed")
                         ctx.close()
                         ctx = browser.new_context(accept_downloads=True)
                         if cookies_extra:
                             ctx.add_cookies(cookies_extra)
                         page = ctx.new_page()
                         consent_ya = [False]
-                        # seguir con el mismo intento (reintentar descarga)
+                        # continue with the same attempt (retry download)
                         continue
-                    raise RuntimeError(err or "fallo")
+                    raise RuntimeError(err or "failure")
                 except Exception as e:
-                    print(f"    ✘ intento {intento}/{args.max_intentos}: {type(e).__name__}: {str(e)[:80]}", flush=True)
+                    print(f"    ✘ attempt {intento}/{args.max_intentos}: {type(e).__name__}: {str(e)[:80]}", flush=True)
                     est[key] = {"file_id": fid, "estado": "fallo", "error": str(e)[:100],
                                 "intentos": intento, "ts": time.time()}
                     guardar_estado(est)
@@ -360,10 +360,10 @@ def main():
             time.sleep(random.uniform(8, 15))
 
     guardar_estado(est)
-    print(f"\n📊 RESULTADO: {ok}/{len(pendientes)} OK | fallos: {len(fail)}")
+    print(f"\n📊 RESULT: {ok}/{len(pendientes)} OK | failures: {len(fail)}")
     for mid, err in fail:
         print(f"   ✘ {mid}: {err}")
-    print(f"\nEstado guardado en {ESTADO.name}")
+    print(f"\nState saved in {ESTADO.name}")
     if fail:
         sys.exit(1)
 

@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
-"""Agrega la entrada "Fallout New Vegas (VNV)" a Steam como juego no-Steam,
-apuntando a lanzar-mo2.sh (abre el gestor Mod Organizer desde Steam).
+"""Adds the "Fallout New Vegas (VNV)" entry to Steam as a non-Steam game,
+pointing to lanzar-mo2.sh (opens the Mod Organizer manager from Steam).
 
-Edita userdata/<uid>/config/shortcuts.vdf, que es VDF binario:
-  - 0x00 = mapa (clave null-terminada, contenido, fin 0x08)
-  - 0x01 = string (clave null-terminada, valor null-terminado)
-  - 0x02 = int32 LE (clave null-terminada, 4 bytes)
+Edits userdata/<uid>/config/shortcuts.vdf, which is binary VDF:
+  - 0x00 = map (null-terminated key, content, 0x08 end)
+  - 0x01 = string (null-terminated key, null-terminated value)
+  - 0x02 = int32 LE (null-terminated key, 4 bytes)
 
-El appid de un juego no-Steam se deriva de forma determinística:
-  appid = crc32(exe + nombre) | 0x80000000
+The appid of a non-Steam game is derived deterministically:
+  appid = crc32(exe + name) | 0x80000000
 
-REQUIERE Steam cerrado (Steam reescribe shortcuts.vdf al apagar).
-Idempotente: si ya existe la entrada con el mismo Exe, la actualiza.
+REQUIRES Steam closed (Steam rewrites shortcuts.vdf on shutdown).
+Idempotent: if an entry with the same Exe already exists, it is updated.
 
-Uso: camoufox-python scripts/agregar_a_steam.py [--nombre N] [--exe /ruta]
-     [--start-dir /ruta] [--icono /ruta] [--salida /ruta] [--force]
+Usage: camoufox-python scripts/agregar_a_steam.py [--nombre N] [--exe /path]
+     [--start-dir /path] [--icono /path] [--salida /path] [--force]
 """
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ def _parse_map(data: bytes, off: int) -> tuple[dict, int]:
             val = struct.unpack_from("<I", data, off)[0]
             off += 4
         else:
-            raise ValueError(f"tipo VDF desconocido 0x{t:02x}")
+            raise ValueError(f"unknown VDF type 0x{t:02x}")
         obj[name] = val
     return obj, off
 
@@ -56,7 +56,7 @@ def _parse_map(data: bytes, off: int) -> tuple[dict, int]:
 def parse(data: bytes) -> dict:
     obj, off = _parse_map(data, 0)
     if off != len(data):
-        raise ValueError(f"sobran {len(data) - off} bytes")
+        raise ValueError(f"trailing {len(data) - off} bytes")
     return obj
 
 
@@ -69,7 +69,7 @@ def _enc(name: str, val) -> bytes:
         return b"\x01" + nb + b"\x00" + val.encode("utf-8") + b"\x00"
     if isinstance(val, int):
         return b"\x02" + nb + b"\x00" + struct.pack("<I", val & 0xFFFFFFFF)
-    raise TypeError(f"valor inválido para '{name}': {type(val)}")
+    raise TypeError(f"invalid value for '{name}': {type(val)}")
 
 
 def encode(root: dict) -> bytes:
@@ -85,14 +85,14 @@ def steam_dir() -> Path:
     for cand in (Path.home() / ".local/share/Steam", Path.home() / ".steam/steam"):
         if cand.is_dir():
             return cand
-    raise SystemExit("No encontré la carpeta de Steam (~/.local/share/Steam o ~/.steam/steam)")
+    raise SystemExit("Steam folder not found (~/.local/share/Steam or ~/.steam/steam)")
 
 
 def shortcuts_path() -> Path:
     sd = steam_dir()
     users = sorted((sd / "userdata").glob("*/config")) if (sd / "userdata").is_dir() else []
     if not users:
-        raise SystemExit(f"No hay userdata en {sd}/userdata")
+        raise SystemExit(f"No userdata in {sd}/userdata")
     return users[-1] / "shortcuts.vdf"
 
 
@@ -134,23 +134,23 @@ def main():
     ap.add_argument("--exe", default=str(Path(__file__).resolve().parent.parent / "lanzar-mo2.sh"))
     ap.add_argument("--start-dir", default=str(Path(__file__).resolve().parent.parent))
     ap.add_argument("--icono", default=str(Path(__file__).resolve().parent.parent / "assets" / "gecko.png"))
-    ap.add_argument("--salida")  # path alternativo (testing)
+    ap.add_argument("--salida")  # alternate path (testing)
     ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
 
     if not Path(args.exe).expanduser().is_file():
-        raise SystemExit(f"No existe el ejecutable: {args.exe}")
+        raise SystemExit(f"Executable does not exist: {args.exe}")
 
-    # Steam guarda Exe/StartDir con comillas; el appid se deriva de la forma con comillas.
+    # Steam stores Exe/StartDir with quotes; the appid is derived from the quoted form.
     exe = f'"{args.exe}"'
     start_dir = f'"{args.start_dir}"'
 
     path = Path(args.salida) if args.salida else shortcuts_path()
     if not args.salida and steam_corriendo() and not args.force:
         raise SystemExit(
-            "Steam está corriendo — cerrá Steam (Steam → Salir) y volvé a correr el "
-            "comando. Steam reescribe shortcuts.vdf al apagar y pisaría el cambio.\n"
-            "Si sabés lo que hacés: --force (se escribe igual)."
+            "Steam is running — close Steam (Steam → Exit) and run the command again. "
+            "Steam rewrites shortcuts.vdf on shutdown and would overwrite the change.\n"
+            "If you know what you are doing: --force (it will be written anyway)."
         )
 
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -159,7 +159,7 @@ def main():
     else:
         raiz = {}
 
-    # root: {"shortcuts": {indice: shortcut}}
+    # root: {"shortcuts": {index: shortcut}}
     scs = raiz.get("shortcuts") or {}
     if not isinstance(scs, dict):
         scs = {}
@@ -168,12 +168,12 @@ def main():
     for key, sc in list(scs.items()):
         if isinstance(sc, dict) and sc.get("Exe") == exe:
             scs[key] = nuevo
-            print(f"Entrada existente actualizada (índice {key}).")
+            print(f"Existing entry updated (index {key}).")
             break
     else:
         idx = str(max((int(k) for k in scs if str(k).isdigit()), default=-1) + 1)
         scs[idx] = nuevo
-        print(f"Entrada nueva agregada (índice {idx}).")
+        print(f"New entry added (index {idx}).")
 
     raiz = {"shortcuts": scs}
 
@@ -182,16 +182,16 @@ def main():
     tmp = path.with_suffix(".vdf.tmp")
     tmp.write_bytes(encode(raiz))
 
-    # validación round-trip
+    # round-trip validation
     verif = parse(tmp.read_bytes())
     sc = verif["shortcuts"][idx if "idx" in locals() else str(list(scs.keys())[-1])]
-    assert sc["Exe"] == exe, "round-trip falló"
+    assert sc["Exe"] == exe, "round-trip failed"
     tmp.replace(path)
     print(f"OK: {path}")
     print(f"  AppName: {sc['AppName']}")
     print(f"  Exe:     {sc['Exe']}")
     print(f"  appid:   {sc['appid']}  (0x{sc['appid']:08X})")
-    print("Reiniciá Steam y la entrada 'Fallout New Vegas (VNV)' aparecerá en la biblioteca.")
+    print("Restart Steam and the 'Fallout New Vegas (VNV)' entry will appear in the library.")
 
 
 if __name__ == "__main__":

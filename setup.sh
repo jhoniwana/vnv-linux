@@ -3,16 +3,16 @@
 # setup.sh — Prepara el entorno VNV en CUALQUIER distro Linux
 #
 #   ./setup.sh             → prepara todo (venv, Camoufox, libs, login)
-#   ./setup.sh --chequear  → solo diagnóstico (sin instalar)
+#   ./setup.sh --chequear  → diagnostics only (no install)
 #
-# Qué hace:
+# What it does:
 #   1. Detecta la distro y muestra/instala dependencias del sistema
 #   2. Crea el venv e instala Camoufox (+ Playwright)
 #   3. Smoke test: ¿Camoufox arranca con las libs del sistema?
 #   4. Si falla → descarga micromamba (user-space, SIN sudo) con pixman
-#      y crea un wrapper que resuelve las libs (útil en Arch medio-roto,
+#      and creates a wrapper that resolves the libs (useful on semi-broken Arch,
 #      Debian sin GTK3, etc.)
-#   5. Verifica la sesión de Nexus (cookies); si faltan → guía al login
+#   5. Checks the Nexus session (cookies); if missing → guides to login
 # ============================================================================
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -41,7 +41,7 @@ detectar_distro() {
 
 deps_sistema() {
   info "Dependencias del sistema para Camoufox (Firefox):"
-  # deps por distro (incluye protontricks para la conexión MO2 ↔ Steam/Proton)
+  # per-distro deps (includes protontricks for the MO2 ↔ Steam/Proton bridge)
   case "$DISTRO" in
     debian|ubuntu|linuxmint|pop)
       echo "  Debian/Ubuntu:"
@@ -60,25 +60,25 @@ deps_sistema() {
       echo "    sudo zypper install -y gtk3 alsa-lib libXcomposite1 libXdamage1 libXrandr2 libXtst6 pango cairo pixman nss libXss1 libEGL1 libxkbcommon0 atk at-spi2-atk libcups2 libdrm2 libgbm1 glib2 curl bzip2 python311"
       ;;
     *)
-      echo "  Distro no reconocida ($DISTRO) — instalá manualmente: GTK3, alsa-lib, nss, cairo, pixman, pango, libXcomposite, libXdamage, libXrandr, libXtst, python3-venv"
+      echo "  Unrecognized distro ($DISTRO) — install manually: GTK3, alsa-lib, nss, cairo, pixman, pango, libXcomposite, libXdamage, libXrandr, libXtst, python3-venv"
       ;;
   esac
-  # ¿hay sudo? intentar instalar automáticamente en Debian/Arch/Fedora
+  # is sudo available? try installing automatically on Debian/Arch/Fedora
   if command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
-    info "sudo sin contraseña disponible — instalando dependencias automáticamente..."
+    info "passwordless sudo available — installing dependencies automatically..."
     case "$DISTRO" in
       debian|ubuntu|linuxmint|pop)
-        sudo apt update -qq && sudo apt install -y -qq libgtk-3-0 libasound2t64 libasound2 libdbus-glib-1-2 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxdamage1 libxrandr2 libxtst6 libpango-1.0-0 libcairo2 libpixman-1-0 libnss3 libxss1 libegl1 libxkbcommon0 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 libglib2.0-0 curl bzip2 python3-venv 2>/dev/null && ok "deps instaladas" || fail "apt falló"
+        sudo apt update -qq && sudo apt install -y -qq libgtk-3-0 libasound2t64 libasound2 libdbus-glib-1-2 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxdamage1 libxrandr2 libxtst6 libpango-1.0-0 libcairo2 libpixman-1-0 libnss3 libxss1 libegl1 libxkbcommon0 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 libglib2.0-0 curl bzip2 python3-venv 2>/dev/null && ok "deps installed" || fail "apt failed"
         ;;
       arch|manjaro|endeavouros)
-        sudo pacman -S --needed --noconfirm gtk3 alsa-lib libxcomposite libxdamage libxrandr libxtst pango cairo pixman nss libxss libegl libxkbcommon atk at-spi2-core libcups libdrm libgbm glib2 curl bzip2 python 2>/dev/null && ok "deps instaladas" || fail "pacman falló"
+        sudo pacman -S --needed --noconfirm gtk3 alsa-lib libxcomposite libxdamage libxrandr libxtst pango cairo pixman nss libxss libegl libxkbcommon atk at-spi2-core libcups libdrm libgbm glib2 curl bzip2 python 2>/dev/null && ok "deps installed" || fail "pacman failed"
         ;;
       fedora|rhel|centos|rocky|almalinux)
-        sudo dnf install -y -q gtk3 alsa-lib libXcomposite libXdamage libXrandr libXtst pango cairo pixman nss libXScrnSaver libEGL libxkbcommon atk at-spi2-atk libcups libdrm libgbm glib2 curl bzip2 python3-virtualenv 2>/dev/null && ok "deps instaladas" || fail "dnf falló"
+        sudo dnf install -y -q gtk3 alsa-lib libXcomposite libXdamage libXrandr libXtst pango cairo pixman nss libXScrnSaver libEGL libxkbcommon atk at-spi2-atk libcups libdrm libgbm glib2 curl bzip2 python3-virtualenv 2>/dev/null && ok "deps installed" || fail "dnf failed"
         ;;
     esac
   else
-    info "Sin sudo automático — corré los comandos de arriba manualmente si Camoufox falla."
+    info "No automatic sudo — run the commands above manually if Camoufox fails."
   fi
 }
 
@@ -91,7 +91,7 @@ crear_venv() {
   if ! "$VENV/bin/python" -c "import camoufox" 2>/dev/null; then
     info "Instalando Camoufox..."
     "$VENV/bin/pip" install -q camoufox 2>&1 | tail -2 || {
-      fail "pip install camoufox falló (¿falta python3-venv o red?)"
+      fail "pip install camoufox failed (missing python3-venv or network?)"
       return 1
     }
   fi
@@ -99,16 +99,16 @@ crear_venv() {
 from camoufox import pkgman
 pkgman.installed_verstr()
 " >/dev/null 2>&1; then
-    info "Descargando el binario de Camoufox (Firefox anti-detección)..."
+    info "Downloading the Camoufox binary (anti-detection Firefox)..."
     "$VENV/bin/python" -m camoufox fetch 2>&1 | tail -1 || {
-      fail "camoufox fetch falló (¿red?)"
+      fail "camoufox fetch failed (network?)"
       return 1
     }
   fi
   if ! "$VENV/bin/python" -c "import flask" 2>/dev/null; then
     info "Instalando Flask (para la interfaz web)..."
     "$VENV/bin/pip" install -q flask 2>&1 | tail -1 || {
-      fail "pip install flask falló"
+      fail "pip install flask failed"
       return 1
     }
   fi
@@ -117,7 +117,7 @@ pkgman.installed_verstr()
 
 instalar_libfix() {
   # Fallback: micromamba user-space con pixman (para distros con libs rotas)
-  info "Libs del sistema problemáticas — instalando pixman vía micromamba (sin sudo)..."
+  info "Problematic system libs — installing pixman via micromamba (no sudo)..."
   mkdir -p "$LIBFIX"
   if [[ ! -x "$MICROMAMBA_BIN" ]]; then
     curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest -o "$LIBFIX/micromamba.tar.bz2"
@@ -127,13 +127,13 @@ instalar_libfix() {
     rm -rf "$LIBFIX/bin" "$LIBFIX/micromamba.tar.bz2"
   fi
   if [[ ! -x "$MICROMAMBA_BIN" ]]; then
-    fail "micromamba no se pudo descargar — las descargas podrían fallar por libs del sistema"
+    fail "micromamba could not be downloaded — downloads could fail due to system libs"
     return 1
   fi
   if [[ ! -f "$LIBFIX/lib/libpixman-1.so" ]]; then
     "$MICROMAMBA_BIN" create -p "$LIBFIX" -c conda-forge -y pixman >/dev/null 2>&1 || {
-      # Debian/Ubuntu no necesita este fallback normalmente; arch con update parcial sí
-      fail "conda pixman falló"
+      # Debian/Ubuntu usually do not need this fallback; partially-updated Arch does
+      fail "conda pixman failed"
       return 1
     }
   fi
@@ -170,7 +170,7 @@ with Camoufox(headless=True) as b:
     ok "Camoufox funciona con libs del sistema"
     return 0
   fi
-  fail "Camoufox falló: $(echo "$salida" | grep -i -E "error|symbol|cannot open" | head -1)"
+  fail "Camoufox failed: $(echo "$salida" | grep -i -E "error|symbol|cannot open" | head -1)"
   info "Intentando fallback de libs (micromamba + pixman)..."
   if instalar_libfix && [[ -f "$LIBFIX/lib/libpixman-1.so" ]]; then
     crear_wrapper
@@ -184,7 +184,7 @@ with Camoufox(headless=True) as b:
       return 0
     fi
     fail "Camoufox sigue fallando: $(echo "$salida" | grep -i -E "error|symbol|cannot open" | head -1)"
-    echo "--- diagnóstico: ejecutá  $WRAPPER -c 'from camoufox.sync_api import Camoufox' ---"
+    echo "--- diagnosis: run  $WRAPPER -c 'from camoufox.sync_api import Camoufox' ---"
     return 1
   fi
   return 1
@@ -193,14 +193,14 @@ with Camoufox(headless=True) as b:
 verificar_sesion() {
   mkdir -p "$CONFIG_DIR"
   if [[ -s "$CONFIG_DIR/nexus_session" && -s "$CONFIG_DIR/cf_clearance" ]]; then
-    ok "Cookies de sesión presentes (nexus_session + cf_clearance)"
+    ok "Session cookies present (nexus_session + cf_clearance)"
     return 0
   fi
-  info "No hay sesión de Nexus — necesitás loguearte una vez (2 minutos)."
-  echo "  Opción A (recomendada):  ./vnv.sh login"
-  echo "    → abre Chrome real, te logueás, captura las cookies sola"
-  echo "  Opción B (manual):       ./vnv.sh config-cookies"
-  echo "    → pegás la cookie 'nexusmods_session' del navegador (F12 → Application → Cookies)"
+  info "No Nexus session — you need to log in once (2 minutes)."
+  echo "  Option A (recommended):  ./vnv.sh login"
+  echo "    → opens real Chrome, you log in, it captures the cookies by itself"
+  echo "  Option B (manual):       ./vnv.sh config-cookies"
+  echo "    → paste the 'nexusmods_session' cookie from the browser (F12 → Application → Cookies)"
   return 1
 }
 
@@ -210,9 +210,9 @@ if [[ "${1:-}" == "--chequear" ]]; then
   deps_sistema
   echo
   info "Estado:"
-  [[ -x "$VENV/bin/python" ]] && ok "venv existe" || fail "venv NO existe (corré ./setup.sh)"
+  [[ -x "$VENV/bin/python" ]] && ok "venv exists" || fail "venv does NOT exist (run ./setup.sh)"
   [[ -x "$WRAPPER" ]] && ok "wrapper existe" || fail "wrapper NO existe"
-  [[ -s "$CONFIG_DIR/nexus_session" ]] && ok "sesión Nexus OK" || fail "sin sesión Nexus"
+  [[ -s "$CONFIG_DIR/nexus_session" ]] && ok "Nexus session OK" || fail "no Nexus session"
   exit 0
 fi
 
@@ -220,14 +220,14 @@ info "=== SETUP VNV LINUX ==="
 detectar_distro
 deps_sistema
 crear_venv || exit 1
-# si no hay wrapper aún (primera vez), crearlo sin libfix
+# if there is no wrapper yet (first time), create it without libfix
 [[ -x "$WRAPPER" ]] || crear_wrapper
 if ! smoke_test; then
-  fail "No se pudo arrancar Camoufox — revisá las dependencias del sistema de arriba."
+  fail "Could not start Camoufox — check the system dependencies above."
   exit 1
 fi
 verificar_sesion || true
 info "Setup completo. Siguientes pasos:"
-echo "  1. (si no hay sesión)  ./vnv.sh login   o   ./vnv.sh config-cookies"
+echo "  1. (if no session)  ./vnv.sh login   or   ./vnv.sh config-cookies"
 echo "  2. Descargar mods:      ./vnv.sh update"
 echo "  3. Instalar:            ./vnv.sh install"

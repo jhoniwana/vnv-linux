@@ -1,22 +1,34 @@
 #!/usr/bin/env bash
 # ============================================================================
-# vnv.sh — Instalador 100% automático de Viva New Vegas (Core) en Linux/Steam
+# vnv.sh — Fully automated Viva New Vegas (Core) installer on Linux/Steam
 #
-#   ./vnv.sh setup          → prepara entorno (venv, Camoufox, libs, login)
-#   ./vnv.sh login          → login automático a Nexus (Camoufox pasa Turnstile)
-#   ./vnv.sh config-cookies → guarda la cookie de sesión manualmente (fallback)
-#   ./vnv.sh download       → descarga/actualiza los mods (gestor con estados)
-#   ./vnv.sh estado         → verifica archivos vs manifest (53/53, integridad)
-#   ./vnv.sh install        → MO2-LINT + prefix Proton + importar mods + INIs + LOOT
-#   ./vnv.sh run            → lanza el juego vía MO2 (Steam → "Launch Mod Organizer")
-#   ./vnv.sh mo2            → abre el gestor MO2 (GUI); se inicia el juego desde ahí
-#                             (lanzar-mo2.sh es el acceso directo para agregar a Steam)
-#   ./vnv.sh steam-add      → agrega "Fallout New Vegas (VNV)" a Steam como juego no-Steam
-#                             (abre MO2 al hacer clic; requiere Steam cerrado)
-#   ./vnv.sh update         → alias de download (actualiza manifest + mods)
+#   ./vnv.sh setup          → prepare the environment (venv, Camoufox, libs, login)
+#   ./vnv.sh login          → automatic Nexus login (Camoufox passes Turnstile)
+#   ./vnv.sh config-cookies → save the session cookie manually (fallback)
+#   ./vnv.sh download       → download/update the mods (manager with states)
+#   ./vnv.sh estado         → verify files vs manifest (55/55, integrity)
+#   ./vnv.sh install        → MO2-LINT + Proton prefix + import mods + INIs + LOOT
+#   ./vnv.sh run            → launch the game via MO2 (Steam → "Launch Mod Organizer")
+#   ./vnv.sh mo2            → open the MO2 manager (GUI); start the game from there
+#                             (lanzar-mo2.sh is the shortcut to add to Steam)
+#   ./vnv.sh steam-add      → add "Fallout New Vegas (VNV)" to Steam as a non-Steam game
+#                             (opens MO2 on click; requires Steam closed)
+#   ./vnv.sh update         → alias of download (updates manifest + mods)
 #
-# Funciona en: Debian, Ubuntu, Arch, Fedora, openSUSE y derivadas.
+# Works on: Debian, Ubuntu, Arch, Fedora, openSUSE and derivatives.
 # ============================================================================
+# vnv.sh — Fully automated Viva New Vegas (Core) installer on Linux/Steam
+#
+#   ./vnv.sh setup          → prepare the environment (venv, Camoufox, libs, login)
+#   ./vnv.sh login          → automatic Nexus login (Camoufox passes Turnstile)
+#   ./vnv.sh config-cookies → save the session cookie manually (fallback)
+#   ./vnv.sh download       → download/update the mods (manager with states)
+#   ./vnv.sh estado         → verify files vs manifest (55/55, integrity)
+#   ./vnv.sh install        → MO2-LINT + Proton prefix + import mods + INIs + LOOT
+#   ./vnv.sh run            → launch the game via MO2 (Steam → "Launch Mod Organizer")
+#   ./vnv.sh mo2            → open the MO2 manager (GUI); start the game from there
+#                             (lanzar-mo2.sh is the shortcut to add to Steam)
+#   ./vnv.sh steam-add      → add "Fallout New Vegas (VNV)" to Steam as a non-Steam game========
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
@@ -34,9 +46,9 @@ MO2_GAME_ID="falloutnv"
 WINEPREFIX_DEFAULT="$HOME/.local/share/vnv-wine"
 CONFIG_DIR="$HOME/.config/vnv-linux"
 TMP_DIR="${TMPDIR:-/tmp}/vnv"
-# protontricks-launch: se busca en PATH; fallback al ~/.local/bin estándar de pip
+# protontricks-launch: looked up in PATH; fallback to the standard pip ~/.local/bin
 PT_LAUNCH="$(command -v protontricks-launch 2>/dev/null || printf '%s\n' "$HOME/.local/bin/protontricks-launch")"
-# site-packages del intérprete que instaló protontricks (para el venv de Camoufox).
+# site-packages of the interpreter that installed protontricks (for the Camoufox venv).
 # Busca en ~/.local/lib/python3.*/site-packages el que tenga el paquete.
 PT_PYTHONPATH="$(python3 -c 'import site; print(site.USER_SITE)' 2>/dev/null || true)"
 if [[ -z "$PT_PYTHONPATH" || ! -d "$PT_PYTHONPATH/protontricks" ]]; then
@@ -52,22 +64,22 @@ fail()  { echo -e "\e[1;31m  ✘\e[0m $*"; }
 
 necesita_setup() {
   if [[ ! -x "$PY" ]]; then
-    fail "Falta el entorno — primero corré:  ./vnv.sh setup"
+    fail "Environment missing — first run:  ./vnv.sh setup"
     exit 1
   fi
 }
 
 buscar_juego() {
-  info "Buscando Fallout New Vegas en Steam..."
+  info "Looking for Fallout New Vegas on Steam..."
   for lib in "${STEAM_LIBRARIES[@]}"; do
     local cand="$lib/common/Fallout New Vegas"
     if [[ -f "$cand/FalloutNV.exe" ]]; then
       GAME_DIR="$cand"
-      ok "Juego en: $GAME_DIR"
+      ok "Game at: $GAME_DIR"
       return 0
     fi
   done
-  fail "No encontré el juego. Editá STEAM_LIBRARIES en el script o instalalo en Steam."
+  fail "Game not found. Edit STEAM_LIBRARIES in the script or install it on Steam."
   return 1
 }
 
@@ -84,12 +96,12 @@ instalar_mo2() {
   rel="$(curl -fsSL "https://api.github.com/repos/$MO2_INSTALLER_REPO/releases" \
         | grep -m1 '"tag_name":' | sed -E 's/.*"tag_name": *"([^"]+)".*/\1/')"
   if [[ -z "$rel" ]]; then
-    fail "No pude obtener la última release de MO2-LINT (¿red?)"
+    fail "Could not get the latest MO2-LINT release (network?)"
     return 1
   fi
   url="https://github.com/$MO2_INSTALLER_REPO/releases/download/$rel/mo2-lint"
   curl -fL "$url" -o "$MO2_LINT" 2>/dev/null || {
-    fail "Descarga de MO2-LINT falló"
+    fail "MO2-LINT download failed"
     return 1
   }
   chmod +x "$MO2_LINT"
@@ -99,9 +111,9 @@ instalar_mo2() {
 crear_instancia_mo2() {
   info "Creando instancia de MO2 para Fallout: New Vegas en $MO2_INSTANCE..."
   info "  (descarga MO2 + Java + winetricks, configura el prefix de Proton"
-  info "   y agrega la opción 'Launch Mod Organizer' a Steam)"
+  info "   and add the 'Launch Mod Organizer' option to Steam)"
   mo2-lint install "$MO2_GAME_ID" "$MO2_INSTANCE" --unattended -l INFO 2>/dev/null || {
-    fail "mo2-lint install falló — revisá el log (mo2-lint -l DEBUG ...)"
+    fail "mo2-lint install failed — check the log (mo2-lint -l DEBUG ...)"
     return 1
   }
   ok "Instancia MO2 creada"
@@ -121,9 +133,9 @@ dependencias_wine() {
   # asegurar que Steam tenga el prefix del juego (una corrida con Proton lo crea)
   local prefix="$HOME/.steam/steam/steamapps/compatdata/22380"
   if [[ ! -d "$prefix" ]]; then
-    info "Prefix de Proton para FNV no existe aún."
+    info "Proton prefix for FNV does not exist yet."
     info "  En Steam: FNV → Propiedades → Compatibilidad → forzar Proton → Jugar UNA vez."
-    info "  (o corré: protontricks-launch 22380 cmd /c echo listo)"
+    info "  (or run: protontricks-launch 22380 cmd /c echo ready)"
   else
     ok "Prefix de Proton del juego encontrado: $prefix"
   fi
@@ -133,25 +145,25 @@ importar_mods() {
   info "Importando mods a la instancia de MO2 ($MO2_INSTANCE)..."
   if [[ -d "$ROOT/downloads" && -n "$(ls -A "$ROOT/downloads" 2>/dev/null)" ]]; then
     "$PY" scripts/importar_mo2.py --dir "$MO2_INSTANCE" || {
-      fail "La importación tuvo fallos — revisá el listado"
+      fail "The import had failures — check the listing"
       return 1
     }
   else
-    fail "downloads/ vacío — primero corré:  ./vnv.sh download"
+    fail "downloads/ is empty — first run:  ./vnv.sh download"
     return 1
   fi
 }
 
 root_mods() {
-  info "Instalando root mods (xNVSE, 4GB, BSA Decompressor, UE ESM Fixes — nativos)..."
+  info "Installing root mods (xNVSE, 4GB, BSA Decompressor, UE ESM Fixes — native)..."
   "$PY" scripts/root_mods.py --mo2-dir "$MO2_INSTANCE" || {
-    fail "root mods: falló algún paso — revisá la salida"
+    fail "root mods: a step failed — check the output"
     return 1
   }
 }
 
 tweaks_ini() {
-  info "Aplicando tweaks de INI (NVTF / heap / 4GB)..."
+  info "Applying INI tweaks (NVTF / heap / 4GB)..."
   local ini="$GAME_DIR/Data/NVSE/Plugins/nvtf.ini"
   mkdir -p "$(dirname "$ini")"
   cat > "$ini" <<'EOF'
@@ -163,24 +175,24 @@ Enable4GBPatch = true
 [VRAM]
 EnableVRAMSizeOverride = true
 EOF
-  # además, dentro del mod NVTF importado a MO2 (si existe), para que VFS lo provea
+  # also inside the NVTF mod imported to MO2 (if it exists), so the VFS serves it
   local nvtf_ini_mo2="$(find "$MO2_INSTANCE/mods" -maxdepth 4 -path '*NVSE/Plugins/nvtf.ini' 2>/dev/null | head -1)"
   if [[ -n "$nvtf_ini_mo2" ]]; then
     cp "$ini" "$nvtf_ini_mo2"
-    ok "nvtf.ini aplicado (juego + $nvtf_ini_mo2)"
+    ok "nvtf.ini applied (game + $nvtf_ini_mo2)"
   else
-    ok "nvtf.ini aplicado (juego — el mod NVTF no incluye el archivo; MO2 lo ve por VFS)"
+    ok "nvtf.ini applied (game — the NVTF mod does not ship the file; MO2 serves it via VFS)"
   fi
 
-  # FalloutCustom.ini de la guía (Custom INI — overrides via JIP LN NVSE).
-  # MO2 expone los INIs del perfil al juego, así que va en profiles/Default/.
+  # FalloutCustom.ini from the guide (Custom INI — overrides via JIP LN NVSE).
+  # MO2 exposes the profile INIs to the game, so it lives in profiles/Default/.
   local profini="$MO2_INSTANCE/profiles/Default"
   mkdir -p "$profini"
   if [[ -f "$ROOT/files/FalloutCustom.ini" ]]; then
     cp "$ROOT/files/FalloutCustom.ini" "$profini/FalloutCustom.ini"
-    ok "FalloutCustom.ini aplicado (perfil Default)"
+    ok "FalloutCustom.ini applied (Default profile)"
   else
-    fail "Falta files/FalloutCustom.ini — no se aplicó el Custom INI"
+    fail "Missing files/FalloutCustom.ini — Custom INI not applied"
   fi
 }
 
@@ -188,11 +200,11 @@ correr_loot() {
   # VALIDACIÓN NO-DESTRUCTIVA: lootcli standalone NO ve el VFS de MO2 y usa el
   # formato propio de LOOT (plugins.txt con '*'), no el de MO2 2.5.2. Por eso se
   # valida sobre una COPIA construida desde loadorder.txt (21 activos en orden de
-  # guía) y el perfil real queda intacto.
-  info "Validando load order con LOOT (lootcli, sobre copia — no toca el perfil)..."
+  # guide) and the real profile stays untouched.
+  info "Validating load order with LOOT (lootcli, on a copy — does not touch the profile)..."
   local lootcli="$MO2_INSTANCE/loot/lootcli.exe"
   if [[ ! -f "$lootcli" ]]; then
-    fail "No está lootcli.exe en $MO2_INSTANCE/loot — revisá la instalación de MO2"
+    fail "lootcli.exe not found in $MO2_INSTANCE/loot — check the MO2 installation"
     return 1
   fi
   mkdir -p "$TMP_DIR"
@@ -209,22 +221,22 @@ correr_loot() {
     --pluginListPath "$plugin_list" --out "Z:$(echo "$TMP_DIR/loot_report.json" | sed 's|/|\\\\|g')" \
     --auto-sort 2>&1 | rg -iv "fixme|pressure|Fontconfig|protontricks \(WARNING\)" | tail -5
   if [[ ${PIPESTATUS[0]} -eq 0 ]]; then
-    ok "LOOT validó el load order (solo diagnóstico — no se modificó el perfil)"
+    ok "LOOT validated the load order (diagnostic only — profile untouched)"
   else
-    fail "LOOT falló — revisá la salida"
+    fail "LOOT failed — check the output"
     return 1
   fi
 }
 
-# Preparación común antes de tocar el prefix: Steam corriendo, INIs escribibles,
+# Common preparation before touching the prefix: Steam running, writable INIs,
 # y lista activa (plugins.txt) sincronizada desde loadorder.txt. MO2 2.5.2 usa
 # plugins.txt SIN el marcador '*' (lista de activos CRLF); si el archivo tiene
-# '*', MO2 no reconoce ningún plugin ("Plugin not found: *FalloutNV.esm") y al
-# apagar deja solo el master. loadorder.txt se conserva, así que re-sincronizamos
+# '*', MO2 does not recognize any plugin ("Plugin not found: *FalloutNV.esm") and on
+# shutdown it leaves only the master. loadorder.txt survives, so we re-sync
 # la lista activa desde loadorder.txt antes de cada launch.
 preparar_lanzamiento() {
   if ! pgrep -f "steamwebhelper" >/dev/null 2>&1; then
-    info "Steam no está corriendo — arrancándolo (lo necesita el juego)..."
+    info "Steam is not running — starting it (the game needs it)..."
     nohup steam >/dev/null 2>&1 &
     sleep 20
   fi
@@ -233,7 +245,7 @@ preparar_lanzamiento() {
   local prof="$MO2_INSTANCE/profiles/Default"
   if [[ -f "$prof/loadorder.txt" ]]; then
     if ! diff -q <(grep -v '^#' "$prof/loadorder.txt") <(grep -v '^#' "$prof/plugins.txt") >/dev/null 2>&1; then
-      info "plugins.txt desincronizado de loadorder.txt — regenerando lista activa..."
+      info "plugins.txt out of sync with loadorder.txt — regenerating active list..."
       {
         printf '%s\r\n' "# This file was automatically generated by Mod Organizer."
         tr -d '\r' < "$prof/loadorder.txt" | grep -v '^#' | sed 's/$/\r/'
@@ -243,9 +255,9 @@ preparar_lanzamiento() {
 }
 
 lanzar() {
-  info "Lanzando Fallout New Vegas vía MO2 (NVSE)..."
+  info "Launching Fallout New Vegas via MO2 (NVSE)..."
   if [[ ! -f "$MO2_INSTANCE/ModOrganizer.exe" ]]; then
-    fail "MO2 no está instalado — corré ./vnv.sh install"
+    fail "MO2 is not installed — run ./vnv.sh install"
     return 1
   fi
   preparar_lanzamiento
@@ -255,11 +267,11 @@ lanzar() {
 }
 
 # Abre el GESTOR (GUI de Mod Organizer) en el prefix del juego: se ven los mods
-# y desde ahí se inicia el juego (botón Play con NVSE seleccionado).
+# and from there the game starts (Play button with NVSE selected).
 abrir_mo2() {
-  info "Abriendo el gestor Mod Organizer (GUI)..."
+  info "Opening the Mod Organizer manager (GUI)..."
   if [[ ! -f "$MO2_INSTANCE/ModOrganizer.exe" ]]; then
-    fail "MO2 no está instalado — corré ./vnv.sh install"
+    fail "MO2 is not installed — run ./vnv.sh install"
     return 1
   fi
   preparar_lanzamiento
@@ -273,12 +285,12 @@ case "${1:-}" in
     bash "$ROOT/setup.sh"
     ;;
   config)
-    # Guarda la API key local (permisos 600) para metadata vía API
+    # Save the local API key (0600 perms) for API metadata
     mkdir -p "$CONFIG_DIR"
-    read -rsp "Pegá tu API key de Nexus (https://www.nexusmods.com/settings/api-keys): " KEY_INPUT
+    read -rsp "Paste your Nexus API key (https://www.nexusmods.com/settings/api-keys): " KEY_INPUT
     echo
     if [[ -z "$KEY_INPUT" ]]; then
-      fail "Key vacía — no se guardó nada"
+      fail "Empty key — nothing was saved"
       exit 1
     fi
     umask 077
@@ -287,54 +299,54 @@ case "${1:-}" in
     ;;
   login)
     necesita_setup
-    # Login automático: Camoufox headless pasa el Turnstile y guarda las cookies
-    info "Login automático a Nexus (Camoufox)..."
+    # Automatic login: headless Camoufox passes the Turnstile and saves the cookies
+    info "Automatic Nexus login (Camoufox)..."
     NEXUS_USER="${NEXUS_USER:-}" NEXUS_PASS="${NEXUS_PASS:-}" "$PY" scripts/login_camoufox.py
     ;;
   config-cookies)
     # Fallback manual: pegar la cookie nexusmods_session
     mkdir -p "$CONFIG_DIR"
-    echo "Para sacar tu cookie de sesión:"
+    echo "To grab your session cookie:"
     echo "  1. Logueate en https://www.nexusmods.com"
     echo "  2. F12 → Application → Cookies → https://www.nexusmods.com"
-    echo "  3. Copiá el valor de 'nexusmods_session'"
-    read -rsp "Pegá el valor de la cookie nexusmods_session: " SID_INPUT
+    echo "  3. Copy the value of 'nexusmods_session'"
+    read -rsp "Paste the value of the nexusmods_session cookie: " SID_INPUT
     echo
     if [[ -z "$SID_INPUT" ]]; then
-      fail "Cookie vacía"
+      fail "Empty cookie"
       exit 1
     fi
     umask 077
     printf '%s\n' "$SID_INPUT" > "$CONFIG_DIR/nexus_session"
     ok "Cookie guardada en $CONFIG_DIR/nexus_session (permisos 600)"
-    # cf_clearance se obtiene en el primer smoke test / login automático
+    # cf_clearance is captured during the first smoke test / automatic login
     ;;
   credenciales)
-    # Guarda user+pass de Nexus (permisos 600) para el re-login automático
+    # Save Nexus user+pass (0600 perms) for automatic re-login
     mkdir -p "$CONFIG_DIR"
-    read -rsp "Email de Nexus: " USER_INPUT
+    read -rsp "Nexus email: " USER_INPUT
     echo
-    read -rsp "Contraseña de Nexus: " PASS_INPUT
+    read -rsp "Nexus password: " PASS_INPUT
     echo
     if [[ -z "$USER_INPUT" || -z "$PASS_INPUT" ]]; then
-      fail "Credenciales vacías"
+      fail "Empty credentials"
       exit 1
     fi
     umask 077
     printf '%s\n%s\n' "$USER_INPUT" "$PASS_INPUT" > "$CONFIG_DIR/credenciales"
-    ok "Credenciales guardadas en $CONFIG_DIR/credenciales (permisos 600)"
-    echo "⚠ Recomendado: regenerá tu contraseña en Nexus de vez en cuando."
-    echo "  El gestor las usa SOLO para re-loguear automáticamente si la sesión expira."
+    ok "Credentials saved to $CONFIG_DIR/credenciales (permisos 600)"
+    echo "⚠ Recommended: regenerate your Nexus password from time to time."
+    echo "  The manager uses them ONLY to re-login automatically if the session expires."
     ;;
   download|update)
     necesita_setup
     # actualiza manifest (nombres/versiones/file_ids correctos) y descarga lo pendiente
     if [[ -s "$CONFIG_DIR/api_key" ]]; then
-      info "Actualizando metadata desde la API..."
+      info "Updating metadata from the API..."
       export NEXUS_API_KEY="$(cat "$CONFIG_DIR/api_key")"
       "$PY" scripts/actualizar.py
     fi
-    info "Descargando mods (gestor con estados y retries)..."
+    info "Downloading mods (manager with states and retries)..."
     "$PY" scripts/gestor_descargas.py
     ;;
   estado|verificar)
@@ -344,23 +356,23 @@ case "${1:-}" in
   ui)
     necesita_setup
     # Interfaz web local: abre el navegador, TODO desde la UI (sin terminal)
-    info "Abriendo la interfaz web..."
+    info "Opening the web interface..."
     exec "$PY" "$ROOT/ui.py"
     ;;
   steam)
-    # Diagnóstico/conexión con Steam + Proton (paso 1 del flujo de instalación)
-    info "=== Conexión con Steam ==="
+    # Steam + Proton connection diagnostics (step 1 of the install flow)
+    info "=== Steam connection ==="
     local steam_bin=""
     for c in steam steam-native flatpak; do
       command -v "$c" >/dev/null 2>&1 && steam_bin="$c" && break
     done
     if [[ -z "$steam_bin" ]]; then
-      fail "No encontré Steam. Instalalo y logueate, después volvé a correr esto."
+      fail "Steam not found. Install it and log in, then run this again."
       exit 1
     fi
     ok "Steam detectado: $steam_bin"
 
-    # ¿está instalado FNV?
+    # is FNV installed?
     local fnv_dir=""
     for lib in "${STEAM_LIBRARIES[@]}"; do
       local cand="$lib/common/Fallout New Vegas"
@@ -370,7 +382,7 @@ case "${1:-}" in
       fi
     done
     if [[ -z "$fnv_dir" ]]; then
-      fail "No encontré Fallout New Vegas instalado. Instalalo en Steam primero."
+      fail "Fallout New Vegas not found. Install it on Steam first."
       exit 1
     fi
     ok "Fallout New Vegas en: $fnv_dir"
@@ -385,28 +397,28 @@ case "${1:-}" in
       fi
     done
     if [[ -z "$prefix" ]]; then
-      info "El prefix de Proton del juego NO existe todavía."
+      info "The game Proton prefix does not exist yet."
       info "  Para crearlo: en Steam, FNV → Propiedades → Compatibilidad →"
       info "  'Force the use of a specific Steam Play compatibility tool' → Proton."
       echo
       if [[ "${2:-}" == "--si" ]]; then
         R="s"
       else
-        read -rp "¿Querés que intente lanzar FNV con Proton ahora (crea el prefix)? [s/N]: " R
+        read -rp "Try launching FNV with Proton now (creates the prefix)? [y/N]: " R
       fi
       if [[ "$R" =~ ^[sSyY]$ ]]; then
-        info "Lanzando FNV vía Steam... (esperá a que aparezca la ventana y cerrala)"
+        info "Launching FNV via Steam... (wait for the window and close it)"
         nohup "$steam_bin" steam://rungameid/22380 >/dev/null 2>&1 &
         sleep 5
-        info "Revisá en 1-2 minutos si apareció $HOME/.steam/steam/steamapps/compatdata/22380"
+        info "Check in 1-2 minutes whether $HOME/.steam/steam/steamapps/compatdata/22380 appeared"
       fi
     else
       ok "Prefix de Proton listo: $prefix"
     fi
     if command -v protontricks >/dev/null 2>&1; then
-      ok "protontricks disponible (MO2 podrá correr en el prefix del juego)"
+      ok "protontricks available (MO2 will run in the game prefix)"
     else
-      fail "Falta protontricks — mirá las deps del sistema en ./vnv.sh setup"
+      fail "protontricks missing — check the system deps in ./vnv.sh setup"
     fi
     ;;
   install)
@@ -421,8 +433,8 @@ case "${1:-}" in
     importar_mods
     root_mods
     tweaks_ini
-    info "Instalación lista. El load order ya está en el orden de la guía (== LOOT)."
-    info "  Si querés re-ordenar en MO2: GUI → botón Sort. Para validar con lootcli: ./vnv.sh loot"
+    info "Installation ready. The load order is already in the guide order (== LOOT)."
+    info "  To re-sort in MO2: GUI → Sort button. To validate with lootcli: ./vnv.sh loot"
     ;;
   loot)
     necesita_setup
@@ -442,6 +454,6 @@ case "${1:-}" in
     "$PY" scripts/agregar_a_steam.py "${@:2}"
     ;;
   *)
-    echo "Uso: $0 {setup|login|config-cookies|config|download|estado|install|loot|run|mo2|steam-add}"
+    echo "Usage: $0 {setup|login|config-cookies|config|download|estado|install|loot|run|mo2|steam-add}"
     ;;
 esac

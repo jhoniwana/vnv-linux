@@ -1,35 +1,38 @@
 #!/usr/bin/env python3
-"""Importador automático de mods a MO2 (Mod Organizer 2) para FNV.
+"""Automatic importer of mods into MO2 (Mod Organizer 2) for FNV.
 
-Convierte los archivos descargados (downloads/) en el formato que MO2 entiende:
-  mods/<NombreMod>/      ← mod descomprimido (raíces corregidas + meta.ini)
+Converts the downloaded files (downloads/) into the format MO2 understands:
+  mods/<ModName>/        ← extracted mod (fixed roots + meta.ini)
   profiles/Default/      ← modlist.txt, loadorder.txt, plugins.txt
 
-Correcciones frente a la versión anterior (bug del "flatten"):
-  * Una carpeta raíz que ya es carpeta de datos (meshes/, sound/, NVSE/, ...) ya NO se
-    aplana.
-  * Una carpeta raíz "Data/" (o "data/") se PROMUEVE (su contenido sube al mod root).
-  * Una carpeta raíz que no es de datos (nvse_6_4_8/, el wrapper del archivo) se aplana.
-  * Se normaliza la caja a los nombres válidos del checker de FNV (p.ej. "NVSE"→"nvse",
-    "Shaders"→"shaders"), porque el checker de MO2 (falloutnvmoddatachecker.h) es
-    case-sensitive y usvfs hace matching case-insensitive en tiempo de ejecución.
-  * Se escribe meta.ini con installationFile= y validated=true para los mods que quedan
-    sin contenido válido (el flag "No valid game data" depende de !isValid() && !m_Validated).
+Fixes vs the previous version (the "flatten" bug):
+  * A root folder that is already a data folder (meshes/, sound/, NVSE/, ...) is
+    NO longer flattened.
+  * A root "Data/" folder (or "data/") is PROMOTED (its contents go up to the
+    mod root).
+  * A root folder that is not data (nvse_6_4_8/, the archive wrapper) is flattened.
+  * The case is normalized to the valid names of the FNV checker (e.g.
+    "NVSE"→"nvse", "Shaders"→"shaders"), because the MO2 checker
+    (falloutnvmoddatachecker.h) is case-sensitive and usvfs matches
+    case-insensitively at runtime.
+  * meta.ini is written with installationFile= and validated=true for the mods
+    left without valid content (the "No valid game data" flag depends on
+    !isValid() && !m_Validated).
 
-Motor FOMOD genérico (MO2 GamebryoScriptExtender semantics):
-  * requiredInstallFiles + installSteps (visibility por <visible>, grupos por tipo
-    SelectExactlyOne/SelectAtMostOne/SelectAny, <conditionFlags>, <dependencies>) +
-    conditionalFileInstalls (flagDependency/fileDependency).
-  * Mapa de elección explícito FOMOD_CHOICES por (mod_id) → {(step, group): [opciones]}.
-    Las elecciones NO marcadas usan el default de MO2 (primera opción en
-    SelectExactlyOne, ninguna en SelectAny/SelectAtMostOne).
+Generic FOMOD engine (MO2 GamebryoScriptExtender semantics):
+  * requiredInstallFiles + installSteps (visibility via <visible>, groups by
+    type SelectExactlyOne/SelectAtMostOne/SelectAny, <conditionFlags>,
+    <dependencies>) + conditionalFileInstalls (flagDependency/fileDependency).
+  * Explicit choice map FOMOD_CHOICES by (mod_id) → {(step, group): [options]}.
+    Unmarked choices use the MO2 default (first option in SelectExactlyOne, none
+    in SelectAny/SelectAtMostOne).
 
-Uso:
-    importar_mo2.py                     # importa al MO2 detectado
-    importar_mo2.py --dir ~/mo2-test    # otro directorio (pruebas)
-    importar_mo2.py --solo 81933        # un solo mod
-    importar_mo2.py --reinstalar        # borra y reimporta todo
-    importar_mo2.py --verificar         # solo comprueba raíces de mods/ ya importados
+Usage:
+    importar_mo2.py                     # import into the detected MO2
+    importar_mo2.py --dir ~/mo2-test    # another directory (testing)
+    importar_mo2.py --solo 81933        # a single mod
+    importar_mo2.py --reinstalar        # wipe and reimport everything
+    importar_mo2.py --verificar         # only check the roots of already-imported mods/
 """
 import argparse
 import json
@@ -51,8 +54,8 @@ MO2_CANDIDATOS = [
 
 BASURA = {"__MACOSX", ".DS_Store", "Thumbs.db", "desktop.ini"}
 
-# Carpetas válidas del checker de FNV (falloutnvmoddatachecker.h). Compare
-# case-sensitive; en tiempo de ejecución usvfs iguala sin importar la caja.
+# Valid folders of the FNV checker (falloutnvmoddatachecker.h). It compares
+# case-sensitive; at runtime usvfs matches regardless of case.
 FNV_FOLDERS = {
     "fonts", "interface", "menus", "meshes", "music", "scripts", "shaders",
     "sound", "strings", "textures", "trees", "video", "facegen", "materials",
@@ -63,15 +66,15 @@ FNV_FOLDERS = {
 FNV_FOLDERS_LOWER = {f.lower() for f in FNV_FOLDERS}
 FNV_EXTS = {"esp", "esm", "esl", "bsa", "ba2", "modgroups", "ini"}
 
-# Mods "Root": se instalan en el directorio del juego (no a través de MO2).
-# En MO2 quedan importados pero desactivados (-) y con validated=true.
+# "Root" mods: installed into the game directory (not through MO2).
+# In MO2 they stay imported but disabled (-) and with validated=true.
 ROOT_MODS = {62552, 65854, 67883, 81281, 92289}
 
-# Elecciones FOMOD explícitas: mod_id -> {(nombreStep, nombreGroup): [opciones]}
-# Lo no marcado usa el default de MO2 (primera opción en SelectExactlyOne, nada en
-# SelectAny/SelectAtMostOne). Para ISA solo se marca el patch de YUP (instrucción
-# de la guía: "1. Yukichigai's Unofficial Patch, 2. Install"); el resto de pasos
-# (NVAO/kNVSE/weapon replacers) queda sin seleccionar y se ocultan solos.
+# Explicit FOMOD choices: mod_id -> {(stepName, groupName): [options]}
+# Unmarked items use the MO2 default (first option in SelectExactlyOne, none in
+# SelectAny/SelectAtMostOne). For ISA only the YUP patch is marked (guide
+# instruction: "1. Yukichigai's Unofficial Patch, 2. Install"); the remaining
+# steps (NVAO/kNVSE/weapon replacers) stay unselected and hide themselves.
 FOMOD_CHOICES = {
     81933: {
         ("Iron Sights Aligned Options", "Additional Patches"):
@@ -88,9 +91,9 @@ FOMOD_CHOICES = {
     },
 }
 
-# Esms base (siempre en el loadorder) + plugins de la guía (files/loadorder.txt)
-# filtrados a los mods que instalamos. El loadorder se filtra por los plugins que
-# realmente se importaron (los que falten, p.ej. YUPDate.esm, se omiten).
+# Base esms (always in the loadorder) + guide plugins (files/loadorder.txt)
+# filtered to the mods we install. The loadorder is filtered by the plugins that
+# were actually imported (missing ones, e.g. YUPDate.esm, are omitted).
 BASE_ESMS = [
     "FalloutNV.esm", "DeadMoney.esm", "HonestHearts.esm", "OldWorldBlues.esm",
     "LonesomeRoad.esm", "GunRunnersArsenal.esm", "ClassicPack.esm",
@@ -112,8 +115,8 @@ GUIAS_PLUGINS = [
     "Placement Fixes.esm",
 ]
 
-# Orden de display del modlist (arriba = mayor prioridad). En la guía se instalan
-# primero los Utilities (quedan abajo) y al final los de Base Finish (arriba).
+# Display order of the modlist (top = highest priority). In the guide the
+# Utilities are installed first (stay at the bottom) and Base Finish last (top).
 ORDEN_SECCIONES = {"setup": 0, "utilities": 1, "bugfix": 2, "basefinish": 3, "finish": 4}
 NOMBRE_SECCION = {
     "setup": "Setup", "utilities": "Utilities", "bugfix": "Bug Fixes",
@@ -123,7 +126,7 @@ SECCIONES_DISPLAY = ["basefinish", "bugfix", "utilities"]
 
 
 def descomprimir(archivo, destino):
-    """Descomprime un archivo (7z/zip/rar) en destino. Devuelve True si pudo."""
+    """Extracts an archive (7z/zip/rar) into dest. Returns True if it could."""
     destino.mkdir(parents=True, exist_ok=True)
     if str(archivo).lower().endswith(".zip"):
         with zipfile_abrir(archivo) as z:
@@ -152,7 +155,7 @@ def zipfile_abrir(archivo):
 
 
 def limpiar_basura(mod_dir):
-    """Quita basura (__MACOSX, .DS_Store, archivos ._*) y carpetas vacías."""
+    """Removes junk (__MACOSX, .DS_Store, ._* files) and empty folders."""
     for p in list(mod_dir.rglob("*")):
         if p.name in BASURA or p.name.startswith("._"):
             if p.is_dir():
@@ -165,7 +168,7 @@ def limpiar_basura(mod_dir):
 
 
 def promover_data(mod_dir):
-    """Promueve una carpeta top-level Data/ (su contenido sube al mod root)."""
+    """Promotes a top-level Data/ folder (its contents go up to the mod root)."""
     for p in list(mod_dir.iterdir()):
         if p.is_dir() and p.name.lower() == "data" and p.name != ".metadata":
             for q in list(p.iterdir()):
@@ -176,7 +179,7 @@ def promover_data(mod_dir):
 
 
 def normalizar_case(mod_dir):
-    """Renombra carpetas top-level a la caja canónica del checker de FNV."""
+    """Renames top-level folders to the canonical case of the FNV checker."""
     canon = {f.lower(): f for f in FNV_FOLDERS}
     for p in list(mod_dir.iterdir()):
         if not p.is_dir() or p.name == ".metadata":
@@ -204,13 +207,14 @@ def normalizar_case(mod_dir):
 
 
 def arrumar_raizes(mod_dir):
-    """Arregla la estructura de raíces del mod (sin romper carpetas de datos).
+    """Fixes the root structure of the mod (without breaking data folders).
 
-    - Limpia basura.
-    - Promueve Data/ (siempre).
-    - Si queda UNA sola raíz que NO es carpeta de datos (wrapper del archivo), la
-      aplana. Si la única raíz ya es de datos (meshes/, sound/, ...), la conserva.
-    - Normaliza la caja de los nombres de carpeta válidos.
+    - Cleans junk.
+    - Promotes Data/ (always).
+    - If only ONE root remains that is NOT a data folder (archive wrapper), it
+      is flattened. If the only root is already data (meshes/, sound/, ...), it
+      is kept.
+    - Normalizes the case of valid folder names.
     """
     for _ in range(4):
         limpiar_basura(mod_dir)
@@ -234,7 +238,7 @@ def arrumar_raizes(mod_dir):
 
 
 def tiene_contenido_valido(mod_dir):
-    """Misma regla que ModDataChecker::dataLooksValid de FNV (case-insensitive)."""
+    """Same rule as ModDataChecker::dataLooksValid from FNV (case-insensitive)."""
     for p in mod_dir.iterdir():
         if p.name in (".metadata", "meta.ini"):
             continue
@@ -247,7 +251,7 @@ def tiene_contenido_valido(mod_dir):
 
 
 def escribir_meta(mod_dir, arch, valido):
-    """Escribe meta.ini. validated=true suprime el flag 'No valid game data'."""
+    """Writes meta.ini. validated=true suppresses the 'No valid game data' flag."""
     lines = ["[General]"]
     if arch is not None:
         lines.append(f"installationFile={arch.name}")
@@ -312,13 +316,13 @@ def decodificar_fomod(path):
 
 
 def aplicar_fomod(mod_dir, mod_id):
-    """Aplica un FOMOD. Devuelve (n_mappings, lista_errores)."""
+    """Applies a FOMOD. Returns (n_mappings, error_list)."""
     fomod_dir = mod_dir / "fomod"
     mc = fomod_dir / "ModuleConfig.xml"
     if not mc.exists():
         mc = fomod_dir / "ModuleConfig.txt"
     if not mc.exists():
-        return 0, ["sin fomod/ModuleConfig"]
+        return 0, ["no fomod/ModuleConfig"]
 
     root = ET.fromstring(decodificar_fomod(mc))
     flags = {}
@@ -356,7 +360,7 @@ def aplicar_fomod(mod_dir, mod_id):
                 for pname in chosen:
                     pl = next((p for p in plugins if p.get("name") == pname), None)
                     if pl is None:
-                        print(f"      ⚠ opción '{pname}' no existe en '{sn}'/'{gname}'")
+                        print(f"      ⚠ option '{pname}' does not exist in '{sn}'/'{gname}'")
                         continue
                     dep = pl.find("dependencies")
                     if dep is not None and not evaluar_deps(dep, flags, mod_dir):
@@ -403,7 +407,7 @@ def aplicar_fomod(mod_dir, mod_id):
         else:
             covered.add(norm_sep(d).split("/")[0].lower())
 
-    # limpieza: quitar fomod/ y toda raíz no seleccionada por el FOMOD
+    # cleanup: remove fomod/ and every root not selected by the FOMOD
     shutil.rmtree(fomod_dir, ignore_errors=True)
     for p in list(mod_dir.iterdir()):
         if p.name in (".metadata", "overwrite"):
@@ -431,11 +435,11 @@ def nombre_mod(m):
 
 
 def resolver_archivo(est, m):
-    """Resuelve el archivo principal de un mod (preferentemente vía estado.json)."""
+    """Resolves the main file of a mod (preferably via estado.json)."""
     extras_archivos = {est.get(k, {}).get("archivo")
                        for k, v in est.items() if ":" in k}
     def es_archivo_main(p):
-        # el main NO puede ser el archivo de un extra (estados cruzados históricos)
+        # the main CANNOT be the file of an extra (historical crossed states)
         return p.exists() and p.name not in extras_archivos
     info = est.get(str(m["mod_id"]))
     if info and info.get("archivo"):
@@ -444,14 +448,14 @@ def resolver_archivo(est, m):
             return p
     cand = [p for p in sorted(DEST.glob(f"*{m['mod_id']}*")) if es_archivo_main(p)]
     if cand:
-        return cand[-1]  # el más reciente por nombre (timestamp)
-    # último recurso: cualquiera
+        return cand[-1]  # the most recent by name (timestamp)
+    # last resort: any
     cand = sorted(DEST.glob(f"*{m['mod_id']}*"))
     return cand[-1] if cand else None
 
 
 def resolver_extra(est, m, x):
-    """Resuelve el archivo de un extra (file_id o url) vía estado.json."""
+    """Resolves the file of an extra (file_id or url) via estado.json."""
     if x.get("file_id"):
         key = f"{m['mod_id']}:{x['file_id']}"
     else:
@@ -465,17 +469,17 @@ def resolver_extra(est, m, x):
 
 
 def fusionar_extras(mod_dir, m, est):
-    """Mezcla los archivos extra (INIs, esps, dlls) en la carpeta del mod."""
+    """Merges the extra files (INIs, esps, dlls) into the mod folder."""
     for x in (m.get("extra") or []):
         arch = resolver_extra(est, m, x)
         if not arch:
-            print(f"      ⚠ extra sin archivo descargado: {x['nombre']}")
+            print(f"      ⚠ extra no downloaded file: {x['nombre']}")
             continue
         tmp = mod_dir / ".extra_tmp"
         if tmp.exists():
             shutil.rmtree(tmp, ignore_errors=True)
         if not descomprimir(arch, tmp):
-            print(f"      ⚠ no se pudo descomprimir extra: {x['nombre']}")
+            print(f"      ⚠ could not extract extra: {x['nombre']}")
             continue
         arrumar_raizes(tmp)
         for p in tmp.iterdir():
@@ -491,9 +495,9 @@ def importar(mo2_dir, args):
         mods = [m for m in mods if m["mod_id"] == args.solo]
     mods = [m for m in mods if m.get("file_id")]
     mods_ord = sorted(mods, key=lambda m: ORDEN_SECCIONES.get(m.get("seccion"), 9))
-    # con --solo solo se (re)extrae ese mod, pero las listas del perfil se
-    # regeneran SIEMPRE con el manifest completo (si no, MO2 ve los demás
-    # mods como "nuevos" y los desactiva: el perfil se corrompe).
+    # with --solo only that mod is (re)extracted, but the profile lists are
+    # ALWAYS regenerated with the full manifest (otherwise MO2 sees the other
+    # mods as "new" and disables them: the profile gets corrupted).
     lista_mods = [m for m in todos if m.get("file_id")]
 
     mods_dir = mo2_dir / "mods"
@@ -513,14 +517,14 @@ def importar(mo2_dir, args):
     for m in mods_ord:
         arch = resolver_archivo(est, m)
         if not arch:
-            fail.append((m["mod_id"], "sin archivo descargado"))
+            fail.append((m["mod_id"], "no downloaded file"))
             continue
         nombre = nombre_mod(m)
         mod_dir = mods_dir / nombre
         if mod_dir.exists():
             shutil.rmtree(mod_dir, ignore_errors=True)
         if not descomprimir(arch, mod_dir):
-            fail.append((m["mod_id"], f"no se pudo descomprimir {arch.name[:40]}"))
+            fail.append((m["mod_id"], f"could not extract {arch.name[:40]}"))
             continue
 
         es_fomod = (mod_dir / "fomod" / "ModuleConfig.xml").exists() or \
@@ -528,7 +532,7 @@ def importar(mo2_dir, args):
         if es_fomod:
             n_map, errs = aplicar_fomod(mod_dir, m["mod_id"])
             if errs:
-                print(f"  ⚠ {nombre[:50]} FOMOD: faltan {errs[:3]}")
+                print(f"  ⚠ {nombre[:50]} FOMOD: missing {errs[:3]}")
         else:
             arrumar_raizes(mod_dir)
 
@@ -542,12 +546,12 @@ def importar(mo2_dir, args):
                 plugins_orden.append(p)
         ok += 1
         estado = "✔" if valido else "✘(validated)"
-        print(f"  {estado} {nombre[:52]}" + ("" if valido else "  [sin contenido → validated]"), flush=True)
+        print(f"  {estado} {nombre[:52]}" + ("" if valido else "  [no content → validated]"), flush=True)
 
-    # separadores + modlist (arriba = mayor prioridad)
-    # OJO: preservar el estado +/- del modlist ACTUAL (MO2 y toggles manuales
-    # se pierden si se reescribe todo; ej. "Fixed ESMs" desactivado manualmente
-    # volvía a activarse en cada re-import --solo).
+    # separators + modlist (top = highest priority)
+    # NOTE: preserve the +/- state of the CURRENT modlist (MO2 and manual
+    # toggles are lost if everything is rewritten; e.g. "Fixed ESMs" disabled
+    # manually used to get re-enabled on every re-import --solo).
     estado_previo = {}
     modlist_prev = profile_dir / "modlist.txt"
     if modlist_prev.exists():
@@ -579,18 +583,18 @@ def importar(mo2_dir, args):
         "# This file was automatically generated by Mod Organizer.\n"
         + "\n".join(modlist) + "\n")
 
-    # loadorder + plugins (solo los de la guía que realmente se importaron).
-    # OJO: MO2 2.5.2 YA NO usa el marcador '*' en plugins.txt (el archivo es la
-    # lista de plugins ACTIVOS sin asterisco; loadorder.txt guarda el orden).
-    # Un plugins.txt con '*' hace que MO2 no reconozca NINGÚN plugin
-    # ("Plugin not found: *FalloutNV.esm"). Mismo header CRLF que escribe MO2.
+    # loadorder + plugins (only the guide ones that were actually imported).
+    # NOTE: MO2 2.5.2 NO LONGER uses the '*' marker in plugins.txt (the file is
+    # the list of ACTIVE plugins without asterisk; loadorder.txt keeps the order).
+    # A plugins.txt with '*' makes MO2 not recognize ANY plugin
+    # ("Plugin not found: *FalloutNV.esm"). Same CRLF header MO2 writes.
     plugins_lower = {p.lower(): p for p in plugins_orden}
     loadorder = list(BASE_ESMS)
     for gp in GUIAS_PLUGINS:
         if gp.lower() in plugins_lower:
             loadorder.append(plugins_lower[gp.lower()])
-    # mods fuera de la guía (JAM, d20Fixes, etc.): se preservan del loadorder
-    # previo y van al final (la guía: los mods propios quedan al final).
+    # mods outside the guide (JAM, d20Fixes, etc.): preserved from the previous
+    # loadorder and appended at the end (the guide: own mods go last).
     if (profile_dir / "loadorder.txt").exists():
         prev = [p.strip("\r") for p in
                 (profile_dir / "loadorder.txt").read_text(errors="ignore").splitlines()
@@ -600,9 +604,10 @@ def importar(mo2_dir, args):
             if p.lower() not in conocidos:
                 loadorder.append(p)
                 conocidos.add(p.lower())
-    # con --solo: el perfil ya tiene el loadorder completo (los demás mods están
-    # importados). NO reconstruir desde cero: preservar el orden previo EXACTO y
-    # solo INSERTAR los plugins nuevos del mod importado (después de su master).
+    # with --solo: the profile already has the full loadorder (the other mods
+    # are imported). Do NOT rebuild from scratch: preserve the EXACT previous
+    # order and only INSERT the new plugins of the imported mod (after their
+    # master).
     if args.solo and (profile_dir / "loadorder.txt").exists():
         prev = [p.strip("\r") for p in
                 (profile_dir / "loadorder.txt").read_text(errors="ignore").splitlines()
@@ -611,7 +616,7 @@ def importar(mo2_dir, args):
             loadorder = prev
         for nuevo in [p for p in plugins_orden if p.lower() not in
                       [x.lower() for x in loadorder]]:
-            # insertar después del master (primer esm del plugin) o al final
+            # insert after the master (first esm of the plugin) or at the end
             master = None
             for m in BASE_ESMS:
                 if m.lower() == nuevo.lower():
@@ -637,11 +642,11 @@ def importar(mo2_dir, args):
     (mo2_dir / "profiles" / "profiles.ini").write_text(
         "[General]\ncurrent_profile=Default\n")
 
-    print(f"\n✅ {ok}/{len(mods_ord)} mods importados a {mods_dir}")
-    print(f"   modlist: {len(modlist)} líneas (separadores incluidos)")
+    print(f"\n✅ {ok}/{len(mods_ord)} mods imported to {mods_dir}")
+    print(f"   modlist: {len(modlist)} lines (separators included)")
     print(f"   loadorder: {len(loadorder)} plugins")
     if fail:
-        print("   Fallos:")
+        print("   Failures:")
         for mid, err in fail:
             print(f"     ✘ {mid}: {err}")
     return 0 if not fail else 1
@@ -650,7 +655,7 @@ def importar(mo2_dir, args):
 def verificar(mo2_dir):
     mods_dir = mo2_dir / "mods"
     if not mods_dir.is_dir():
-        print(f"no existe {mods_dir}")
+        print(f"does not exist: {mods_dir}")
         return 1
     malos = []
     for p in sorted(mods_dir.iterdir()):
@@ -666,10 +671,10 @@ def verificar(mo2_dir):
         elif validated:
             print(f"  ~ {p.name[:52]}  (validated)")
         else:
-            print(f"  ✘ {p.name[:52]}  ¡flag probable!")
+            print(f"  ✘ {p.name[:52]}  likely flag!")
             malos.append(p.name)
     if malos:
-        print(f"\n{len(malos)} mods sin contenido válido ni validated:")
+        print(f"\n{len(malos)} mods with no valid content nor validated:")
         for n in malos:
             print("   ", n)
     return 0
@@ -677,7 +682,7 @@ def verificar(mo2_dir):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dir", help="directorio MO2")
+    ap.add_argument("--dir", help="MO2 directory")
     ap.add_argument("--solo", type=int)
     ap.add_argument("--reinstalar", action="store_true")
     ap.add_argument("--verificar", action="store_true")
@@ -692,7 +697,7 @@ def main():
 
     if args.verificar:
         sys.exit(verificar(mo2_dir))
-    print(f"📦 Importando a MO2: {mo2_dir}")
+    print(f"📦 Importing to MO2: {mo2_dir}")
     sys.exit(importar(mo2_dir, args))
 
 

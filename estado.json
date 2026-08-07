@@ -7,7 +7,9 @@
   "58277": {
     "file_id": 1000132314,
     "estado": "ok",
-    "archivo": "JIP LN NVSE Plugin-58277-57-30-1716662080.7z"
+    "archivo": "JIP LN NVSE Plugin-58277-57-30-1716662080.7z",
+    "intentos": 1,
+    "ts": 1786084643.8782613
   },
   "62552": {
     "file_id": 1000079136,

@@ -1,379 +1,379 @@
 # BRAIN.md — VNV Linux Installer
 
-Bitácora técnica del proyecto: **instalador 100% automático de Viva New Vegas (Core) para Linux/Steam**.
+Technical log of the project: **100% automatic installer of Viva New Vegas (Core) for Linux/Steam**.
 
-> Regla: cada descubrimiento, bug y decisión va acá. Este archivo ES la memoria del proyecto.
+> Rule: every discovery, bug and decision goes here. This file IS the project's memory.
 
 ---
 
-## 🎯 Objetivo
-`./vnv.sh install` = detectar juego → descargar 54 mods → MO2 + Wine prefix → importar → INIs → LOOT → lanzar. Cero pasos manuales.
+## 🎯 Goal
+`./vnv.sh install` = detect game → download 54 mods → MO2 + Wine prefix → import → INIs → LOOT → launch. Zero manual steps.
 
 ## 🧱 Stack
 - Python 3.12 + venv (`/home/shot/vnv-linux/venv`)
-- **Camoufox** (Firefox anti-detección) para login Nexus — pasa Turnstile headless
-- Playwright (venv postulaciones) para captchas iCIMS (otro proyecto)
-- API Nexus v1 para metadata (gratis) + cookie `nexusmods_session` para sesión
+- **Camoufox** (anti-detection Firefox) for Nexus login — passes Turnstile headless
+- Playwright (venv postulaciones) for iCIMS captchas (another project)
+- Nexus API v1 for metadata (free) + `nexusmods_session` cookie for the session
 
 ---
 
-## ✅ VALIDACIÓN FINAL COMPLETA (6 ago 2026) — TODO PROBADO EN VIVO
+## ✅ FINAL COMPLETE VALIDATION (6 aug 2026) — EVERYTHING TESTED LIVE
 
-## ✅ CIERRE DEFINITIVO (7 ago 2026) — verificado al 100% por el usuario
+## ✅ DEFINITIVE CLOSURE (7 aug 2026) — 100% verified by the user
 
-- **55 mods** (Core VNV + JAM 66666 + YUPDate/supplement 98514 con `d20Fixes.esm`), 50 activos + 5 root + Fixed ESMs.
-- **Load order canónico VNV Core** de 23 plugins (YUP 1º, d20Fixes tras YUP, Placement Fixes último, JAM al final) — sync loadorder/plugins.
-- **Fixed ESMs REBUILD CORRECTO**: el problema era la FUENTE — los esms copiados del setup viejo del usuario (mtimes 1999) no eran los del depot actual → xdelta3 con fuente ±bytes → esm con TES4 válido pero 233K records y **0 diálogos** (vs 465K/18.2K del correcto) → crash `0x00AA991C` en init de diálogos (contexto: records YUP "Doctors" — topic 0002284F, info 000377F6). Tras `steam steam://validate/22380` (los esms se alinearon al depot), `port.py --force` produce el build correcto (465.054 records, DIALOG 18.215). **Regla: el verify de Steam debe preceder al uefix** (y re-correr 4gb/bsa después — el verify revierte todo).
-- **JGNVSE**: tras los Fixed ESMs correctos, los "EDIDs conflicting" DLC (WeapNVDLC00Faderator, FadeToBlackAndBack..., NVDLC03TTank*) DESAPARECIERON. Queda 1 benigno: `UPNVSEPVendorQuestItemSCRIPT` (YUP vs UPNVSE+, conocido).
-- **Error log del juego**: 1.5 KB = ruido vanilla benigno (RagdollConstraint rdt, "misnamed BSA" ×10, swaps de textura opcionales, animation group notes). 0 MASTERFILE, 0 MODEL ERROR reales.
-- **28 plugins NVSE** cargados (incl. JIP LN v57.30, LOD Fixes v1.33 con su INI, VanillaPlusTerrain, FART...).
-- **JAM - VNV Configuration** (1000132850, `config/JustMods.ini`) = preset oficial de VNV (sprint y QOL vía MCM) — el "JAM Custom INI" del Patch Emporium (repo borrado) ya no se usa.
-- **Limpieza**: sin descargas stale, sin mods extra en MO2, 1 entrada de estado vieja eliminada, backups de saves/mods viejos borrados.
-- **`importar_mo2.py`**: `--solo` preserva loadorder EXACTO (inserta el plugin nuevo tras su master) y el modlist preserva estados +/- (b7782f3, 0ffc8ce, fade38a).
+- **55 mods** (Core VNV + JAM 66666 + YUPDate/supplement 98514 with `d20Fixes.esm`), 50 active + 5 root + Fixed ESMs.
+- **Canonical VNV Core load order** of 23 plugins (YUP 1st, d20Fixes after YUP, Placement Fixes last, JAM at the end) — loadorder/plugins sync.
+- **CORRECT Fixed ESMs REBUILD**: the problem was the SOURCE — the esms copied from the user's old setup (mtimes 1999) were not the ones from the current depot → xdelta3 with a source ±bytes → esm with valid TES4 but 233K records and **0 dialogues** (vs 465K/18.2K of the correct one) → crash `0x00AA991C` during dialogue init (context: YUP "Doctors" records — topic 0002284F, info 000377F6). After `steam steam://validate/22380` (the esms aligned with the depot), `port.py --force` produces the correct build (465,054 records, DIALOG 18,215). **Rule: Steam verify must precede uefix** (and re-run 4gb/bsa afterwards — verify reverts everything).
+- **JGNVSE**: after the correct Fixed ESMs, the DLC "EDIDs conflicting" (WeapNVDLC00Faderator, FadeToBlackAndBack..., NVDLC03TTank*) DISAPPEARED. Only 1 benign one remains: `UPNVSEPVendorQuestItemSCRIPT` (YUP vs UPNVSE+, known).
+- **Game error log**: 1.5 KB = benign vanilla noise (RagdollConstraint rdt, "misnamed BSA" ×10, optional texture swaps, animation group notes). 0 real MASTERFILE, 0 real MODEL ERROR.
+- **28 NVSE plugins** loaded (incl. JIP LN v57.30, LOD Fixes v1.33 with its INI, VanillaPlusTerrain, FART...).
+- **JAM - VNV Configuration** (1000132850, `config/JustMods.ini`) = official VNV preset (sprint and QOL via MCM) — the Patch Emporium "JAM Custom INI" (deleted repo) is no longer used.
+- **Cleanup**: no stale downloads, no extra mods in MO2, 1 old state entry removed, backups of old saves/mods deleted.
+- **`importar_mo2.py`**: `--solo` preserves the EXACT loadorder (inserts the new plugin after its master) and the modlist preserves +/- states (b7782f3, 0ffc8ce, fade38a).
 
 
-Pipeline completo verificado de punta a punta en la máquina del usuario (Steam + FNV):
-- **Descargas**: 53/53 main + 4/4 extras, 0 HTML (auditoría vs manifest+estado.json)
-- **`install` e2e idempotente** (re-corrido tras push): 53/53 re-importados, modlist 55 líneas, loadorder 21 en orden de guía, root mods re-ejecutados OK, tweaks INI aplicados
-- **Juego lanzado y confirmado en menú principal**: 27 plugins NVSE cargados (`nvse.log`), VFS MO2 completo, `run -e NVSE` correcto, cierre limpio
-- **Estado del juego**: LAA=0xA620 + nvse_steam_loader importado, BSAs descomprimidos (ver 8265), Fixed ESMs con tamaños correctos
-- **UI web** sirve OK (curl), `bash -n` + `py_compile` de todos los scripts OK
+Full pipeline verified end to end on the user's machine (Steam + FNV):
+- **Downloads**: 53/53 main + 4/4 extras, 0 HTML (audit vs manifest+estado.json)
+- **`install` e2e idempotent** (re-run after push): 53/53 re-imported, modlist 55 lines, loadorder 21 in guide order, root mods re-executed OK, INI tweaks applied
+- **Game launched and confirmed at main menu**: 27 NVSE plugins loaded (`nvse.log`), full MO2 VFS, `run -e NVSE` correct, clean exit
+- **Game state**: LAA=0xA620 + nvse_steam_loader imported, decompressed BSAs (see 8265), Fixed ESMs with correct sizes
+- **Web UI** serves OK (curl), `bash -n` + `py_compile` of all scripts OK
 
-### Bugs encontrados en la validación (todos con fix):
-1. **MO2 2.5.2 trunca `plugins.txt` al apagar** tras sesión de juego (deja `FalloutNV.esm` solo; `loadorder.txt` intacto). Reproducido 2×. Fix en `lanzar()`: regenera `plugins.txt` = cabecera + `*` por línea del `loadorder.txt` si difieren (vnv.sh:214-226).
-2. **lootcli standalone no ve el VFS de MO2** → re-escribe `plugins.txt` con ~10 plugins si se apunta al perfil real. Fix: `./vnv.sh loot` valida sobre copia `/tmp/opencode/loot_plugins.txt`; LOOT sacado del `install` (vnv.sh:172-192).
+### Bugs found during validation (all with fixes):
+1. **MO2 2.5.2 truncates `plugins.txt` on shutdown** after a game session (leaves only `FalloutNV.esm`; `loadorder.txt` intact). Reproduced 2×. Fix in `lanzar()`: regenerates `plugins.txt` = header + one `*` per line of `loadorder.txt` if they differ (vnv.sh:214-226).
+2. **Standalone lootcli can't see MO2's VFS** → rewrites `plugins.txt` with ~10 plugins if pointed at the real profile. Fix: `./vnv.sh loot` validates against copy `/tmp/opencode/loot_plugins.txt`; LOOT removed from `install` (vnv.sh:172-192).
 
-### Segunda oleada de bugs (7 ago 2026, todos con fix — juego jugando con partida nueva)
-1. **MO2 2.5.2 plugins.txt SIN `*`**: el archivo = plugins activos SIN asterisco (CRLF, header). Con `*` → `Plugin not found: *FalloutNV.esm` (el `*` pasa a ser parte del nombre) → MO2 no reconoce NINGÚN plugin. Fix en importar_mo2.py + preparar_lanzamiento().
-2. **`--solo` de importar_mo2.py pisaba las listas del perfil** → modlist con 1 mod → MO2 "directory update" desactiva los demás → juego sin mods ("no estan configurados"). Fix: listas SIEMPRE con manifest completo.
-3. **JIP LN sin dll**: estado.json de 58277 apuntaba al INI en vez del main → jip_nvse.dll nunca se extrajo. Fix: estado.json + re-import (JIP v57.30 carga).
-4. **LOD Fixes sin INI**: extra 84171:1000150631 apuntaba al main. Fix: estado.json + re-import.
-5. **Fixed ESMs CORRUPTOS (crash determinista al inicio, stack idéntico 0x00AA991C)**: los parches xdelta3 del .mpi no matchean el vanilla del juego (cpylen FalloutNV=245,642,722 vs vanilla 245,650,747; DeadMoney 6,274,831 vs 6,274,851 — el Data es vanilla legítimo según verify de Steam) → xdelta3 con fuente ±bytes → esm con TES4 válido pero records faltantes (00115C5F, 00094EB8 ausentes) → `MASTERFILE: Could not find reference` → crash. **Estado**: mod desactivado, esms vanilla. Pendiente: fuente exacta del .mpi.
-6. **SArchiveList incompleto** (solo 6 BSAs base) en los 3 inis → BSAs DLC sin registrar. Fix: 21 BSAs orden vanilla, Update.bsa último.
-7. **Saves incompatibles**: partidas creadas con otra era de esms → formids rotos al cargar → "!" (statics), armas DLC rosadas, texturas de cuerpo (`00000007modbodyfemale` vs BSA `00118e86`). Fix: backup de saves; partida nueva = todo OK. OJO: el juego AUTO-CARGA el último save al iniciar (nvse.log DoLoadGameHook sin interacción) — vaciar Saves/ para tests limpios.
-8. **BSAs verificadas a fondo**: las 11 comprimidas tienen bit30 en TODOS los records (sin-bit30=0), data raw válida (nif `Gamebryo`, dds `DDS `); las raw (Meshes/Textures/etc.) son vanilla intactas. El decompresor NO fue la causa de ningún error visible.
-9. **Formato BSA record**: records de 16 bytes `<QII` (hash, size, off); carpeta = hash de carpeta; file-hash = hash del NOMBRE SOLO (todos los skeleton.nif comparten hash). El sum-hash NO matchea nada en FNV (el hash real del motor es otro — no resuelto, no hizo falta).
+### Second wave of bugs (7 aug 2026, all with fixes — game playable with a new game)
+1. **MO2 2.5.2 plugins.txt WITHOUT `*`**: the file = active plugins WITHOUT asterisk (CRLF, header). With `*` → `Plugin not found: *FalloutNV.esm` (the `*` becomes part of the name) → MO2 recognizes NO plugin. Fix in importar_mo2.py + preparar_lanzamiento().
+2. **`--solo` of importar_mo2.py overwrote the profile lists** → modlist with 1 mod → MO2 "directory update" disables the rest → game without mods ("not configured"). Fix: lists ALWAYS with the full manifest.
+3. **JIP LN without dll**: estado.json of 58277 pointed to the INI instead of the main → jip_nvse.dll was never extracted. Fix: estado.json + re-import (JIP v57.30 loads).
+4. **LOD Fixes without INI**: extra 84171:1000150631 pointed to the main. Fix: estado.json + re-import.
+5. **CORRUPTED Fixed ESMs (deterministic crash at start, identical stack 0x00AA991C)**: the xdelta3 patches of the .mpi don't match the game's vanilla (cpylen FalloutNV=245,642,722 vs vanilla 245,650,747; DeadMoney 6,274,831 vs 6,274,851 — the Data is legit vanilla per Steam verify) → xdelta3 with a source ±bytes → esm with valid TES4 but missing records (00115C5F, 00094EB8 absent) → `MASTERFILE: Could not find reference` → crash. **State**: mod disabled, vanilla esms. Pending: exact source of the .mpi.
+6. **Incomplete SArchiveList** (only 6 base BSAs) in the 3 inis → DLC BSAs not registered. Fix: 21 BSAs in vanilla order, Update.bsa last.
+7. **Incompatible saves**: games created with another era of esms → broken formids when loading → "!" (statics), pink DLC weapons, body textures (`00000007modbodyfemale` vs BSA `00118e86`). Fix: saves backup; new game = everything OK. CAUTION: the game AUTO-LOADS the last save on start (nvse.log DoLoadGameHook without interaction) — empty Saves/ for clean tests.
+8. **BSAs verified thoroughly**: the 11 compressed ones have bit30 on ALL records (without-bit30=0), valid raw data (nif `Gamebryo`, dds `DDS `); the raw ones (Meshes/Textures/etc.) are intact vanilla. The decompressor was NOT the cause of any visible error.
+9. **BSA record format**: 16-byte records `<QII` (hash, size, off); folder = folder hash; file-hash = hash of the NAME ONLY (all skeleton.nif share the hash). The sum-hash does NOT match anything in FNV (the engine's real hash is another one — unresolved, not needed).
 
 ### Repos post-push
-- `jhoniwana/vnv-linux` **público** (rama main, `a5ea1a7`); 5 root repos **privados** por decisión del usuario.
-- `.mpi` de UEM Fixes (220 MB) fuera del repo (límite GitHub 100 MB); `port.py` lo extrae del `.7z` con 7z a `~/.cache/vnv-uefix/`.
-- `epic` en Steam = no-op (root_mods.py:10,13).
+- `jhoniwana/vnv-linux` **public** (branch main, `a5ea1a7`); 5 root repos **private** by the user's decision.
+- UEM Fixes `.mpi` (220 MB) out of the repo (GitHub 100 MB limit); `port.py` extracts it from the `.7z` with 7z to `~/.cache/vnv-uefix/`.
+- `epic` on Steam = no-op (root_mods.py:10,13).
 
 ---
 
-## 📚 LO APRENDIDO (por área)
+## 📚 WHAT WAS LEARNED (by area)
 
-### API de Nexus (v1)
-- `GET /v1/games/newvegas/mods/{id}.json` — metadata (nombre, versión) — GRATIS con API key
-- `GET /v1/games/newvegas/mods/{id}/files.json` — lista de archivos — GRATIS
-- `GET /v1/games/newvegas/mods/{id}/files/{fid}/download_link.json` — **SOLO PREMIUM** (403 "premium users only")
-- API key = personal, gratis, en `nexusmods.com/settings/api-keys`. Formato nuevo: token firmado
-- Rate limits gratis: ~5s entre llamadas recomendado
-- **`latest_link.json` NO existe** (422 — es un id numérico, no un endpoint)
+### Nexus API (v1)
+- `GET /v1/games/newvegas/mods/{id}.json` — metadata (name, version) — FREE with API key
+- `GET /v1/games/newvegas/mods/{id}/files.json` — file list — FREE
+- `GET /v1/games/newvegas/mods/{id}/files/{fid}/download_link.json` — **PREMIUM ONLY** (403 "premium users only")
+- API key = personal, free, at `nexusmods.com/settings/api-keys`. New format: signed token
+- Free rate limits: ~5s between calls recommended
+- **`latest_link.json` does NOT exist** (422 — it's a numeric id, not an endpoint)
 
-### Login a Nexus (el gran logro)
-- Playwright Chrome headless: ❌ Turnstile bloquea
-- SeleniumBase UC headless: ❌ Turnstile bloquea (mejor, pero no pasa)
-- **Camoufox headless: ✅ PASA TURNSTILE**
-  - `pip install camoufox` (baja Firefox 152 beta propio)
-  - ⚠️ En este Arch necesita `LD_LIBRARY_PATH=/home/shot/xvfb-env/lib` (pixman de conda-forge — el cairo del sistema está roto por update parcial)
-  - Flujo: `users.nexusmods.com/register` → click "Sign in" → `#user_login` + `#password` → submit → esperar "Welcome back"/"Sign out"
-- **La cookie de sesión NO se llama `sid` — se llama `nexusmods_session`** (Nexus la renombró). También existe `cf_clearance` (Cloudflare).
-- 2FA del usuario: NOT ACTIVE (login limpio)
-- Cookies guardadas en `~/.config/vnv-linux/` con permisos 600
+### Nexus login (the big achievement)
+- Playwright Chrome headless: ❌ Turnstile blocks
+- SeleniumBase UC headless: ❌ Turnstile blocks (better, but doesn't pass)
+- **Camoufox headless: ✅ PASSES TURNSTILE**
+  - `pip install camoufox` (downloads its own Firefox 152 beta)
+  - ⚠️ On this Arch it needs `LD_LIBRARY_PATH=/home/shot/xvfb-env/lib` (conda-forge pixman — the system cairo is broken by a partial update)
+  - Flow: `users.nexusmods.com/register` → click "Sign in" → `#user_login` + `#password` → submit → wait for "Welcome back"/"Sign out"
+- **The session cookie is NOT called `sid` — it's called `nexusmods_session`** (Nexus renamed it). `cf_clearance` (Cloudflare) also exists.
+- User's 2FA: NOT ACTIVE (clean login)
+- Cookies saved in `~/.config/vnv-linux/` with 600 permissions
 
-### Descarga de archivos (EL MURO)
-- API download_link: solo Premium ❌
-- UI nueva de Nexus = React + web components (`<slow-download-prompt>`, shadow DOM con floating-ui-root)
-- `DownloadPopUp` widget (legacy): redirige a la página del mod (muerto)
-- `/api/files/{internal_id}/download?nmm=0` → 302 a la página del mod (no sirve)
-- `/api/files/{internal_id}/download?nmm=1` → 200 pero es flujo Vortex (nxm://)
-- El botón de descarga real: el dt de la fila tiene `id="file-expander-header-{fid}"` y `data-id`; el icono `cloud_download` es SOLO status ("You downloaded this")
-- Herramientas existentes (NexusDownloadFlow 79★, NexusAutoDL 75★, WabbaRush): TODAS clickean el botón "Slow Download" en un navegador visible con sesión humana — ninguna automatiza headless
-- **Conclusión: la descarga gratis requiere o un humano clickeando o Premium. Por diseño de Nexus.**
-- Vía manual: `MODS_LISTA.md` con los 54 links directos (generado)
+### File downloads (THE WALL)
+- API download_link: Premium only ❌
+- New Nexus UI = React + web components (`<slow-download-prompt>`, shadow DOM with floating-ui-root)
+- `DownloadPopUp` widget (legacy): redirects to the mod page (dead)
+- `/api/files/{internal_id}/download?nmm=0` → 302 to the mod page (useless)
+- `/api/files/{internal_id}/download?nmm=1` → 200 but it's the Vortex flow (nxm://)
+- The real download button: the row's dt has `id="file-expander-header-{fid}"` and `data-id`; the `cloud_download` icon is ONLY status ("You downloaded this")
+- Existing tools (NexusDownloadFlow 79★, NexusAutoDL 75★, WabbaRush): ALL click the "Slow Download" button in a visible browser with a human session — none automates headless
+- **Conclusion: free download requires either a human clicking or Premium. By Nexus design.**
+- Manual path: `MODS_LISTA.md` with the 54 direct links (generated)
 
-### Viva New Vegas (guía)
-- La guía se mudó: **vivanewvegas.moddinglinked.com** (repo ModdingLinked/Viva-New-Vegas)
-- Core = ~54 mods de Nexus (utilities 21 + bugfix 34 + setup) + 1 GitHub (Stewie Tweaks INIs)
-- Tiene Wabbajack oficial para la versión Extended
-- `wabbajack.html`, `mo2.html`, `setup.html` — páginas clave de config
+### Viva New Vegas (guide)
+- The guide moved: **vivanewvegas.moddinglinked.com** (repo ModdingLinked/Viva-New-Vegas)
+- Core = ~54 Nexus mods (utilities 21 + bugfix 34 + setup) + 1 GitHub (Stewie Tweaks INIs)
+- Has an official Wabbajack for the Extended version
+- `wabbajack.html`, `mo2.html`, `setup.html` — key config pages
 
-### MO2 en Linux
-- **MO2-LINT** (`Furglitch/modorganizer2-linux-installer`, ★1743): el estándar, soporta FNV (fullscreen-only)
-- VNV exige: VC++ redist (winetricks vcrun*), ASLR off, 4GB/NVTF heap
-- Load order: VNV usa LOOT para ordenar (no orden fijo)
+### MO2 on Linux
+- **MO2-LINT** (`Furglitch/modorganizer2-linux-installer`, ★1743): the standard, supports FNV (fullscreen-only)
+- VNV requires: VC++ redist (winetricks vcrun*), ASLR off, 4GB/NVTF heap
+- Load order: VNV uses LOOT to sort (no fixed order)
 
-### Herramientas útiles descubiertas
-- **micromamba** (user-space, sin sudo): instaló Xvfb + pixman + openssl 1.0 en `/home/shot/xvfb-env`
-- Xvfb del sistema: binario borrado pero proceso zombie (inútil)
-- `Xorg` del sistema: bloquea usuarios no-console ("Only console users")
-- LightPanda: NO sirve para anti-bot (Cloudflare lo bloquea) — solo render JS simple
+### Useful tools discovered
+- **micromamba** (user-space, no sudo): installed Xvfb + pixman + openssl 1.0 in `/home/shot/xvfb-env`
+- System Xvfb: binary deleted but zombie process (useless)
+- System `Xorg`: blocks non-console users ("Only console users")
+- LightPanda: NOT suitable for anti-bot (Cloudflare blocks it) — only simple JS rendering
 
 ---
 
-## 🐛 Bugs encontrados y arreglados
-1. **`--solo` destruía el manifest**: `actualizar.py`/`descargar_nexus.py` guardaban la lista FILTRADA. Fix: `todos = mods` + `json.dump(todos)`.
-2. **Cookie `sid` inexistente**: Nexus usa `nexusmods_session`. Fix en `login_camoufox.py` + `descargar_nexus_cookies.py`.
-3. **`user_agent` no es kwarg de SeleniumBase Driver** (es `agent`/default).
-4. **SeleniumBase `headless2`**: sesión inestable (connection pool muere).
-5. **urllib no reenvía cookies entre dominios** en redirects → el CDN rechaza.
-6. **Manifest regenerado desde `/tmp/vnv_mods.json`** tras el bug #1 (el backup salvó el proyecto).
+## 🐛 Bugs found and fixed
+1. **`--solo` destroyed the manifest**: `actualizar.py`/`descargar_nexus.py` saved the FILTERED list. Fix: `todos = mods` + `json.dump(todos)`.
+2. **Non-existent `sid` cookie**: Nexus uses `nexusmods_session`. Fix in `login_camoufox.py` + `descargar_nexus_cookies.py`.
+3. **`user_agent` is not a SeleniumBase Driver kwarg** (it's `agent`/default).
+4. **SeleniumBase `headless2`**: unstable session (connection pool dies).
+5. **urllib doesn't forward cookies across domains** on redirects → the CDN rejects.
+6. **Manifest regenerated from `/tmp/vnv_mods.json`** after bug #1 (the backup saved the project).
 
-## 🔑 Credenciales y seguridad
-- API key del usuario: formato token firmado, guardada SOLO por env var en corridas (no en disco)
-- ⚠️ **El usuario pegó la password de Nexus en el chat — recomendado cambiar password + regenerar API key**
-- Cookies en `~/.config/vnv-linux/` con chmod 600
-- NUNCA subir cookies/key/password al repo (gitignore + .config/)
+## 🔑 Credentials and security
+- User's API key: signed token format, kept ONLY via env var during runs (not on disk)
+- ⚠️ **The user pasted the Nexus password in the chat — recommended to change password + regenerate API key**
+- Cookies in `~/.config/vnv-linux/` with chmod 600
+- NEVER upload cookies/key/password to the repo (gitignore + .config/)
 
 ## 🗺️ Roadmap
-- [x] Manifest 54 mods (53 con file_id — 90824 da 403)
-- [x] actualizar.py (metadata vía API) — probado en vivo
-- [x] Login Nexus automático (Camoufox) — probado en vivo
+- [x] Manifest of 54 mods (53 with file_id — 90824 gives 403)
+- [x] actualizar.py (metadata via API) — tested live
+- [x] Automatic Nexus login (Camoufox) — tested live
 - [x] descargar_nexus.py (Premium) + descargar_nexus_cookies.py + descargar_browser.py
 - [x] vnv.sh install/run/config/config-cookies/login
-- [x] MODS_LISTA.md (vía manual)
-- [ ] **Descargar los 54 mods (el bloqueo)** — vías: Premium (inmediato) / manual / investigar más
-- [ ] Import automático a MO2
-- [ ] Probar MO2-LINT en máquina real
-- [ ] Pipeline completo verificado
+- [x] MODS_LISTA.md (manual path)
+- [ ] **Download the 54 mods (the blocker)** — paths: Premium (instant) / manual / keep researching
+- [ ] Automatic import into MO2
+- [ ] Test MO2-LINT on a real machine
+- [ ] Full pipeline verified
 
-## 📌 Investigaciones cerradas
-- **JSON embebido**: la página embebe `downloadUrl: /api/files/{uid_interno}/download` (y `?nmm=1` para Vortex). PERO el endpoint 302 a la página del mod incluso dentro del browser (fetch manual → opaqueredirect). El link real requiere el estado del modal React.
-- **`exp=true`**: no revive nada (302 igual).
-- **POST al endpoint**: 405 Method Not Allowed.
-- **Dump completo del DOM expandido**: los rows muestran "Preview file contents" + "Version history" pero NO hay botón de descarga en el HTML servido — el botón lo renderiza el web component `<file-row>`/React solo ante interacción (estado hover/click), invisible al DOM headless.
-- **UI libre de descarga = imposible headless** (confirmado con 3 motores + endpoints). La descarga gratis requiere humano (2 clicks por mod) o Premium (1 comando).
-- **Dump exhaustivo de ids/classes/botones**: las filas `file-expander-header-*` NO tienen NINGÚN botón de descarga en el DOM servido. El botón lo renderiza el web component solo ante estados interactivos (gesto real del usuario) — inalcanzable headless. El selector `#slowDownloadButton` del script nolvus (2023) ya no existe en la UI 2026.
-- **"Manual download"**: tampoco expuesto en el DOM actual — misma conclusión.
-- **NexusMods.App**: app oficial open source (GPL) con builds Linux — candidata para flujo nativo, no automatizable por CLI estable aún.
-- **Wabbajack**: la guía tiene Wabbajack oficial para VNV Extended (no Core) — funciona en Linux vía Jackify (★721) — alternativa válida si el usuario acepta Extended.
-- **Veredicto FINAL (cerrado)**: la descarga gratuita de Nexus NO es automatizable headless por diseño (2026). Vías: Premium (descargar_nexus.py, listo) / humano clickeando (MODS_LISTA.md) / app oficial.
+## 📌 Closed investigations
+- **Embedded JSON**: the page embeds `downloadUrl: /api/files/{internal_uid}/download` (and `?nmm=1` for Vortex). BUT the endpoint 302s to the mod page even inside the browser (manual fetch → opaqueredirect). The real link requires the React modal state.
+- **`exp=true`**: revives nothing (302 anyway).
+- **POST to the endpoint**: 405 Method Not Allowed.
+- **Full dump of the expanded DOM**: the rows show "Preview file contents" + "Version history" but there is NO download button in the served HTML — the button is rendered by the `<file-row>` web component/React only on interaction (hover/click state), invisible to a headless DOM.
+- **Download-free UI = impossible headless** (confirmed with 3 engines + endpoints). Free download requires a human (2 clicks per mod) or Premium (1 command).
+- **Exhaustive dump of ids/classes/buttons**: the `file-expander-header-*` rows have NO download button at all in the served DOM. The button is rendered by the web component only on interactive states (real user gesture) — unreachable headless. The `#slowDownloadButton` selector from the nolvus script (2023) no longer exists in the 2026 UI.
+- **"Manual download"**: also not exposed in the current DOM — same conclusion.
+- **NexusMods.App**: official open source app (GPL) with Linux builds — candidate for a native flow, not yet automatable via stable CLI.
+- **Wabbajack**: the guide has an official Wabbajack for VNV Extended (not Core) — works on Linux via Jackify (★721) — a valid alternative if the user accepts Extended.
+- **FINAL VERDICT (closed)**: free downloading from Nexus is NOT headless-automatable by design (2026). Paths: Premium (descargar_nexus.py, ready) / human clicking (MODS_LISTA.md) / official app.
 
-## 🔑 Resumen ejecutivo del estado (última actualización)
-| Componente | Estado |
+## 🔑 Executive summary of the state (last update)
+| Component | State |
 |---|---|
-| Manifest 54 mods (53 file_id) | ✅ |
-| actualizar.py | ✅ probado |
-| Login Camoufox (pasa Turnstile) | ✅ probado |
-| **Descarga FREE automatizada** | ✅ **53/53 DESCARGADOS** — verificado, 0 fallos |
-| vnv.sh + pipeline MO2/INI/LOOT | ✅ esqueleto |
+| Manifest of 54 mods (53 file_id) | ✅ |
+| actualizar.py | ✅ tested |
+| Camoufox login (passes Turnstile) | ✅ tested |
+| **Automated FREE download** | ✅ **53/53 DOWNLOADED** — verified, 0 failures |
+| vnv.sh + MO2/INI/LOOT pipeline | ✅ skeleton |
 
-## 🏆 LOGRO COMPLETO DE DESCARGA (53/53)
-- Endpoint: `/Download/?id={file_id}&game_id=130&source=ModPage` — funciona para FREE
-- Dos formatos de página: auto-download ("should automatically begin") y botón ("served via CDN" + botón "Download")
-- Patrón universal del descargador: listener `page.on("download")` → esperar 12s auto → si no, click en el botón exacto (texto === 'Download' cerca del área)
-- Rate limits: 8-15s entre mods, 3 intentos con backoff, espera de challenge Cloudflare (hasta 60s)
-- Monitoreo: `python -u script > /tmp/descarga.log` (NO pipe a tail — bufferiza todo)
-- Verificación: `file -b` sobre cada archivo (0 HTML)
-- **OJO: no lanzar dos instancias al mismo log — se pisan las salidas**
+## 🏆 COMPLETE DOWNLOAD ACHIEVEMENT (53/53)
+- Endpoint: `/Download/?id={file_id}&game_id=130&source=ModPage` — works for FREE
+- Two page formats: auto-download ("should automatically begin") and button ("served via CDN" + "Download" button)
+- Universal downloader pattern: listener `page.on("download")` → wait 12s auto → if not, click the exact button (text === 'Download' near the area)
+- Rate limits: 8-15s between mods, 3 attempts with backoff, Cloudflare challenge wait (up to 60s)
+- Monitoring: `python -u script > /tmp/descarga.log` (do NOT pipe to tail — it buffers everything)
+- Verification: `file -b` on each file (0 HTML)
+- **CAUTION: don't run two instances on the same log — the outputs overwrite each other**
 
-## ⚠️ Falta (pequeño)
-- ~~Mod 90824~~ → **RESUELTO**: la guía actual usa el mod **66347** ("lStewieAl's Tweaks and Engine Fixes" v9.95, fid 1000177460) — el 90824 era la versión vieja (hidden). El manifest se deduplicó a **53 mods únicos = Core completo actual**.
+## ⚠️ Missing (small)
+- ~~Mod 90824~~ → **RESOLVED**: the current guide uses mod **66347** ("lStewieAl's Tweaks and Engine Fixes" v9.95, fid 1000177460) — 90824 was the old version (hidden). The manifest was deduplicated to **53 unique mods = complete current Core**.
 
-## 🛡️ VERIFICACIÓN EXACTA + GESTOR (gestor_descargas.py)
-- **Bug corregido en actualizar.py**: elegía el PRIMER archivo MAIN en vez del más reciente → 13 mods con file_id equivocado (ej. JIP LN bajó el INI v56.24 en vez del PLUGIN v57.30; FNV 4GB bajó el 1.4 en vez del 1.5 "for Proton")
-- Fix: `max(mains, key=uploaded_timestamp)` → **13 file_ids corregidos y re-descargados**
-- **gestor_descargas.py**: orquestador con estados persistidos en `estado.json` (pendiente/descargando/ok/fallo), retries con backoff (--max-intentos), --verificar (integridad con `file`), --solo-fallidos, --forzar (re-descarga si cambió file_id), --seccion/--solo
-- Verificación final: **53/53 archivos OK, 0 HTML, versiones correctas vs manifest**
+## 🛡️ EXACT VERIFICATION + MANAGER (gestor_descargas.py)
+- **Bug fixed in actualizar.py**: it chose the FIRST MAIN file instead of the most recent → 13 mods with the wrong file_id (e.g. JIP LN downloaded the INI v56.24 instead of the PLUGIN v57.30; FNV 4GB downloaded 1.4 instead of 1.5 "for Proton")
+- Fix: `max(mains, key=uploaded_timestamp)` → **13 file_ids corrected and re-downloaded**
+- **gestor_descargas.py**: orchestrator with states persisted in `estado.json` (pending/downloading/ok/failed), retries with backoff (--max-intentos), --verificar (integrity with `file`), --solo-fallidos, --forzar (re-download if file_id changed), --seccion/--solo
+- Final verification: **53/53 files OK, 0 HTML, correct versions vs manifest**
 
-## 🚀 PORTABILIDAD + AUTORECUPERACIÓN (setup.sh + wrapper)
-- **setup.sh multi-distro**: detecta Debian/Ubuntu/Arch/Fedora/openSUSE → comandos de deps del sistema (auto-instala con sudo si está disponible, sino instrucciones) → crea venv + Camoufox → smoke test → si falla por libs, fallback micromamba+pixman user-space (sin sudo) → crea wrapper `venv/camoufox-python` que resuelve las libs
-- **Wrapper**: exporta el LD_LIBRARY_PATH correcto y limpia el contaminado — resuelve el caso Arch con update parcial (cairo/pixman desync)
-- **`vnv.sh credenciales`**: guarda user+pass (permisos 600) en `~/.config/vnv-linux/credenciales` — el gestor las usa SOLO para re-login automático
-- **Re-login automático probado**: sesión borrada → página muestra "Log in" (¡NO "Sign in"! — el bug de detección) → gestor detecta → relogin() lee credenciales → login_camoufox pasa Turnstile → cookies regeneradas → reintenta → ✔ descarga OK
-- **Comandos vnv.sh**: setup | login | config-cookies | credenciales | config | download/update | estado/verificar | install | run
+## 🚀 PORTABILITY + SELF-RECOVERY (setup.sh + wrapper)
+- **setup.sh multi-distro**: detects Debian/Ubuntu/Arch/Fedora/openSUSE → system dep commands (auto-installs with sudo if available, otherwise instructions) → creates venv + Camoufox → smoke test → if it fails due to libs, falls back to micromamba+pixman user-space (no sudo) → creates wrapper `venv/camoufox-python` that resolves the libs
+- **Wrapper**: exports the correct LD_LIBRARY_PATH and cleans the contaminated one — solves the Arch partial-update case (cairo/pixman desync)
+- **`vnv.sh credenciales`**: saves user+pass (600 permissions) in `~/.config/vnv-linux/credenciales` — the manager uses them ONLY for automatic re-login
+- **Automatic re-login tested**: session deleted → page shows "Log in" (NOT "Sign in"! — the detection bug) → manager detects → relogin() reads credentials → login_camoufox passes Turnstile → cookies regenerated → retries → ✔ download OK
+- **vnv.sh commands**: setup | login | config-cookies | credenciales | config | download/update | estado/verificar | install | run
 
-## 🖥️ UI WEB (ui.py — SIN terminal, llevado de la mano)
-- `./vnv.sh ui` → Flask en http://127.0.0.1:8397 + abre el navegador solo
-- **Wizard de 5 pasos**: Entorno → Cuenta Nexus → Descargas → Instalar → Jugar
-- Cada paso: botón grande + log en vivo vía **SSE** (Server-Sent Events) + barra de progreso
-- Estado en tiempo real: checkmarks por paso (setup ok, sesión ok, 53/53, MO2, juego), paso actual destacado
-- Formulario de credenciales en la UI (guarda con permisos 600), login 1-click
+## 🖥️ WEB UI (ui.py — NO terminal, hand-held)
+- `./vnv.sh ui` → Flask at http://127.0.0.1:8397 + opens the browser on its own
+- **5-step wizard**: Environment → Nexus account → Downloads → Install → Play
+- Each step: big button + live log via **SSE** (Server-Sent Events) + progress bar
+- Real-time state: checkmarks per step (setup ok, session ok, 53/53, MO2, game), current step highlighted
+- Credentials form in the UI (saves with 600 permissions), 1-click login
 - Backend: `/api/estado` (JSON), `/api/accion/<setup|login|credenciales|descargar|verificar|instalar|jugar>` (POST → job_id), `/api/log/<job_id>` (SSE stream)
-- Flask se instala en el setup.sh (deps del venv)
-- Probado en vivo: estado correcto, verificación con logs SSE fluyendo a la UI
+- Flask is installed by setup.sh (venv deps)
+- Tested live: correct state, verification with SSE logs flowing to the UI
 
-## 📦 IMPORTADOR AUTOMÁTICO A MO2 (scripts/importar_mo2.py)
-- Convierte downloads/ → formato MO2: `mods/<Nombre>/` descomprimido + `profiles/Default/modlist.txt`
-- Descomprime 7z (sistema), zip (stdlib seguro), rar (7z); limpia __MACOSX/.DS_Store; aplana carpeta raíz única; borra vacías
-- modlist.txt con el orden del manifest (setup → utilities → bugfix → finish), todos activos (+)
-- **Probado en vivo: 53/53 mods importados** (estructura correcta: nvse/plugins/, uio/settings.ini...)
-- Integrado en `vnv.sh install` (reemplazó el "importá manualmente") — el pipeline es 100% automático
+## 📦 AUTOMATIC MO2 IMPORTER (scripts/importar_mo2.py)
+- Converts downloads/ → MO2 format: `mods/<Nombre>/` decompressed + `profiles/Default/modlist.txt`
+- Decompresses 7z (system), zip (safe stdlib), rar (7z); cleans __MACOSX/.DS_Store; flattens single root folder; deletes empty ones
+- modlist.txt with the manifest order (setup → utilities → bugfix → finish), all active (+)
+- **Tested live: 53/53 mods imported** (correct structure: nvse/plugins/, uio/settings.ini...)
+- Integrated into `vnv.sh install` (replaced the "import manually") — the pipeline is 100% automatic
 
-## 🔗 CONEXIÓN STEAM ↔ MO2 (paso 1 — automatizado) + TEORÍA DEL LANZAMIENTO (paso 2)
-### Realidad del modding en Linux
-- **NO existe modloader nativo para FNV**: MO2/Vortex son apps .NET de Windows → corren con Wine/Proton.
-  NexusMods.App (la app oficial) ES nativa Linux pero **NO soporta FNV** (verificado en su código: solo Fallout4, Cyberpunk, etc.).
-- MO2 vía Wine/Proton es el estándar (lo usa la guía VNV y MO2-LINT).
+## 🔗 STEAM ↔ MO2 CONNECTION (step 1 — automated) + LAUNCH THEORY (step 2)
+### The reality of modding on Linux
+- **There is NO native modloader for FNV**: MO2/Vortex are .NET Windows apps → they run with Wine/Proton.
+  NexusMods.App (the official app) IS native Linux but **does NOT support FNV** (verified in its code: only Fallout4, Cyberpunk, etc.).
+- MO2 via Wine/Proton is the standard (used by the VNV guide and MO2-LINT).
 
-### Paso 1 — Conexión (automatizado en ./vnv.sh steam)
-- Steam: FNV (appid 22380) → Propiedades → Compatibilidad → forzar Proton (una vez, crea el prefix)
-- El prefix vive en `steamapps/compatdata/22380/pfx`
-- **protontricks** es la pieza clave: permite que MO2 corra DENTRO del prefix del juego
-- `./vnv.sh steam` diagnostica: Steam, FNV instalado, prefix, protontricks — y puede lanzar FNV con Proton para crear el prefix (`--si` para no-interactivo, usado por la UI)
+### Step 1 — Connection (automated in ./vnv.sh steam)
+- Steam: FNV (appid 22380) → Properties → Compatibility → force Proton (once, creates the prefix)
+- The prefix lives in `steamapps/compatdata/22380/pfx`
+- **protontricks is the key piece**: it lets MO2 run INSIDE the game's prefix
+- `./vnv.sh steam` diagnoses: Steam, FNV installed, prefix, protontricks — and can launch FNV with Proton to create the prefix (`--si` for non-interactive, used by the UI)
 
-### Paso 2 — Lanzamiento (teoría — requiere hardware real con el juego)
-1. `mo2-installer install --game fallout-new-vegas` → instala MO2 en el prefix del juego (MO2-LINT usa protontricks internamente)
-2. `mo2-installer run --game fallout-new-vegas` → abre MO2 con el mismo entorno Wine que el juego
-3. Dentro de MO2: el perfil "Default" ya tiene los 53 mods importados (importar_mo2.py) + modlist.txt
-4. **LOOT**: primera vez → botón Sort en MO2 (ordena los plugins y escribe loadorder.txt). LOOT corre dentro del prefix (MO2-LINT lo incluye)
-5. **Run**: el botón "Run" de MO2 lanza FalloutNV.exe con el VFS de MO2 (los mods montados virtualmente — el directorio del juego NO se toca)
-6. NVTF (New Vegas Tick Fix) se encarga del heap + 4GB + vsync desde `Data/NVSE/Plugins/nvtf.ini` (lo escribe tweaks_ini)
-7. FNV en Linux con Proton: fullscreen-only según MO2-LINT (no windowed) — la guía VNV recomienda fullscreen + NVTF
+### Step 2 — Launch (theory — requires real hardware with the game)
+1. `mo2-installer install --game fallout-new-vegas` → installs MO2 in the game's prefix (MO2-LINT uses protontricks internally)
+2. `mo2-installer run --game fallout-new-vegas` → opens MO2 with the same Wine environment as the game
+3. Inside MO2: the "Default" profile already has the 53 imported mods (importar_mo2.py) + modlist.txt
+4. **LOOT**: first time → Sort button in MO2 (sorts the plugins and writes loadorder.txt). LOOT runs inside the prefix (MO2-LINT includes it)
+5. **Run**: MO2's "Run" button launches FalloutNV.exe with MO2's VFS (the mods mounted virtually — the game directory is NOT touched)
+6. NVTF (New Vegas Tick Fix) handles the heap + 4GB + vsync from `Data/NVSE/Plugins/nvtf.ini` (written by tweaks_ini)
+7. FNV on Linux with Proton: fullscreen-only according to MO2-LINT (no windowed) — the VNV guide recommends fullscreen + NVTF
 
-### Troubleshooting del lanzamiento
-- **El juego crashea al inicio**: verificar nvtf.ini (EnableHeapReplacement) y que NVTF esté activo en el modlist
-- **Sin mods cargados**: el perfil activo de MO2 debe ser el que tiene el modlist (Default); verificar que el juego se lance DESDE MO2, no desde Steam directo
-- **Pantalla negra**: FNV + Proton necesita fullscreen; probar Proton GE si falla el estándar
-- **LOOT no ordena**: correr LOOT desde MO2 (el botón Sort usa el LOOT del prefix); si falta, MO2-LINT lo instala con `mo2-installer install --game fallout-new-vegas`
+### Launch troubleshooting
+- **The game crashes at start**: check nvtf.ini (EnableHeapReplacement) and that NVTF is active in the modlist
+- **No mods loaded**: the active MO2 profile must be the one with the modlist (Default); verify the game launches FROM MO2, not directly from Steam
+- **Black screen**: FNV + Proton needs fullscreen; try Proton GE if the standard one fails
+- **LOOT doesn't sort**: run LOOT from MO2 (the Sort button uses the prefix's LOOT); if missing, MO2-LINT installs it with `mo2-installer install --game fallout-new-vegas`
 
-## 💎 EL DESCUBRIMIENTO QUE LO RESOLVIÓ (no rendirse paga)
-El usuario insistió: "al estar en la página del mod tienes que darle a files y ahí aparecen los botones para manual download". Tenía razón. Buscando en el bundle JS (`web-components-*.js`):
-- El botón "Manual" del componente `<mod-download-modal>` (shadow DOM) genera:
+## 💎 THE DISCOVERY THAT SOLVED IT (not giving up pays off)
+The user insisted: "when you're on the mod page you have to click files and there the buttons for manual download appear". They were right. Searching the JS bundle (`web-components-*.js`):
+- The "Manual" button of the `<mod-download-modal>` component (shadow DOM) generates:
   - Premium: `/Download/?id={fid}&game_id={gid}&source=ModPage`
-  - Free: navega a `?tab=files&file_id={fid}` (donde el modal muestra el botón)
-- **El endpoint `/Download/?id={file_id}&game_id=130&source=ModPage` funciona para FREE**: muestra una página con "Your file will be served via CDN" + botón "Download" (link sin href, dispara JS)
-- Click en ese link → **descarga el archivo real** (nombre original, ej. `UIO - User Interface Organizer-57174-2-30-1629600625.7z`)
-- Selector del botón: buscar el texto "served via CDN" en el DOM → subir 6 niveles → `el.querySelector('a')` → click
-- **Moraleja: el botón estaba en el shadow DOM del web component — buscaba en el DOM normal. El bundle JS de la página es la fuente de verdad.**
+  - Free: navigates to `?tab=files&file_id={fid}` (where the modal shows the button)
+- **The endpoint `/Download/?id={file_id}&game_id=130&source=ModPage` works for FREE**: shows a page with "Your file will be served via CDN" + "Download" button (link without href, triggers JS)
+- Clicking that link → **downloads the real file** (original name, e.g. `UIO - User Interface Organizer-57174-2-30-1629600625.7z`)
+- Button selector: search for the text "served via CDN" in the DOM → go up 6 levels → `el.querySelector('a')` → click
+- **Moral: the button was in the web component's shadow DOM — I was looking in the regular DOM. The page's JS bundle is the source of truth.**
 
-## ⚠️ Lecciones del fracaso previo (para no repetir)
-- "Manual download" SÍ es automatizable — el endpoint `/Download/` es la vía
-- El flujo anterior (DownloadPopUp, /api/files/, slow-download-prompt) estaba MUERTO o incompleto
-- El consentimiento de cookies (Cookiebot) bloquea TODAS las páginas — hay que aceptarlo primero
-- El botón "Download" no tiene href (dispara JS) — `a:has-text('Download')` genérico encuentra el de la nav (invisible); hay que anclarse al texto "served via CDN"
+## ⚠️ Lessons from the previous failure (not to repeat)
+- "Manual download" IS automatable — the `/Download/` endpoint is the path
+- The previous flow (DownloadPopUp, /api/files/, slow-download-prompt) was DEAD or incomplete
+- Cookie consent (Cookiebot) blocks ALL pages — it must be accepted first
+- The "Download" button has no href (triggers JS) — a generic `a:has-text('Download')` finds the nav one (invisible); you must anchor to the text "served via CDN"
 
 ---
 
-# 🧩 SEGUNDA FASE — ROOT MODS, NATIVO Y REPOS POR MOD (5 ago 2026)
+# 🧩 SECOND PHASE — ROOT MODS, NATIVE AND PER-MOD REPOS (5 aug 2026)
 
-## 🏆 VALIDACIÓN COMPLETA DEL JUEGO (6 ago, noche) — MENÚ CON MODS
-- **El juego llega al MENÚ PRINCIPAL con TODO el pipeline**: BSAs descomprimidos (v2) + exe 4GB parcheado + xNVSE + los 53 mods del perfil Default + Fixed ESMs. Confirmado por el usuario (Stewie Tweaks apareció en Settings = mods cargados).
-- **El bug de la descompresión (CRÍTICO)**: el v1 ponía `flags=0` → el juego crasheaba (`page fault` a distintas direcciones — el lector BSA del juego necesita los bits del header). **El fix real (spec UESP)**: **mantener flags=0x100 y marcar cada archivo con el BIT 30 (0x40000000) en el size** ("si bit 30 seteado, la compresión por defecto se invierte") + data raw sin prefijo. Commiteado en `fnv-bsa-decompressor-linux` (`aec8e47`).
-- **Steam validation restaura el exe vanilla** → el parche 4GB hay que re-aplicarlo DESPUÉS de validar. Fix en `fnv-4gb-patch-linux` (`f1ce0c5`): detecta exe parcheado por LAA (0x20 en COFF header) + import `nvse_steam_loader` (NO por la existencia del backup).
-- **El `run` de MO2 sin `--profile` usa el último perfil activo de la UI** (no profiles.ini) → el perfil test-vanilla nunca se usó; los tests con "perfil vanilla" corrían el Default (con mods). Por eso el crash era siempre el BSA v1 o el entorno.
-- **Lección de diagnóstico**: los logs de NVSE (nvse*.log en el game root) se ACUMULAN entre corridas — truncarlos antes de cada test para leer solo la corrida actual.
-- **Launcher de FNV roto bajo Proton** (proceso corre, nunca muestra ventana) — el entry real es FalloutNV.exe vía MO2 (`run -e "New Vegas"`).
-- **Input automation definitiva**: XTest roto en esta sesión → **uinput/evdev** (`scripts/uikey.py`, pip evdev, /dev/uinput con grupo input) — inyecta teclado real a nivel kernel, funciona en GNOME (wtype no: mutter no soporta virtual-keyboard). Los diálogos de MO2 (Launch Steam / Waiting) se resuelven con Tab+Enter.
-- El "Launch Steam" de MO2 es un falso positivo (busca proceso Windows "Steam.exe"; el Steam nativo es Linux) — "Continue without starting Steam" es seguro (el DRM encuentra a Steam por IPC).
-- El juego NUNCA había corrido de verdad en esta máquina (el "run" de ayer era el launcher colgado).
+## 🏆 COMPLETE GAME VALIDATION (6 aug, night) — MENU WITH MODS
+- **The game reaches the MAIN MENU with the FULL pipeline**: decompressed BSAs (v2) + patched 4GB exe + xNVSE + the 53 mods of the Default profile + Fixed ESMs. Confirmed by the user (Stewie Tweaks appeared in Settings = mods loaded).
+- **The decompression bug (CRITICAL)**: v1 set `flags=0` → the game crashed (`page fault` at different addresses — the game's BSA reader needs the header bits). **The real fix (UESP spec)**: **keep flags=0x100 and mark each file with BIT 30 (0x40000000) in the size** ("if bit 30 is set, the default compression is inverted") + raw data without prefix. Committed in `fnv-bsa-decompressor-linux` (`aec8e47`).
+- **Steam validation restores the vanilla exe** → the 4GB patch must be re-applied AFTER validating. Fix in `fnv-4gb-patch-linux` (`f1ce0c5`): detects exe patched by LAA (0x20 in COFF header) + imports `nvse_steam_loader` (NOT by the existence of the backup).
+- **MO2's `run` without `--profile` uses the last active profile of the UI** (not profiles.ini) → the test-vanilla profile was never used; the "vanilla profile" tests ran the Default (with mods). That's why the crash was always the BSA v1 or the environment.
+- **Diagnostic lesson**: NVSE logs (nvse*.log in the game root) ACCUMULATE between runs — truncate them before each test to read only the current run.
+- **FNV launcher broken under Proton** (process runs, never shows a window) — the real entry is FalloutNV.exe via MO2 (`run -e "New Vegas"`).
+- **Definitive input automation**: XTest broken in this session → **uinput/evdev** (`scripts/uikey.py`, pip evdev, /dev/uinput with input group) — injects real keyboard at kernel level, works on GNOME (wtype doesn't: mutter doesn't support virtual-keyboard). MO2 dialogs (Launch Steam / Waiting) are solved with Tab+Enter.
+- MO2's "Launch Steam" is a false positive (looks for a Windows "Steam.exe" process; native Steam is Linux) — "Continue without starting Steam" is safe (the DRM finds Steam via IPC).
+- The game had NEVER really run on this machine (yesterday's "run" was the hung launcher).
 
-## 🧰 BSA DECOMPRESSOR — PORT NATIVO LISTO (5 ago, noche)
-- **Repo**: `repos/fnv-bsa-decompressor-linux/` (git `6a95a62`) — `decompress.py` (Python puro, stdlib, sin wine).
-- **Formato FNV BSA v104/v105 real (difiere del UESP estándar)**: header 36B ("BSA\0"+version+folderRecOff+fileRecOff+counts+lengths+flags) → folder records [hash(8)][count(4)][nameOff(4)] → **por carpeta: [nameLen(1)][nombre][file records count×16: hash(8)+size(4)+off(4)]** → file names (fileNameLen, NUL-terminated) → datos. `fileRecOff` del header = 7 en los BSAs vanilla (valor aparentemente ignorado). Los folder nameOff apuntan al primer FILE NAME de la carpeta en la sección de names.
-- Compresión: flag header 0x100 → cada archivo = `[u32 size sin comprimir][zlib]`; size del record = tamaño comprimido (incluye el prefijo).
-- `reescribir()`: header flags sin 0x100 + records con size=raw y offsets recomputados + names intactos + datos en crudo.
-- **Bug encontrado**: `pos += n*16` faltaba en el loop por carpeta (leía los nombres desde posiciones equivocadas).
-- **Validación roundtrip** (parse→decompress→rewrite→reparse→SHA1 por archivo contra original): Misc 142/142 ✓, Caravan 11/11 ✓, Classic 19/19 ✓, **DeadMoney - Main (358MB, 7207 archivos) 7207/7207 ✓**.
-- BSAs vanilla comprimidos: DeadMoney-Main, Fallout-Misc, GRA-Main, HH-Main, LR-Main, MercenaryPack, OWB-Main, CaravanPack, ClassicPack, TribalPack, Update.bsa (11). Los Sounds/Meshes/Textures ya no → se omiten.
+## 🧰 BSA DECOMPRESSOR — NATIVE PORT READY (5 aug, night)
+- **Repo**: `repos/fnv-bsa-decompressor-linux/` (git `6a95a62`) — `decompress.py` (pure Python, stdlib, no wine).
+- **Real FNV BSA v104/v105 format (differs from the UESP standard)**: header 36B ("BSA\0"+version+folderRecOff+fileRecOff+counts+lengths+flags) → folder records [hash(8)][count(4)][nameOff(4)] → **per folder: [nameLen(1)][name][file records count×16: hash(8)+size(4)+off(4)]** → file names (fileNameLen, NUL-terminated) → data. The header's `fileRecOff` = 7 in vanilla BSAs (apparently ignored value). The folder nameOff point to the first FILE NAME of the folder in the names section.
+- Compression: header flag 0x100 → each file = `[u32 uncompressed size][zlib]`; record size = compressed size (includes the prefix).
+- `reescribir()`: header flags without 0x100 + records with size=raw and recomputed offsets + intact names + raw data.
+- **Bug found**: `pos += n*16` was missing in the per-folder loop (names were read from wrong positions).
+- **Roundtrip validation** (parse→decompress→rewrite→reparse→SHA1 per file against original): Misc 142/142 ✓, Caravan 11/11 ✓, Classic 19/19 ✓, **DeadMoney - Main (358MB, 7207 files) 7207/7207 ✓**.
+- Compressed vanilla BSAs: DeadMoney-Main, Fallout-Misc, GRA-Main, HH-Main, LR-Main, MercenaryPack, OWB-Main, CaravanPack, ClassicPack, TribalPack, Update.bsa (11). The Sounds/Meshes/Textures are not → skipped.
 
-## 💎 UE ESM FIXES — PORT NATIVO RESUELTO (5 ago, noche)
-- **Repo**: `repos/ue-esm-fixes-linux/` (git `89cfef1`) — `port.py` + `build_xdelta3.sh` + `Installer.exe`/`.mpi` originales.
-- **El secreto del `.mpi`**: los 6 parches `.xd3` están envueltos en **LZ4 Frame** (magic `04 22 4D 18`, 13 bytes antes de cada magic VCDIFF `D6 C3 C4 00`). Por eso los "magics falsos" y los streams ilegibles: eran bloques LZ4 comprimidos. Los errores `ERROR_blockMode_invalid` del .exe son códigos de `lz4frame`.
-- **Manifiesto real** (`_package/index.json`, comprimido LZ4, 4048 bytes): `Assets` = [0,2,"",3,1,3,"<esm>","./<esm>"] mapea 1:1 `%FNVDATA%\<esm>` → destino. `Checks` SOLO valida `FalloutNV.exe` (8 SHA1: Steam/GOG/EGS parcheados o no; el nuestro = `0021023E37B1AF143305A61B7B29A1811CC7C5FB` ✓). Los esm NO se validan → van crudos a `xd3_decode_memory`. No hay cadena de parches ni esm pre-generados.
-- **Flujo nativo** (port.py): scan magics LZ4 → descomprimir (python-lz4) → descartar no-VCDIFF (index.json/html/css) → leer cpylen del primer window (== tamaño esm vanilla, puede ser ≤ tamaño del archivo — los −20/−8045 nunca fueron problema) → match contra `Data/*.esm` → `xdelta3 -d -s <vanilla> <patch> <out>`.
-- **Outputs verificados** (adler32 de los windows confirmado por xdelta3, headers TES4 ✓): FalloutNV 330,921,877 / DeadMoney 7,303,362 / HonestHearts 35,736,867 / OWB 32,923,146 / LR 40,265,999 / GRA 252,293.
-- **VALIDACIÓN DEFINITIVA (5 ago, noche)**: corrí el `Installer.exe` oficial vía Proton (con la GUI a ciegas: OCR rapidocr + xdotool) apuntando a `C:\users\steamuser\Desktop\Fixed ESMs` → **los 6 esm del instalador oficial son SHA1-IDENTICOS a los de port.py**. Validación bit-exacta cerrada.
-  - Cómo manejar la GUI de Wine a ciegas: `import -window <WID>` funciona (root no), OCR con `rapidocr-onnxruntime` (pip, venv), los campos custom del instalador NO aceptan typing (solo los diálogos nativos); el Browse pega el texto al folder actual del diálogo (Desktop) → escribir nombre relativo + Return funciona; `windowactivate` SÍ funciona en XWayland para dar foco.
-  - Instalador requiere `xdelta3.dll` al lado del exe (commit b7ebdbf lo agregó).
-- **Lecciones**: (1) el error anterior "address too large" era porque alimentaba a xdelta3 los bytes crudos sin descomprimir (p1c.xd3 ≠ full_4735.xd3); (2) `xdelta3 test` cuelga el shell — no usarlo; (3) protontricks-launch de este sistema usa `--appid` y necesita `vdf` (instalado en venv) + `winetricks` (descargado a ~/.local/bin); (4) `import`/`magick import` de ImageMagick falla con "missing an image filename" (usar ffmpeg x11grab o gnome-screenshot); (5) `xdelta3 printdelta` con streams VCD_SOURCE falla sin source — usar `-d -s` real; (6) flags VCDIFF reales: VCD_SOURCE=1, VCD_TARGET=2, VCD_ADLER32=4.
+## 💎 UE ESM FIXES — NATIVE PORT RESOLVED (5 aug, night)
+- **Repo**: `repos/ue-esm-fixes-linux/` (git `89cfef1`) — `port.py` + `build_xdelta3.sh` + original `Installer.exe`/`.mpi`.
+- **The secret of the `.mpi`**: the 6 `.xd3` patches are wrapped in **LZ4 Frame** (magic `04 22 4D 18`, 13 bytes before each VCDIFF magic `D6 C3 C4 00`). That's why there were "fake magics" and unreadable streams: they were LZ4-compressed blocks. The `ERROR_blockMode_invalid` errors of the .exe are `lz4frame` codes.
+- **Real manifest** (`_package/index.json`, LZ4-compressed, 4048 bytes): `Assets` = [0,2,"",3,1,3,"<esm>","./<esm>"] maps `%FNVDATA%\<esm>` → destination 1:1. `Checks` only validates `FalloutNV.exe` (8 SHA1: Steam/GOG/EGS patched or not; ours = `0021023E37B1AF143305A61B7B29A1811CC7C5FB` ✓). The esm are NOT validated → they go raw to `xd3_decode_memory`. No patch chain or pre-generated esm.
+- **Native flow** (port.py): scan LZ4 magics → decompress (python-lz4) → discard non-VCDIFF (index.json/html/css) → read cpylen from the first window (== vanilla esm size, can be ≤ file size — the −20/−8045 were never a problem) → match against `Data/*.esm` → `xdelta3 -d -s <vanilla> <patch> <out>`.
+- **Verified outputs** (adler32 of the windows confirmed by xdelta3, TES4 headers ✓): FalloutNV 330,921,877 / DeadMoney 7,303,362 / HonestHearts 35,736,867 / OWB 32,923,146 / LR 40,265,999 / GRA 252,293.
+- **DEFINITIVE VALIDATION (5 aug, night)**: I ran the official `Installer.exe` via Proton (GUI blind: OCR rapidocr + xdotool) pointed at `C:\users\steamuser\Desktop\Fixed ESMs` → **the 6 esm of the official installer are SHA1-IDENTICAL to those of port.py**. Bit-exact validation closed.
+  - How to handle Wine GUI blind: `import -window <WID>` works (root doesn't), OCR with `rapidocr-onnxruntime` (pip, venv), the installer's custom fields don't accept typing (only the native dialogs); the Browse pastes the text into the dialog's current folder (Desktop) → writing a relative name + Return works; `windowactivate` DOES work on XWayland to give focus.
+  - Installer requires `xdelta3.dll` next to the exe (commit b7ebdbf added it).
+- **Lessons**: (1) the previous "address too large" error was because I fed xdelta3 the raw bytes without decompressing (p1c.xd3 ≠ full_4735.xd3); (2) `xdelta3 test` hangs the shell — don't use it; (3) this system's protontricks-launch uses `--appid` and needs `vdf` (installed in venv) + `winetricks` (downloaded to ~/.local/bin); (4) ImageMagick's `import`/`magick import` fails with "missing an image filename" (use ffmpeg x11grab or gnome-screenshot); (5) `xdelta3 printdelta` with VCD_SOURCE streams fails without a source — use real `-d -s`; (6) real VCDIFF flags: VCD_SOURCE=1, VCD_TARGET=2, VCD_ADLER32=4.
 
-## ✅ VALIDACIÓN LOOT + MO2 (6 ago)
-- **Intentos de boot del juego (6 ago, tarde)**: todo lo automatizable está validado EXCEPTO el boot final, bloqueado por el entorno degradado:
-  - `steam -applaunch 22380` SÍ lanza el juego → pero arranca **FalloutNVLauncher.exe** (launcher roto bajo Proton: proceso corre, ventana nunca aparece) → sin Play clickable.
-  - Lanzar FalloutNV.exe con el wrapper real de Steam (`reaper SteamLaunch AppId=22380 -- ... _v2-entry-point --verb=waitforexitandrun -- proton waitforexitandrun FalloutNV.exe` + STEAM_COMPAT_DATA_PATH/CLIENT_INSTALL_PATH/LIBRARY_PATHS/RUNTIME_PATHS) → pasa el DRM, inicia DXVK (Fossilize) y **muere silenciosamente** (sin window, sin error en log).
-  - Directo por protontricks: DRM error sin Steam; con Steam corriendo → page fault (falta el entorno Steam).
-  - nvse_loader directo: "Couldn't Find FalloutNV.exe" si el CWD no es el juego (protontricks usa --directory); con CWD correcto → sigue igual que el exe.
-  - El juego SÍ corrió ayer (log Steam 20:52 del 5 ago: procesos 22380 agregados/removidos) — el usuario lo lanzó desde el entorno sano.
-- **Input automation**: XTest roto (puntero congelado) tras el cambio de resolución 1368x768→2560x1440; capturas de root en negro; ydotool no instalado. Los clicks/keys solo funcionan vía XSendEvent (`--window`) en diálogos nativos puntuales. → el click final (Play del launcher, o Run de MO2, o "Continue without starting Steam") lo hace el usuario físicamente.
-- **Launcher de FNV (FalloutNVLauncher.exe) roto bajo Proton**: proceso corre pero nunca muestra ventana.
-- **Lección**: `pkill -f` con el patrón en la propia línea de comando se mata solo (2 veces hoy). Usar `pkill -x` o matar por PID.
+## ✅ LOOT + MO2 VALIDATION (6 aug)
+- **Game boot attempts (6 aug, afternoon)**: everything automatable is validated EXCEPT the final boot, blocked by the degraded environment:
+  - `steam -applaunch 22380` DOES launch the game → but it starts **FalloutNVLauncher.exe** (launcher broken under Proton: process runs, window never appears) → no clickable Play.
+  - Launching FalloutNV.exe with Steam's real wrapper (`reaper SteamLaunch AppId=22380 -- ... _v2-entry-point --verb=waitforexitandrun -- proton waitforexitandrun FalloutNV.exe` + STEAM_COMPAT_DATA_PATH/CLIENT_INSTALL_PATH/LIBRARY_PATHS/RUNTIME_PATHS) → passes the DRM, starts DXVK (Fossilize) and **dies silently** (no window, no error in the log).
+  - Direct via protontricks: DRM error without Steam; with Steam running → page fault (Steam environment missing).
+  - nvse_loader direct: "Couldn't Find FalloutNV.exe" if the CWD isn't the game (protontricks uses --directory); with correct CWD → behaves the same as the exe.
+  - The game DID run yesterday (Steam log 20:52 on 5 aug: 22380 processes added/removed) — the user launched it from the healthy environment.
+- **Input automation**: XTest broken (frozen pointer) after the resolution change 1368x768→2560x1440; root screenshots in black; ydotool not installed. Clicks/keys only work via XSendEvent (`--window`) in specific native dialogs. → the final click (launcher Play, or MO2 Run, or "Continue without starting Steam") is done physically by the user.
+- **FNV launcher (FalloutNVLauncher.exe) broken under Proton**: process runs but never shows a window.
+- **Lesson**: `pkill -f` with a pattern on your own command line kills itself (twice today). Use `pkill -x` or kill by PID.
 
-## ✅ VALIDACIÓN LOOT + MO2 (6 ago)
-- **LOOT real**: `lootcli.exe` de la instancia MO2 (`loot/lootcli.exe`) corre en el prefix con `WINEPATH=<MO2>/dlls` (Qt6 está ahí) + `--game FalloutNV --gamePath <game> --pluginListPath <profile>/plugins.txt --out <reporte> --auto-sort`. Descarga el masterlist de GitHub y ordena. **El orden LOOT == el orden de la guía (20 plugins idénticos).**
-  - ⚠️ lootcli standalone NO ve el VFS de MO2 → descarta los esps de los mods (solo resuelve los esm del Data real) y **re-escribe plugins.txt** dejándolo en 10 → no usarlo para el perfil (solo como validación); el Sort real se hace con MO2 GUI.
-  - ⚠️ `--out` ES obligatorio (sin él: "argument missing out") y SOBREESCRIBE el archivo destino — apuntarlo a un reporte aparte.
-- **MO2 GUI**: carga el perfil Default con los 53 mods + los 21 plugins resueltos (verificado por OCR del panel derecho). El `*DLC: X` del modlist lo agrega MO2 (virtuales, sin folders).
-- **CLI de MO2 (corregido)**: en 2.5.2 el CLI es un **comando** `run` (boost::program_options, `src/commandline.cpp`): `ModOrganizer.exe --profile=Default run -e NVSE` lanza el ejecutable NVSE configurado (nvse_loader.exe, wd del juego). `-e` es `zero_tokens` (flag sin valor). **`-e=NVSE` FALLA** (opción no registrada → queda como positional → MO2 la toma como nombre de ejecutable: `"-e=NVSE" not set up as executable` + intenta spawnear `...\vnv\-e=NVSE`). Con `steamAppID=` vacío en customExecutables el launch es directo, SIN diálogo "Launch Steam".
-- **Bug real encontrado y arreglado**: los INIs del perfil quedaban **read-only** (`-r--r--r--`) → el juego no puede escribirlos → diálogo "INI file is read-only". Fix: `chmod u+w` (agregado a `lanzar()` en vnv.sh).
-- **Otro bug**: el re-import borraba el `+Fixed ESMs` del modlist (root_mods lo agrega después) → fix en importar_mo2.py: lo re-agrega si el folder existe.
-- **Input automation ROTO en este estado de sesión**: XTest no mueve el puntero ni teclea (display cambió 1368x768→2560x1440; puntero pegado). xdotool `--window` con XSendEvent: funciona solo en algunos diálogos nativos (Return en el file dialog sí; dialogs MO2 no). → el boot final del juego necesita click físico del usuario.
-- **Juego**: lanzado directo (protontricks) da DRM error si Steam no corre; con Steam corriendo, nvse_loader directo crashea ("page fault") porque falta el entorno Steam; el lanzamiento correcto = Steam (`steam://rungameid/22380`) o MO2 GUI → Run. El juego SÍ corrió ayer (log de Steam 22380).
-- `plugins.txt` de MO2 usa `*` = plugin ACTIVO (formato correcto). El loadorder generado == orden LOOT ✓.
+## ✅ LOOT + MO2 VALIDATION (6 aug)
+- **Real LOOT**: `lootcli.exe` of the MO2 instance (`loot/lootcli.exe`) runs in the prefix with `WINEPATH=<MO2>/dlls` (Qt6 is there) + `--game FalloutNV --gamePath <game> --pluginListPath <profile>/plugins.txt --out <report> --auto-sort`. Downloads the masterlist from GitHub and sorts. **The LOOT order == the guide's order (20 identical plugins).**
+  - ⚠️ Standalone lootcli can't see MO2's VFS → discards the mods' esps (only resolves the real Data esm) and **rewrites plugins.txt** leaving it at 10 → don't use it for the profile (only as validation); the real Sort is done with the MO2 GUI.
+  - ⚠️ `--out` is MANDATORY (without it: "argument missing out") and OVERWRITES the destination file — point it to a separate report.
+- **MO2 GUI**: loads the Default profile with the 53 mods + the 21 resolved plugins (verified by OCR of the right panel). The `*DLC: X` in the modlist is added by MO2 (virtual, without folders).
+- **MO2 CLI (corrected)**: in 2.5.2 the CLI is a `run` **command** (boost::program_options, `src/commandline.cpp`): `ModOrganizer.exe --profile=Default run -e NVSE` launches the configured NVSE executable (nvse_loader.exe, game wd). `-e` is `zero_tokens` (flag without value). **`-e=NVSE` FAILS** (unregistered option → stays as positional → MO2 treats it as an executable name: `"-e=NVSE" not set up as executable` + tries to spawn `...\vnv\-e=NVSE`). With `steamAppID=` empty in customExecutables the launch is direct, WITHOUT the "Launch Steam" dialog.
+- **Real bug found and fixed**: the profile INIs were **read-only** (`-r--r--r--`) → the game can't write them → "INI file is read-only" dialog. Fix: `chmod u+w` (added to `lanzar()` in vnv.sh).
+- **Another bug**: the re-import deleted the `+Fixed ESMs` from the modlist (root_mods adds it later) → fix in importar_mo2.py: re-adds it if the folder exists.
+- **Input automation BROKEN in this session state**: XTest doesn't move the pointer or type (display changed 1368x768→2560x1440; pointer stuck). xdotool `--window` with XSendEvent: works only on some native dialogs (Return in the file dialog yes; MO2 dialogs no). → the game's final boot needs a physical click from the user.
+- **Game**: launched direct (protontricks) gives a DRM error if Steam isn't running; with Steam running, nvse_loader direct crashes ("page fault") because the Steam environment is missing; the correct launch = Steam (`steam://rungameid/22380`) or MO2 GUI → Run. The game DID run yesterday (Steam log 22380).
+- MO2's `plugins.txt` uses `*` = ACTIVE plugin (correct format). The generated loadorder == LOOT order ✓.
 
-## ✅ VALIDACIÓN DE LANZAMIENTO VIA CLI (7 ago, madrugada) — MENÚ OK
-- **`run -e NVSE` funciona y es la forma CORRECTA** (confirmado del source MO2 2.5.2 `src/commandline.cpp`: el CLI es un comando `run` con `-e`/`--executable` como flag `zero_tokens` + NAME posicional; `setFromExecutable` usa binary/wd/arguments configurados).
-- **`-e=NVSE` FALLA**: opción no registrada → `collect_unrecognized` la deja como positional → MO2 la trata como nombre de ejecutable (`"-e=NVSE" not set up as executable`) e intenta spawnear el archivo relativo al working dir del proceso (`Z:\home\jhon\vivanewvegas\vnv\-e=NVSE`). 
-- **Validación pasó**: con `--profile=Default run -e NVSE` → `nvse_loader.log` ("steam exe", "hook thread complete", "launching") → `FalloutNV.exe` corriendo estable → **ventana "Fallout: New Vegas" en pantalla** + los **27 DLLs de NVSE del VFS cargados** (jip_nvse, nvse_stewie_tweaks, LOD Fixes, kNVSE, VATSLagFix, etc. en `nvse.log`) + CrashLogger.log vacío (sin crash) + master files cargando.
-- Con `steamAppID=` vacío en el customExecutable NVSE no aparece el diálogo "Launch Steam" → el launch por CLI es limpio y automatizable.
-- Nota: BRAIN.md línea 213 ya documentaba `run -e "New Vegas"`; ahora está confirmado también con el executable `NVSE` (nvse_loader.exe).
+## ✅ LAUNCH VALIDATION VIA CLI (7 aug, dawn) — MENU OK
+- **`run -e NVSE` works and is the CORRECT way** (confirmed from the MO2 2.5.2 source `src/commandline.cpp`: the CLI is a `run` command with `-e`/`--executable` as a `zero_tokens` flag + positional NAME; `setFromExecutable` uses the configured binary/wd/arguments).
+- **`-e=NVSE` FAILS**: unregistered option → `collect_unrecognized` leaves it as positional → MO2 treats it as an executable name (`"-e=NVSE" not set up as executable`) and tries to spawn the file relative to the process working dir (`Z:\home\jhon\vivanewvegas\vnv\-e=NVSE`).
+- **Validation passed**: with `--profile=Default run -e NVSE` → `nvse_loader.log` ("steam exe", "hook thread complete", "launching") → `FalloutNV.exe` running stable → **"Fallout: New Vegas" window on screen** + the **27 VFS NVSE DLLs loaded** (jip_nvse, nvse_stewie_tweaks, LOD Fixes, kNVSE, VATSLagFix, etc. in `nvse.log`) + CrashLogger.log empty (no crash) + master files loading.
+- With `steamAppID=` empty in the NVSE customExecutable the "Launch Steam" dialog doesn't appear → the CLI launch is clean and automatable.
+- Note: BRAIN.md line 213 already documented `run -e "New Vegas"`; now it's also confirmed with the `NVSE` executable (nvse_loader.exe).
 
-## ✅ ROOT MODS INTEGRADO (5 ago, noche)
-- `scripts/root_mods.py` reescrito: **orquestador** que delega en los 5 repos (`repos/<mod>-linux/`) vía subprocess — sin wine, sin proton. `--solo`, `--game-dir`, `--mo2-dir`; uefix → `mods/Fixed ESMs` y activa `+Fixed ESMs` en modlist.txt.
-- `vnv.sh install` ahora corre: instalar_mo2 → crear_instancia_mo2 → importar_mods → **root_mods** → tweaks_ini → correr_loot.
-- **Probado end-to-end contra el juego real**: 11 BSAs descomprimidos in-place + 6 esm Fixed ESMs generados en el MO2 real + modlist activado. Idempotente (2ª corrida: todo "skip" sin error).
-- **Bug encontrado en juego real**: BSAs vanilla contienen archivos de tamaño 0 → `struct.unpack` explotaba; fix `sz == 0 → b""` (commit en fnv-bsa-decompressor-linux).
-- **Idempotencia uefix**: si los esm ya existen → OK (no error).
+## ✅ ROOT MODS INTEGRATED (5 aug, night)
+- `scripts/root_mods.py` rewritten: **orchestrator** that delegates to the 5 repos (`repos/<mod>-linux/`) via subprocess — no wine, no proton. `--solo`, `--game-dir`, `--mo2-dir`; uefix → `mods/Fixed ESMs` and activates `+Fixed ESMs` in modlist.txt.
+- `vnv.sh install` now runs: instalar_mo2 → crear_instancia_mo2 → importar_mods → **root_mods** → tweaks_ini → correr_loot.
+- **Tested end-to-end against the real game**: 11 BSAs decompressed in-place + 6 Fixed ESMs generated in the real MO2 + activated modlist. Idempotent (2nd run: everything "skip" without error).
+- **Bug found in the real game**: vanilla BSAs contain 0-size files → `struct.unpack` exploded; fix `sz == 0 → b""` (commit in fnv-bsa-decompressor-linux).
+- **uefix idempotency**: if the esm already exist → OK (no error).
 
-## 🗂️ REPOS POR MOD (nombres: <mod>-linux)
-| Mod | Repo | Contenido |
+## 🗂️ PER-MOD REPOS (names: <mod>-linux)
+| Mod | Repo | Contents |
 |---|---|---|
 | UE ESM Fixes Remastered | `repos/ue-esm-fixes-linux` | port.py (LZ4+xdelta3), build_xdelta3.sh, Installer.exe, .mpi |
-| FNV BSA Decompressor | `repos/fnv-bsa-decompressor-linux` | decompress.py (BSA v104/v105 → sin zlib) |
-| xNVSE | `repos/xnvse-linux` | port.py (copia al Root) |
-| FNV 4GB Patcher | `repos/fnv-4gb-patch-linux` | port.py + FalloutNVPatcher (ELF nativo) |
-| Epic Games Patcher | `repos/epic-games-patcher-linux` | port.py (xdelta3 nativo, EGS-only) + patch.xdelta |
+| FNV BSA Decompressor | `repos/fnv-bsa-decompressor-linux` | decompress.py (BSA v104/v105 → without zlib) |
+| xNVSE | `repos/xnvse-linux` | port.py (copies to Root) |
+| FNV 4GB Patcher | `repos/fnv-4gb-patch-linux` | port.py + FalloutNVPatcher (native ELF) |
+| Epic Games Patcher | `repos/epic-games-patcher-linux` | port.py (native xdelta3, EGS-only) + patch.xdelta |
 
-## 🚧 PENDIENTE de la fase 2
-- [ ] Probar `install` completo en máquina real (MO2-LINT, LOOT, primer lanzamiento)
-- [ ] LOOT + primer lanzamiento validado (correr_loot/lanzar siguen instructivos)
+## 🚧 PENDING from phase 2
+- [ ] Test full `install` on a real machine (MO2-LINT, LOOT, first launch)
+- [ ] LOOT + first launch validated (correr_loot/lanzar are still instructive)
 
-## Qué son los "root mods" (paso de la guía VNV)
-- Mods que van **directo al directorio del juego** (no al VFS de MO2). En MO2 quedan desactivados a propósito (importar_mo2.py les pone `-` + `validated=true`, instalados al "Root").
-- Los 5: **xnvse=67883, 4gb=62552, epic=81281, uefix=92289, bsa=65854**.
-- Instancia MO2: `~/.local/share/modorganizer2` (symlink con `~/.config/mo2-lint/instances/newvegas`).
-- Juego: `~/.steam/steam/steamapps/common/Fallout New Vegas/` (STEAM_LIBRARIES[0]).
-- Prefix Proton: `~/.steam/steam/steamapps/compatdata/22380/pfx`; registry → `installed path = S:\common\Fallout New Vegas\` (los GUIs Wine auto-completan rutas).
+## What are the "root mods" (step of the VNV guide)
+- Mods that go **directly to the game directory** (not to MO2's VFS). In MO2 they stay disabled on purpose (importar_mo2.py sets `-` + `validated=true` for them, installed to the "Root").
+- The 5: **xnvse=67883, 4gb=62552, epic=81281, uefix=92289, bsa=65854**.
+- MO2 instance: `~/.local/share/modorganizer2` (symlink with `~/.config/mo2-lint/instances/newvegas`).
+- Game: `~/.steam/steam/steamapps/common/Fallout New Vegas/` (STEAM_LIBRARIES[0]).
+- Proton prefix: `~/.steam/steam/steamapps/compatdata/22380/pfx`; registry → `installed path = S:\common\Fallout New Vegas\` (Wine GUIs autocomplete paths).
 
-## 🔬 Hechos técnicos duros (verificados en juego real)
-- **`wine` plano NO corre GUIs en el prefix Proton** (errores setupapi, no abre ventana). Hay que usar `protontricks-launch 22380 <exe>`. Disponibles: protontricks, wine, xdotool, ImageMagick `import`; DISPLAY=:0, WAYLAND_DISPLAY=wayland-0.
-- **4GB Patcher (`FalloutNVPatcher`) es ELF nativo Linux** (build "for Proton"). Corre desde el root, imprime `Patching FalloutNV.exe [US]... FalloutNV.exe patched!` y crea `FalloutNV_backup.exe`. ⚠️ El ELF sale con código 0 AUNQUE falle ("FalloutNV.exe not found!") → detectar éxito por existencia del backup.
-- **Epic Games Patcher**: xdelta (patch.xdelta + xdelta3.exe), SOLO para versión EGS → se omite en Steam (el guía lo dice).
-- **BSA Decompressor**: GUI Wine (`FNV BSA Decompressor.exe`) — el usuario debe clickear "Decompress"; no automatizable.
-- **UE ESM Fixes `Installer.exe`**: GUI Wine; su payload `.mpi` es un **BSA v105** (220.334.500 bytes; 7z NO puede abrirlo) → sin extracción posible por GUI-tools → candidato natural a reescritura nativa.
-- **xNVSE**: el archivo trae carpeta interna `nvse_6_4_8/`; 9 archivos (dll/pdb/exe + `Data/NVSE/nvse_config.ini`). Probado: 9 copiados al Root OK.
-- **4GB probado en juego real**: `FalloutNV.exe patched!` + backup creado. **xnvse probado**: OK.
+## 🔬 Hard technical facts (verified in the real game)
+- **Plain `wine` does NOT run GUIs in the Proton prefix** (setupapi errors, no window opens). You must use `protontricks-launch 22380 <exe>`. Available: protontricks, wine, xdotool, ImageMagick `import`; DISPLAY=:0, WAYLAND_DISPLAY=wayland-0.
+- **4GB Patcher (`FalloutNVPatcher`) is a native Linux ELF** (build "for Proton"). Runs from the root, prints `Patching FalloutNV.exe [US]... FalloutNV.exe patched!` and creates `FalloutNV_backup.exe`. ⚠️ The ELF exits with code 0 EVEN IF it fails ("FalloutNV.exe not found!") → detect success by the existence of the backup.
+- **Epic Games Patcher**: xdelta (patch.xdelta + xdelta3.exe), ONLY for the EGS version → skipped on Steam (the guide says so).
+- **BSA Decompressor**: Wine GUI (`FNV BSA Decompressor.exe`) — the user must click "Decompress"; not automatable.
+- **UE ESM Fixes `Installer.exe`**: Wine GUI; its `.mpi` payload is a **BSA v105** (220,334,500 bytes; 7z CANNOT open it) → no extraction possible with GUI-tools → natural candidate for a native rewrite.
+- **xNVSE**: the file carries an internal folder `nvse_6_4_8/`; 9 files (dll/pdb/exe + `Data/NVSE/nvse_config.ini`). Tested: 9 copied to Root OK.
+- **4GB tested in the real game**: `FalloutNV.exe patched!` + backup created. **xnvse tested**: OK.
 
-## 📜 Formato BSA v105 (referencia para los extractores nativos)
+## 📜 BSA v105 format (reference for the native extractors)
 - Header: `BSA\0`(4) + version u32 + folderRecordOffset u32 + fileRecordOffset u32 + folderCount u32 + fileCount u32 + totalFolderNameLen u32 + totalFileNameLen u32 + fileFlags u32.
-- File records: hash u64 + size u32 + offset u32; bit 30 del size = comprimido (zlib).
-- ⚠️ Verificación de layout pendiente de probar contra el `.mpi` real (la sonda anterior se cortó).
+- File records: hash u64 + size u32 + offset u32; size bit 30 = compressed (zlib).
+- ⚠️ Layout verification pending to test against the real `.mpi` (the previous probe was cut short).
 
-## 🏗️ `scripts/root_mods.py` (escrito, NO commiteado aún)
-- `--solo {xnvse,4gb,epic,bsa,uefix}`, `--game-dir`, `--prefix`, `--mo2-dir`; busca el juego en STEAM_LIBRARIES; extrae desde `downloads/`.
-- Estado: xnvse ✅, 4gb ✅, epic ✅ (omisión correcta), **bsa/uefix ⚠️ ROTOS** (usan `_wine()` con wine plano → falla en prefix).
-- Plan: reescribir `_wine()` con `protontricks-launch 22380` (ubicar su binario).
+## 🏗️ `scripts/root_mods.py` (written, NOT committed yet)
+- `--solo {xnvse,4gb,epic,bsa,uefix}`, `--game-dir`, `--prefix`, `--mo2-dir`; finds the game in STEAM_LIBRARIES; extracts from `downloads/`.
+- State: xnvse ✅, 4gb ✅, epic ✅ (correct skip), **bsa/uefix ⚠️ BROKEN** (they use `_wine()` with plain wine → fails in the prefix).
+- Plan: rewrite `_wine()` with `protontricks-launch 22380` (locate its binary).
 
-## 🎯 DECISIÓN DEL USUARIO (5 ago 2026)
-1. **Hacer nativos en Linux los pasos Wine**:
-   - BSA Decompressor → reescribir los `.bsa` del Data sin compresión (zlib) en Python.
-   - UE ESM Fixes → extraer el `.mpi` (BSA v105) con Python → mod "Fixed ESMs".
-   - 4GB ya es nativo; Epic se omite en Steam.
-2. **Crear UN GIT REPO POR CADA root mod** (`xnvse`, `4gb`, `epic`, `bsa`, `uefix`) — cada uno con su herramienta nativa.
+## 🎯 USER DECISION (5 aug 2026)
+1. **Make the Wine steps native on Linux**:
+   - BSA Decompressor → rewrite the Data `.bsa` files without compression (zlib) in Python.
+   - UE ESM Fixes → extract the `.mpi` (BSA v105) with Python → "Fixed ESMs" mod.
+   - 4GB is already native; Epic is skipped on Steam.
+2. **Create ONE GIT REPO PER root mod** (`xnvse`, `4gb`, `epic`, `bsa`, `uefix`) — each with its native tool.
 
-## 🐛 Footgun del shell (lección)
-- `pkill -f 'protontricks'` (o patrón que aparezca en la propia línea de comando) **se mata a sí mismo** → el comando cuelga hasta timeout. Usar `pkill -x` (nombre exacto) o patrones que no coincidan con el shell.
+## 🐛 Shell footgun (lesson)
+- `pkill -f 'protontricks'` (or a pattern that appears in your own command line) **kills itself** → the command hangs until timeout. Use `pkill -x` (exact name) or patterns that don't match the shell.
 
-## 📦 Estado de artefactos en /tmp
-- `/tmp/opencode/rootmods/4gb/FalloutNVPatcher` (ELF extraído), `/tmp/opencode/rootmods/uefix/` (Installer.exe + .mpi 220MB + xdelta3.dll), `/tmp/opencode/bsadec/` (decompresor + logs wine/proton).
-- Intento `protontricks-launch 22380 ".../FNV BSA Decompressor.exe"`: arrancó, timeout del shell; GUI no verificada; sin procesos colgados (verificado con pgrep).
-- `/tmp/opencode/uefix-patches/`: streams LZ4 descomprimidos (full_*.xd3) + outputs (out_*.esm) — basura temporal, ya no hace falta (el port.py lo hace todo).
-- `/home/jhon/vivanewvegas/vnv/repos/ue-esm-fixes-linux/`: Installer.exe + .mpi (commit `89cfef1`), `xdelta3` compilado en `~/.local/bin/xdelta3` (v3.1.0).
+## 📦 Artifact state in /tmp
+- `/tmp/opencode/rootmods/4gb/FalloutNVPatcher` (extracted ELF), `/tmp/opencode/rootmods/uefix/` (Installer.exe + .mpi 220MB + xdelta3.dll), `/tmp/opencode/bsadec/` (decompressor + wine/proton logs).
+- Attempt `protontricks-launch 22380 ".../FNV BSA Decompressor.exe"`: started, shell timeout; GUI not verified; no hung processes (verified with pgrep).
+- `/tmp/opencode/uefix-patches/`: decompressed LZ4 streams (full_*.xd3) + outputs (out_*.esm) — temporary garbage, no longer needed (port.py does everything).
+- `/home/jhon/vivanewvegas/vnv/repos/ue-esm-fixes-linux/`: Installer.exe + .mpi (commit `89cfef1`), `xdelta3` compiled at `~/.local/bin/xdelta3` (v3.1.0).
 
-## 🗺️ Próximos pasos
-1. Probar formato BSA v105 contra el `.mpi` real (sonda Python corta).
-2. Escribir herramientas nativas (bsa decompressor + uefix extractor) en los repos por mod.
-3. `git init` en `repos/xnvse|4gb|epic|bsa|uefix` con scripts + tests.
-4. Reescribir `_wine()` → protontricks; testear `--solo bsa/uefix`.
-5. Integrar root_mods en `vnv.sh install` (después de importar_mods, antes de tweaks_ini) + commit.
+## 🗺️ Next steps
+1. Test the BSA v105 format against the real `.mpi` (short Python probe).
+2. Write the native tools (bsa decompressor + uefix extractor) in the per-mod repos.
+3. `git init` in `repos/xnvse|4gb|epic|bsa|uefix` with scripts + tests.
+4. Rewrite `_wine()` → protontricks; test `--solo bsa/uefix`.
+5. Integrate root_mods into `vnv.sh install` (after importar_mods, before tweaks_ini) + commit.

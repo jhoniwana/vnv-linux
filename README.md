@@ -1,31 +1,31 @@
-# ⚡ VNV Linux — Viva New Vegas para Linux/Steam
+# ⚡ VNV Linux — Viva New Vegas for Linux/Steam
 
 <p align="center">
   <img src="assets/gecko.png" alt="Gecko de Fallout New Vegas" width="160">
 </p>
 
-Instalador **100% automático** del Core de Viva New Vegas (53 mods) para Fallout New Vegas en Linux.
+**100% automatic** installer of the Viva New Vegas Core (53 mods) for Fallout New Vegas on Linux.
 
-> 🎮 **Un solo comando y te lleva de la mano:**
+> 🎮 **A single command and it holds your hand:**
 > ```bash
 > ./vnv.sh ui
 > ```
-> Se abre el navegador con un asistente paso a paso (botones grandes, progreso en vivo).
-> **No necesitás usar la terminal.**
+> A browser opens with a step-by-step wizard (big buttons, live progress).
+> **You don't need to use the terminal.**
 
 ---
 
-## ✅ Qué hace por vos
+## ✅ What it does for you
 
-| Paso | Qué pasa |
+| Step | What happens |
 |---|---|
-| 1 · Entorno | Instala Python + Camoufox + librerías (funciona en Debian, Ubuntu, Arch, Fedora, openSUSE) |
-| 2 · Cuenta Nexus | Login automático (gratis, una vez) — pasa el captcha solo |
-| 3 · Descargas | Baja los 53 mods con reintentos automáticos y verificación de integridad |
-| 4 · Instalación | Detecta el juego en Steam, crea la instancia MO2 (MO2-LINT), importa los 53 mods, aplica los INI tweaks, prepara LOOT |
-| 5 · Jugar | Abre Steam → "Launch Mod Organizer" → Run, y FNV arranca con todo cargado |
+| 1 · Environment | Installs Python + Camoufox + libraries (works on Debian, Ubuntu, Arch, Fedora, openSUSE) |
+| 2 · Nexus account | Automatic login (free, once) — passes the captcha on its own |
+| 3 · Downloads | Downloads the 53 mods with automatic retries and integrity verification |
+| 4 · Installation | Detects the game on Steam, creates the MO2 instance (MO2-LINT), imports the 53 mods, applies the INI tweaks, prepares LOOT |
+| 5 · Play | Opens Steam → "Launch Mod Organizer" → Run, and FNV starts with everything loaded |
 
-## 🚀 Empezar
+## 🚀 Getting started
 
 ```bash
 git clone https://github.com/jhoniwana/vnv-linux
@@ -33,53 +33,53 @@ cd vnv-linux
 ./vnv.sh ui
 ```
 
-Requisitos: Steam con **Fallout New Vegas** instalado y corrido una vez con Proton (crea el prefix) · Python 3.10+ · ~4 GB de espacio.
+Requirements: Steam with **Fallout New Vegas** installed and run once with Proton (creates the prefix) · Python 3.10+ · ~4 GB of space.
 
-> ⚠️ **Una vez, a mano:** FNV → Propiedades → Compatibilidad → forzar **Proton** → Jugar 1 vez (MO2-LINT lo recomienda con Proton 10, pero funciona con cualquiera reciente).
+> ⚠️ **Once, manually:** FNV → Properties → Compatibility → force **Proton** → Play 1 time (MO2-LINT recommends Proton 10, but any recent one works).
 
-## 🛠️ Comandos útiles (opcional — la UI ya hace todo)
+## 🛠️ Useful commands (optional — the UI already does everything)
 
 ```bash
-./vnv.sh setup          # prepara el entorno (lo hace la UI en el paso 1)
-./vnv.sh login          # login a Nexus (paso 2)
-./vnv.sh download       # descarga mods con estados y reintentos (paso 3)
-./vnv.sh estado         # verifica los 53 archivos
-./vnv.sh install        # MO2 + INIs + LOOT (paso 4)
-./vnv.sh run            # lanza el juego (paso 5)
+./vnv.sh setup          # prepares the environment (the UI does this in step 1)
+./vnv.sh login          # Nexus login (step 2)
+./vnv.sh download       # downloads mods with states and retries (step 3)
+./vnv.sh estado         # verifies the 53 files
+./vnv.sh install        # MO2 + INIs + LOOT (step 4)
+./vnv.sh run            # launches the game (step 5)
 ```
 
-## 🔑 Cuenta de Nexus
+## 🔑 Nexus account
 
-- **Login automático**: la UI (o `./vnv.sh login`) abre Camoufox (Firefox anti-detección) y pasa el Turnstile solo. Solo hay que hacerlo **una vez**.
-- **Credenciales**: guardalas con `./vnv.sh credenciales` (permisos 600) — se usan SOLO para re-loguear automáticamente si la sesión expira.
-- Las cookies (`nexusmods_session` + `cf_clearance`) viven en `~/.config/vnv-linux/` y permiten descargar gratis sin Premium.
+- **Automatic login**: the UI (or `./vnv.sh login`) opens Camoufox (anti-detection Firefox) and passes Turnstile on its own. You only have to do it **once**.
+- **Credentials**: save them with `./vnv.sh credenciales` (600 permissions) — used ONLY to re-login automatically if the session expires.
+- The cookies (`nexusmods_session` + `cf_clearance`) live in `~/.config/vnv-linux/` and allow free downloads without Premium.
 
-## 🐛 Si algo falla
+## 🐛 If something fails
 
-- El gestor de descargas **reintenta solo** (3 intentos, espera de captchas de Cloudflare, re-login automático).
-- `./vnv.sh estado` verifica archivo por archivo.
-- La bitácora técnica completa está en **`BRAIN.md`** (APIs, endpoints, bugs resueltos).
+- The download manager **retries on its own** (3 attempts, waits for Cloudflare captchas, automatic re-login).
+- `./vnv.sh estado` verifies file by file.
+- The complete technical log is in **`BRAIN.md`** (APIs, endpoints, resolved bugs).
 
-## 🔧 Herramientas porteadas a Linux (repos raíz)
+## 🔧 Tools ported to Linux (root repos)
 
-El instalador delega en 5 repos nativos (sin Wine para el trabajo pesado), todos
-**privados** por decisión del usuario (contienen binarios con copyright):
+The installer delegates to 5 native repos (no Wine for the heavy lifting), all
+**private** by the user's decision (they contain copyrighted binaries):
 
-| Herramienta | Repo | Qué hace |
+| Tool | Repo | What it does |
 |---|---|---|
-| **NVSE / xNVSE** | `fnv-4gb-patch-linux` | parche 4GB/LAA + auto-load de NVSE vía `nvse_steam_loader` |
-| **FNV BSA Decompressor** | `fnv-bsa-decompressor-linux` | descomprime las 11 BSAs con flag 0x100 (bit30 + raw, juego-compatible) |
-| **UE ESM Fixes** | `ue-esm-fixes-linux` | extrae y aplica los parches xdelta3 del `.mpi` (LZ4 frames) → Fixed ESMs |
-| **Epic Games Patcher** | `epic-games-patcher-linux` | parcheo EGS (no-op en Steam: detecta LAA ya aplicado) |
-| **xNVSE** | `xnvse-linux` | instalación de los DLLs de NVSE xNVSE en el juego |
+| **NVSE / xNVSE** | `fnv-4gb-patch-linux` | 4GB/LAA patch + NVSE auto-load via `nvse_steam_loader` |
+| **FNV BSA Decompressor** | `fnv-bsa-decompressor-linux` | decompresses the 11 BSAs with flag 0x100 (bit30 + raw, game-compatible) |
+| **UE ESM Fixes** | `ue-esm-fixes-linux` | extracts and applies the xdelta3 patches from the `.mpi` (LZ4 frames) → Fixed ESMs |
+| **Epic Games Patcher** | `epic-games-patcher-linux` | EGS patching (no-op on Steam: detects LAA already applied) |
+| **xNVSE** | `xnvse-linux` | installs the NVSE xNVSE DLLs into the game |
 
-Notas:
-- Cada uno acepta `VNV_STEAM_LIBRARY` (env) para bibliotecas Steam alternativas.
-- **`ue-esm-fixes-linux`**: los ESMs deben ser los del depot actual — si vienen de
-  otra máquina, correr `steam steam://validate/22380` antes (ver su README: parches
-  con fuente distinta → ESMs corruptos que crashean el juego en el init de diálogos).
-- El verify de Steam revierte 4GB/BSAs/ESMs → correr `./vnv.sh root` después.
+Notes:
+- Each one accepts `VNV_STEAM_LIBRARY` (env) for alternate Steam libraries.
+- **`ue-esm-fixes-linux`**: the ESMs must be from the current depot — if they come
+  from another machine, run `steam steam://validate/22380` first (see its README:
+  patches with a different source → corrupted ESMs that crash the game during dialogue init).
+- Steam verify reverts 4GB/BSAs/ESMs → run `./vnv.sh root` afterwards.
 
 ## 📜 Legal
 
-Los mods se descargan desde Nexus con TU sesión (gratis). Este proyecto no redistribuye mods — solo los baja y los instala. Requiere tener el juego en Steam.
+The mods are downloaded from Nexus with YOUR session (free). This project does not redistribute mods — it only downloads and installs them. Requires owning the game on Steam.

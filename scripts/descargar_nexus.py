@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Descargador de mods del Core de Viva New Vegas vía API de Nexus.
+"""Core Viva New Vegas mod downloader via the Nexus API.
 
-Uso:
-    export NEXUS_API_KEY="tu-key-personal"
+Usage:
+    export NEXUS_API_KEY="your-personal-key"
     ./scripts/descargar_nexus.py [--solo utilities] [--resume]
 
-La key se genera gratis en: https://www.nexusmods.com/users/myaccount?tab=developer
+The key is generated for free at: https://www.nexusmods.com/users/myaccount?tab=developer
 
-API usada:
+API used:
     GET /v1/games/newvegas/mods/{id}/files/latest_link.json
-    (header: apikey)  ->  devuelve file_id + download_link de un solo uso
+    (header: apikey)  ->  returns a single-use file_id + download_link
 """
 import argparse, json, os, pathlib, sys, time, urllib.request
 
@@ -29,7 +29,7 @@ def get_files(mod_id, api_key):
         return json.loads(r.read().decode())
 
 def download_link(mod_id, file_id, api_key):
-    """Link de descarga vía API — SOLO PREMIUM (403 para cuentas gratis)."""
+    """Download link via API — PREMIUM ONLY (403 for free accounts)."""
     req = urllib.request.Request(f"{API}/{mod_id}/files/{file_id}/download_link.json",
                                  headers={"apikey": api_key})
     with urllib.request.urlopen(req, timeout=60) as r:
@@ -53,23 +53,23 @@ def descargar(url, destino, espera=8):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--solo", help="sección del manifest (utilities, bugfix...)")
-    ap.add_argument("--resume", action="store_true", help="no re-descargar archivos existentes")
+    ap.add_argument("--solo", help="manifest section (utilities, bugfix...)")
+    ap.add_argument("--resume", action="store_true", help="do not re-download existing files")
     args = ap.parse_args()
 
-    # key: env var o ~/.config/vnv-linux/api_key (guardada con ./vnv.sh config)
+    # key: env var or ~/.config/vnv-linux/api_key (saved with ./vnv.sh config)
     api_key = os.environ.get("NEXUS_API_KEY")
     if not api_key:
         keyfile = pathlib.Path.home() / ".config" / "vnv-linux" / "api_key"
         if keyfile.exists():
             api_key = keyfile.read_text().strip()
     if not api_key:
-        sys.exit("❌ Falta la API key. Usá `./vnv.sh config` o export NEXUS_API_KEY=...")
+        sys.exit("❌ Missing the API key. Use `./vnv.sh config` or export NEXUS_API_KEY=...")
     if not MANIFEST.exists():
-        sys.exit("❌ No existe manifest.json en la raíz del proyecto.")
+        sys.exit("❌ manifest.json does not exist in the project root.")
 
     mods = json.load(open(MANIFEST))
-    todos = mods  # guardamos referencia a la lista COMPLETA (fix bug --solo)
+    todos = mods  # keep a reference to the FULL list (fix bug --solo)
     if args.solo:
         mods = [m for m in mods if m["seccion"] == args.solo]
     DEST.mkdir(exist_ok=True)
@@ -81,19 +81,19 @@ def main():
         destino = DEST / f"{mid}_{nombre}.zip"
         print(f"[{i}/{len(mods)}] mod {mid} ({m['seccion']})")
         if args.resume and destino.exists() and destino.stat().st_size > 1000:
-            print("    ya descargado, saltando")
+            print("    already downloaded, skipping")
             ok += 1
             continue
         try:
-            # 1) conseguir el file_id del MAIN más nuevo
+            # 1) get the file_id of the newest MAIN
             files = get_files(mid, api_key)
             mains = [f for f in files.get("files", []) if f.get("category_name") == "MAIN"]
             if not mains:
-                raise RuntimeError("sin archivos MAIN")
+                raise RuntimeError("no MAIN files")
             ultimo = max(mains, key=lambda f: (f.get("version") or "", f.get("file_id") or 0))
             fid = ultimo["file_id"]
             print(f"    → {ultimo.get('file_name', '?')} (file_id {fid})")
-            # 2) pedir link de descarga (SOLO PREMIUM)
+            # 2) request the download link (PREMIUM ONLY)
             link = download_link(mid, fid, api_key)
             descargar(link, destino)
             m["file_id"] = fid
@@ -109,13 +109,13 @@ def main():
         except Exception as e:
             print(f"    ✘ {type(e).__name__}: {str(e)[:100]}")
             fail.append((mid, str(e)[:80]))
-        time.sleep(5)  # respetar rate limits de cuenta gratis
+        time.sleep(5)  # respect free-account rate limits
 
     json.dump(todos, open(MANIFEST, "w"), indent=2)
-    print(f"\n✅ {ok}/{len(mods)} descargados. Fallos: {len(fail)}")
+    print(f"\n✅ {ok}/{len(mods)} downloaded. Failures: {len(fail)}")
     if fail:
-        print("   ⚠ Si son errores 403: los links de descarga por API requieren Nexus Premium.")
-        print("   Para cuentas gratis, el flujo 'slow download' con cookies está en desarrollo (roadmap).")
+        print("   ⚠ If they are 403 errors: API download links require Nexus Premium.")
+        print("   For free accounts, the 'slow download' flow with cookies is in development (roadmap).")
     for mid, e in fail[:8]:
         print(f"   mod {mid}: {e}")
     sys.exit(1 if fail else 0)

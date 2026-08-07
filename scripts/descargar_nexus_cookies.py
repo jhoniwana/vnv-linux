@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Descargador para CUENTAS GRATIS de Nexus: flujo 'Slow Download' con cookies.
+"""Downloader for FREE Nexus accounts: 'Slow Download' flow with cookies.
 
-La API de Nexus solo da links de descarga a Premium (403). Para cuentas gratis
-se usa el MISMO flujo del botón "Slow Download" del sitio, automatizado con la
-sesión del usuario (cookie `sid`). Es legal: tu cuenta, tus descargas.
+The Nexus API only gives download links to Premium (403). For free accounts
+the SAME flow as the "Slow Download" button of the site is used, automated with
+the user's session (the `sid` cookie). It is legal: your account, your downloads.
 
-Cómo sacar la cookie `sid`:
-  1. Logueate en https://www.nexusmods.com con tu navegador
+How to get the `sid` cookie:
+  1. Log in to https://www.nexusmods.com with your browser
   2. F12 → Application → Cookies → https://www.nexusmods.com
-  3. Copiá el valor de la cookie llamada `sid`
-  4. ./vnv.sh config-cookies   (o export NEXUS_SID=...)
+  3. Copy the value of the cookie called `sid`
+  4. ./vnv.sh config-cookies   (or export NEXUS_SID=...)
 
-Uso:
+Usage:
     export NEXUS_SID="..."
     ./scripts/descargar_nexus_cookies.py --resume
 """
@@ -21,7 +21,7 @@ SITE = "https://www.nexusmods.com"
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 MANIFEST = ROOT / "manifest.json"
 DEST = ROOT / "downloads"
-GAME_ID = 130  # newvegas en Nexus
+GAME_ID = 130  # newvegas on Nexus
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 
@@ -42,17 +42,17 @@ def open_url(url, sesion, cf, timeout=60):
     return urllib.request.urlopen(req, timeout=timeout)
 
 def download_popup(file_id, sesion, cf):
-    """Abre el widget DownloadPopUp y extrae el link 'Slow Download'."""
+    """Opens the DownloadPopUp widget and extracts the 'Slow Download' link."""
     url = f"{SITE}/Core/Libs/Common/Widgets/DownloadPopUp?id={file_id}&nmm=0&game_id={GAME_ID}"
     with open_url(url, sesion, cf) as r:
         html = r.read().decode("utf-8", "ignore")
-    # el link lento suele estar en un href o en un onclick
+    # the slow link is usually in an href or an onclick
     m = re.search(r'href="(https?://[^"]*(?:slow|download)[^"]*)"', html, re.I)
     if not m:
-        # patrón alternativo: botón con data-*
+        # alternate pattern: button with data-*
         m = re.search(r'data-(?:download|slow)[^=]*="([^"]+)"', html, re.I)
     if not m:
-        raise RuntimeError(f"no encontré link de descarga lenta (file {file_id}) — ¿sesión válida? {html[:200]}")
+        raise RuntimeError(f"could not find a slow download link (file {file_id}) — valid session? {html[:200]}")
     return m.group(1)
 
 def descargar(url, destino, sesion, cf):
@@ -72,12 +72,12 @@ def descargar(url, destino, sesion, cf):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--solo", help="sección del manifest")
+    ap.add_argument("--solo", help="manifest section")
     ap.add_argument("--resume", action="store_true")
-    ap.add_argument("--mod", type=int, help="solo un mod_id (pruebas)")
+    ap.add_argument("--mod", type=int, help="only one mod_id (testing)")
     args = ap.parse_args()
 
-    # cookies de sesión guardadas por ./scripts/login_camoufox.py
+    # session cookies saved by ./scripts/login_camoufox.py
     cfg = pathlib.Path.home() / ".config" / "vnv-linux"
     sesion = ""
     if (cfg / "nexus_session").exists():
@@ -86,7 +86,7 @@ def main():
     if (cfg / "cf_clearance").exists():
         cf = (cfg / "cf_clearance").read_text().strip()
     if not sesion:
-        sys.exit("❌ No hay sesión. Corré primero: NEXUS_USER=... NEXUS_PASS=... ./venv/bin/python scripts/login_camoufox.py")
+        sys.exit("❌ No session. Run first: NEXUS_USER=... NEXUS_PASS=... ./venv/bin/python scripts/login_camoufox.py")
 
     mods = json.load(open(MANIFEST))
     if args.mod:
@@ -98,16 +98,16 @@ def main():
     ok, fail = 0, []
     for i, m in enumerate(mods, 1):
         mid = m["mod_id"]
-        # file_id lo deja actualizar.py; si falta, avisar
+        # file_id is set by actualizar.py; if missing, warn
         if not m.get("file_id"):
-            print(f"[{i}/{len(mods)}] mod {mid}: sin file_id — corré primero scripts/actualizar.py")
-            fail.append((mid, "sin file_id"))
+            print(f"[{i}/{len(mods)}] mod {mid}: no file_id — run scripts/actualizar.py first")
+            fail.append((mid, "no file_id"))
             continue
         nombre = (m["nombre"] or f"mod_{mid}").replace("/", "_")
         destino = DEST / f"{mid}_{nombre}.zip"
         print(f"[{i}/{len(mods)}] mod {mid} ({m['seccion']}) file {m['file_id']}")
         if args.resume and destino.exists() and destino.stat().st_size > 1000:
-            print("    ya descargado, saltando")
+            print("    already downloaded, skipping")
             ok += 1
             continue
         try:
@@ -121,9 +121,9 @@ def main():
         except Exception as e:
             print(f"    ✘ {type(e).__name__}: {str(e)[:110]}")
             fail.append((mid, str(e)[:80]))
-        time.sleep(8)  # espera entre descargas lentas
+        time.sleep(8)  # wait between slow downloads
 
-    print(f"\n✅ {ok}/{len(mods)} descargados. Fallos: {len(fail)}")
+    print(f"\n✅ {ok}/{len(mods)} downloaded. Failures: {len(fail)}")
     for mid, e in fail[:10]:
         print(f"   mod {mid}: {e}")
     sys.exit(1 if fail else 0)

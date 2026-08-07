@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""VNV Linux — Interfaz web local (wizard guiado, sin terminal).
+"""VNV Linux — Local web interface (guided wizard, no terminal).
 
-Levanta un servidor en http://127.0.0.1:8397 y abre el navegador.
-Cada paso tiene un botón grande y muestra el progreso en vivo.
+Starts a server on http://127.0.0.1:8397 and opens the browser.
+Each step has a big button and shows live progress.
 
-Uso:
-    ./venv/bin/python ui.py            # o:  ./vnv.sh ui
+Usage:
+    ./venv/bin/python ui.py            # or:  ./vnv.sh ui
 """
 import json
 import os
@@ -29,7 +29,7 @@ PORT = 8397
 
 app = Flask(__name__)
 
-# jobs en ejecución: id -> {"q": queue, "proc": subprocess, "fin": bool}
+# running jobs: id -> {"q": queue, "proc": subprocess, "fin": bool}
 jobs = {}
 jobs_lock = threading.Lock()
 
@@ -73,7 +73,7 @@ def estado_actual():
 
 
 def ejecutar(accion, cmd, env_extra=None):
-    """Lanza un proceso y registra su log en jobs. Devuelve job_id."""
+    """Launches a process and records its log in jobs. Returns job_id."""
     jid = f"{accion}-{int(time.time())}"
     q = queue.Queue()
     env = dict(os.environ)
@@ -95,7 +95,7 @@ def ejecutar(accion, cmd, env_extra=None):
     return jid
 
 
-# ============================ rutas ============================
+# ============================ routes ============================
 @app.route("/")
 def index():
     return HTML
@@ -114,14 +114,14 @@ def api_accion(accion):
         user = (body.get("user") or "").strip()
         pwd = (body.get("pass") or "").strip()
         if not user or not pwd:
-            return jsonify({"error": "Completá email y contraseña"}), 400
+            return jsonify({"error": "Fill in email and password"}), 400
         os.makedirs(CONFIG_DIR, exist_ok=True)
         umask = os.umask(0o077)
         try:
             (CONFIG_DIR / "credenciales").write_text(f"{user}\n{pwd}\n")
         finally:
             os.umask(umask)
-        return jsonify({"ok": True, "msg": "Credenciales guardadas"})
+        return jsonify({"ok": True, "msg": "Credentials saved"})
 
     if accion == "setup":
         jid = ejecutar(accion, ["bash", str(BASE / "setup.sh")])
@@ -139,17 +139,17 @@ def api_accion(accion):
     elif accion == "jugar":
         jid = ejecutar(accion, ["bash", str(BASE / "vnv.sh"), "run"])
     else:
-        return jsonify({"error": f"Acción desconocida: {accion}"}), 400
+        return jsonify({"error": f"Unknown action: {accion}"}), 400
     return jsonify({"job_id": jid})
 
 
 @app.route("/api/log/<jid>")
 def api_log(jid):
-    """SSE: stream del log del job."""
+    """SSE: stream of the job log."""
     def gen():
         q = jobs.get(jid, {}).get("q")
         if q is None:
-            yield "data: {\"fin\": true, \"linea\": \"job no encontrado\"}\n\n"
+            yield "data: {\"fin\": true, \"linea\": \"job not found\"}\n\n"
             return
         while True:
             try:
@@ -167,11 +167,11 @@ def api_log(jid):
 
 # ============================ UI ============================
 HTML = """<!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VNV Linux — Instalador</title>
+<title>VNV Linux — Installer</title>
 <style>
   :root { --bg:#0f1115; --card:#181b22; --card2:#1e222c; --txt:#e8eaf0; --mut:#8b93a7;
           --acc:#6c8cff; --ok:#3ddc84; --err:#ff5f57; --warn:#ffcc00; --borde:#2a2f3a; }
@@ -213,50 +213,50 @@ HTML = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-  <h1>⚡ Viva New Vegas — Instalador Linux</h1>
-  <div class="sub">Todo automático: entorno → cuenta → descargas → instalación → jugar</div>
+  <h1>⚡ Viva New Vegas — Linux Installer</h1>
+  <div class="sub">All automatic: environment → account → downloads → install → play</div>
   <div class="pasos" id="pasos"></div>
   <div class="cards">
     <div class="card" id="card-setup">
-      <h2>1 · Preparar entorno</h2>
-      <p>Instala Python, Camoufox y las librerías necesarias para esta distro (Debian, Ubuntu, Arch, Fedora...).</p>
-      <button class="btn" onclick="correr('setup','card-setup')">Preparar entorno</button>
+      <h2>1 · Set up environment</h2>
+      <p>Installs Python, Camoufox and the libraries needed for this distro (Debian, Ubuntu, Arch, Fedora...).</p>
+      <button class="btn" onclick="correr('setup','card-setup')">Set up environment</button>
     </div>
     <div class="card" id="card-cuenta">
-      <h2>2 · Cuenta de Nexus</h2>
-      <p>Necesitamos tu sesión de Nexus para descargar los mods (gratis, una sola vez).</p>
+      <h2>2 · Nexus account</h2>
+      <p>We need your Nexus session to download the mods (free, only once).</p>
       <div class="form">
-        <input id="user" placeholder="Email de Nexus" autocomplete="off">
-        <input id="pass" type="password" placeholder="Contraseña de Nexus">
+        <input id="user" placeholder="Nexus email" autocomplete="off">
+        <input id="pass" type="password" placeholder="Nexus password">
       </div>
-      <button class="btn sec" onclick="guardarCred()">Guardar credenciales</button>
-      <button class="btn" style="margin-top:8px" onclick="correr('login','card-cuenta')">Iniciar sesión automático</button>
+      <button class="btn sec" onclick="guardarCred()">Save credentials</button>
+      <button class="btn" style="margin-top:8px" onclick="correr('login','card-cuenta')">Start automatic login</button>
     </div>
     <div class="card" id="card-descargas">
-      <h2>3 · Descargar mods</h2>
-      <p>Descarga los 53 mods del Core de Viva New Vegas (con reintentos automáticos si algo falla).</p>
+      <h2>3 · Download mods</h2>
+      <p>Downloads the 53 mods of the Viva New Vegas Core (with automatic retries if something fails).</p>
       <div class="prog" id="prog"><div id="progfill"></div></div>
-      <button class="btn" onclick="correr('descargar','card-descargas')">Descargar mods</button>
-      <button class="btn sec" style="margin-top:8px" onclick="correr('verificar','card-descargas')">Verificar archivos</button>
+      <button class="btn" onclick="correr('descargar','card-descargas')">Download mods</button>
+      <button class="btn sec" style="margin-top:8px" onclick="correr('verificar','card-descargas')">Verify files</button>
     </div>
     <div class="card" id="card-steam">
-      <h2>3½ · Conectar con Steam</h2>
-      <p>Detecta Steam y Fallout New Vegas, crea el prefix de Proton (appid 22380) y verifica protontricks para que MO2 funcione.</p>
-      <button class="btn sec" onclick="correr('steam','card-steam')">🔗 Diagnosticar / conectar Steam</button>
+      <h2>3½ · Connect with Steam</h2>
+      <p>Detects Steam and Fallout New Vegas, creates the Proton prefix (appid 22380) and verifies protontricks so MO2 works.</p>
+      <button class="btn sec" onclick="correr('steam','card-steam')">🔗 Diagnose / connect Steam</button>
     </div>
     <div class="card" id="card-instalar">
-      <h2>4 · Instalar con MO2</h2>
-      <p>Detecta el juego en Steam, instala Mod Organizer 2, aplica los INI tweaks y prepara LOOT.</p>
-      <button class="btn" onclick="correr('instalar','card-instalar')">Instalar todo</button>
+      <h2>4 · Install with MO2</h2>
+      <p>Detects the game in Steam, installs Mod Organizer 2, applies the INI tweaks and prepares LOOT.</p>
+      <button class="btn" onclick="correr('instalar','card-instalar')">Install everything</button>
     </div>
     <div class="card" id="card-jugar">
-      <h2>5 · Jugar</h2>
-      <p>Lanza Fallout New Vegas con todos los mods cargados.</p>
-      <button class="btn" onclick="correr('jugar','card-jugar')">🎮 Lanzar el juego</button>
+      <h2>5 · Play</h2>
+      <p>Launches Fallout New Vegas with all the mods loaded.</p>
+      <button class="btn" onclick="correr('jugar','card-jugar')">🎮 Launch the game</button>
     </div>
   </div>
   <div class="barra">
-    <div style="font-weight:600;margin-bottom:8px">📋 Progreso en vivo</div>
+    <div style="font-weight:600;margin-bottom:8px">📋 Live progress</div>
     <div class="log" id="log"></div>
   </div>
   <div class="mini" id="mini"></div>
@@ -268,11 +268,11 @@ let evSource = null;
 function actualizar() {
   fetch('/api/estado').then(r => r.json()).then(e => {
     const defs = {
-      setup:   { t:'Entorno',        ok: e.setup },
-      cuenta:  { t:'Cuenta Nexus',   ok: e.sesion },
-      descargas:{t:'Descargas',      ok: e.mods_ok >= e.mods_total && e.mods_total > 0 },
-      instalar:{ t:'MO2 + INIs',     ok: e.mo2 },
-      jugar:   { t:'Jugar',          ok: e.juego }
+      setup:   { t:'Environment',        ok: e.setup },
+      cuenta:  { t:'Nexus account',      ok: e.sesion },
+      descargas:{t:'Downloads',          ok: e.mods_ok >= e.mods_total && e.mods_total > 0 },
+      instalar:{ t:'MO2 + INIs',         ok: e.mo2 },
+      jugar:   { t:'Play',               ok: e.juego }
     };
     const html = PASOS.map((k,i) => {
       const d = defs[k];
@@ -282,8 +282,8 @@ function actualizar() {
     }).join('');
     document.getElementById('pasos').innerHTML = html;
     document.getElementById('mini').textContent =
-      `Mods: ${e.mods_ok}/${e.mods_total} descargados · Archivos en disco: ${e.archivos}` +
-      (e.credenciales ? ' · Credenciales guardadas' : '');
+      `Mods: ${e.mods_ok}/${e.mods_total} downloaded · Files on disk: ${e.archivos}` +
+      (e.credenciales ? ' · Credentials saved' : '');
   });
 }
 
@@ -341,5 +341,5 @@ actualizar();
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else PORT
     threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()
-    print(f"🌐 VNV UI en http://127.0.0.1:{port} — navegador abriéndose...")
+    print(f"🌐 VNV UI at http://127.0.0.1:{port} — browser opening...")
     app.run(host="127.0.0.1", port=port, threaded=True)

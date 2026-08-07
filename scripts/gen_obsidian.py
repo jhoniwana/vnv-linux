@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Genera la bóveda de Obsidian con toda la documentación del proyecto."""
+"""Generates the Obsidian vault with all the project documentation."""
 import pathlib
 
 BASE = pathlib.Path(__file__).resolve().parent.parent
@@ -9,40 +9,40 @@ DOCS = {
 "obsidian/Inicio.md": """---
 tags: [inicio, vnv]
 ---
-# ⚡ Viva New Vegas Linux — Bóveda de Documentación
+# ⚡ Viva New Vegas Linux — Documentation Vault
 
-Proyecto: instalador **100% automático** del Core de Viva New Vegas (53 mods) para Fallout New Vegas en Linux/Steam.
+Project: **100% automatic** installer of the Viva New Vegas Core (53 mods) for Fallout New Vegas on Linux/Steam.
 
-## 🧭 Navegación
+## 🧭 Navigation
 
-- [[Visión General]] — qué es y cómo funciona
-- [[Estado Actual]] — qué está hecho y qué falta
-- [[Objetivos y Roadmap]] — hacia dónde va
+- [[Visión General]] — what it is and how it works
+- [[Estado Actual]] — what is done and what is missing
+- [[Objetivos y Roadmap]] — where it is going
 
-## 📚 Guías (paso a paso)
+## 📚 Guides (step by step)
 
-1. [[Setup del Entorno]] — preparar la máquina (multi-distro)
-2. [[Login Nexus]] — cuenta y sesión automática
-3. [[Descarga de Mods]] — el gestor con estados y retries
-4. [[Importar a MO2]] — convertir descargas al formato MO2
-5. [[Conexión Steam]] — Proton + protontricks (paso 1)
-6. [[Lanzamiento del Juego]] — MO2 Run + LOOT (paso 2, teoría)
+1. [[Setup del Entorno]] — prepare the machine (multi-distro)
+2. [[Login Nexus]] — automatic account and session
+3. [[Descarga de Mods]] — the manager with states and retries
+4. [[Importar a MO2]] — convert downloads to the MO2 format
+5. [[Conexión Steam]] — Proton + protontricks (step 1)
+6. [[Lanzamiento del Juego]] — MO2 Run + LOOT (step 2, theory)
 
-## 🛠️ Referencia
+## 🛠️ Reference
 
-- [[Comandos vnv.sh]] — todos los comandos
-- [[Estructura del Proyecto]] — archivos y scripts
-- [[API de Nexus]] — endpoints y límites
-- [[Manifest y Mods]] — los 53 mods del Core
+- [[Comandos vnv.sh]] — all the commands
+- [[Estructura del Proyecto]] — files and scripts
+- [[API de Nexus]] — endpoints and limits
+- [[Manifest y Mods]] — the 53 Core mods
 
 ## 🐛 Troubleshooting
 
-- [[Problemas Comunes]] — fallos típicos y soluciones
-- [[Descargas - Troubleshooting]] — desafíos de Cloudflare y sesión
+- [[Problemas Comunes]] — typical failures and solutions
+- [[Descargas - Troubleshooting]] — Cloudflare and session challenges
 
-## 📅 Bitácora
+## 📅 Log
 
-- [[Cronología]] — línea de tiempo del desarrollo
+- [[Cronología]] — development timeline
 """,
 
 "obsidian/01-Proyecto/Visión General.md": """---
@@ -50,32 +50,32 @@ tags: [proyecto, vnv]
 ---
 # Visión General
 
-Instalador que lleva al usuario de **cero a jugar** con Viva New Vegas Core en Linux, sin tocar la terminal:
+Installer that takes the user from **zero to playing** with Viva New Vegas Core on Linux, without touching the terminal:
 
 ```
-./vnv.sh ui  →  navegador con wizard de 6 pasos
+./vnv.sh ui  →  browser with a 6-step wizard
 ```
 
 ## Pipeline
 
-1. **Setup del entorno** — Python + Camoufox + librerías (Debian/Ubuntu/Arch/Fedora/openSUSE)
-2. **Cuenta Nexus** — login automático (Camoufox pasa el Turnstile de Cloudflare)
-3. **Descargas** — 53 mods con gestor de estados, reintentos y auto-recuperación
-4. **Conectar Steam** — prefix de Proton (appid 22380) + protontricks
-5. **Instalar** — MO2-LINT, importar mods, INI tweaks, LOOT
-6. **Jugar** — lanzar FNV con todo cargado
+1. **Environment setup** — Python + Camoufox + libraries (Debian/Ubuntu/Arch/Fedora/openSUSE)
+2. **Nexus account** — automatic login (Camoufox passes the Cloudflare Turnstile)
+3. **Downloads** — 53 mods with a state manager, retries and self-recovery
+4. **Connect Steam** — Proton prefix (appid 22380) + protontricks
+5. **Install** — MO2-LINT, import mods, INI tweaks, LOOT
+6. **Play** — launch FNV with everything loaded
 
-## Principios
+## Principles
 
-- **Sin terminal** para el usuario final: todo desde la [[Comandos vnv.sh|UI web]]
-- **Auto-recuperación**: si algo falla (captcha, sesión, red), reintenta solo
-- **Multi-distro**: detecta el sistema y se adapta (con fallback de librerías sin sudo)
-- **Legal**: los mods se descargan con la sesión del propio usuario (gratis, sin redistribuir)
+- **No terminal** for the end user: everything from the [[Comandos vnv.sh|web UI]]
+- **Self-recovery**: if something fails (captcha, session, network), it retries on its own
+- **Multi-distro**: detects the system and adapts (with a no-sudo library fallback)
+- **Legal**: the mods are downloaded with the user's own session (free, no redistribution)
 
-## Conceptos clave
+## Key concepts
 
-- [[Conexión Steam]] — cómo se conecta el modloader con Steam
-- [[API de Nexus]] — la fuente de los mods
+- [[Conexión Steam]] — how the modloader connects with Steam
+- [[API de Nexus]] — the source of the mods
 """,
 
 "obsidian/01-Proyecto/Estado Actual.md": """---
@@ -83,32 +83,32 @@ tags: [proyecto, estado]
 ---
 # Estado Actual
 
-## ✅ Completado (probado en vivo)
+## ✅ Done (tested live)
 
-| Componente | Estado |
+| Component | Status |
 |---|---|
-| Manifest con 53 mods (file_id correctos) | ✅ |
-| Login Nexus automático (Camoufox pasa Turnstile) | ✅ |
-| Descarga FREE de los 53 mods (1.1 GB) | ✅ verificados, 0 HTML |
-| Verificación exacta vs API (MAIN más reciente) | ✅ 13 file_ids corregidos |
-| Gestor de descargas (estados + retries + re-login) | ✅ |
-| Setup multi-distro + wrapper de librerías | ✅ |
-| UI web (wizard 6 pasos, logs en vivo SSE) | ✅ |
-| Importador automático a MO2 (53/53) | ✅ |
-| Comando `steam` (diagnóstico Proton) | ✅ |
+| Manifest with 53 mods (correct file_ids) | ✅ |
+| Automatic Nexus login (Camoufox passes Turnstile) | ✅ |
+| FREE download of the 53 mods (1.1 GB) | ✅ verified, 0 HTML |
+| Exact verification vs API (newest MAIN) | ✅ 13 file_ids fixed |
+| Download manager (states + retries + re-login) | ✅ |
+| Multi-distro setup + library wrapper | ✅ |
+| Web UI (6-step wizard, live SSE logs) | ✅ |
+| Automatic MO2 importer (53/53) | ✅ |
+| `steam` command (Proton diagnostics) | ✅ |
 
-## 🟡 Pendiente (requiere hardware real con el juego)
+## 🟡 Pending (requires real hardware with the game)
 
-- Probar `install` completo en máquina con Steam + FNV (MO2-LINT, Wine, LOOT)
-- Primer lanzamiento del juego con los mods
-- Probar el setup en Debian real (solo probado en Arch)
+- Test a full `install` on a machine with Steam + FNV (MO2-LINT, Wine, LOOT)
+- First game launch with the mods
+- Test the setup on real Debian (only tested on Arch)
 
-## 📦 Entregables
+## 📦 Deliverables
 
 - Repo: `<BASE>/`
-- 53 mods en `downloads/` (1.1 GB)
-- Bitácora técnica: [[Cronología]] y `BRAIN.md`
-- Esta bóveda de Obsidian
+- 53 mods in `downloads/` (1.1 GB)
+- Technical log: [[Cronología]] and `BRAIN.md`
+- This Obsidian vault
 """,
 
 "obsidian/01-Proyecto/Objetivos y Roadmap.md": """---
@@ -116,30 +116,30 @@ tags: [proyecto, roadmap]
 ---
 # Objetivos y Roadmap
 
-## Objetivo final
+## Final goal
 
-**Un solo comando → jugar**: `./vnv.sh ui` y el wizard lleva de la mano hasta lanzar Fallout New Vegas con Viva New Vegas Core.
+**One single command → play**: `./vnv.sh ui` and the wizard guides by hand until launching Fallout New Vegas with Viva New Vegas Core.
 
 ## Roadmap
 
-- [x] Manifest 53 mods con file_ids exactos
-- [x] Login automático (Camoufox headless)
-- [x] Descarga FREE completa + verificación
-- [x] Gestor robusto (estados, retries, re-login)
-- [x] Setup multi-distro
-- [x] UI web sin terminal
-- [x] Importador MO2 automático
-- [x] Diagnóstico Steam/Proton (`vnv.sh steam`)
-- [ ] Probar `install` real (MO2-LINT en máquina con el juego)
-- [ ] LOOT + primer lanzamiento validado
-- [ ] Probar en Debian
-- [ ] Publicar repo en GitHub
+- [x] Manifest with 53 mods and exact file_ids
+- [x] Automatic login (Camoufox headless)
+- [x] Complete FREE download + verification
+- [x] Robust manager (states, retries, re-login)
+- [x] Multi-distro setup
+- [x] Web UI without terminal
+- [x] Automatic MO2 importer
+- [x] Steam/Proton diagnostics (`vnv.sh steam`)
+- [ ] Test a real `install` (MO2-LINT on a machine with the game)
+- [ ] LOOT + validated first launch
+- [ ] Test on Debian
+- [ ] Publish the repo on GitHub
 
-## Ideas futuras
+## Future ideas
 
-- Soporte de VNV Extended (Wabbajack vía Jackify)
-- Colecciones de otros juegos (Fallout 4, Skyrim) con el mismo framework
-- Instalador de la UI como app (Electron/Tauri) o .desktop
+- VNV Extended support (Wabbajack via Jackify)
+- Collections of other games (Fallout 4, Skyrim) with the same framework
+- Installer of the UI as an app (Electron/Tauri) or .desktop
 """,
 
 "obsidian/02-Guías/Setup del Entorno.md": """---
@@ -147,34 +147,34 @@ tags: [guia, setup, multi-distro]
 ---
 # Setup del Entorno
 
-> Prepara la máquina en cualquier distro Linux. Se ejecuta solo desde la UI (paso 1) o con `./vnv.sh setup`.
+> Prepares the machine on any Linux distro. It runs only from the UI (step 1) or with `./vnv.sh setup`.
 
-## Qué hace `setup.sh`
+## What `setup.sh` does
 
-1. **Detecta la distro** (`/etc/os-release`)
-2. **Dependencias del sistema**: muestra (o instala con sudo si está disponible) los paquetes para GTK3, NSS, cairo, pixman, protontricks...
+1. **Detects the distro** (`/etc/os-release`)
+2. **System dependencies**: shows (or installs with sudo if available) the packages for GTK3, NSS, cairo, pixman, protontricks...
    - Debian/Ubuntu: `apt install ... protontricks`
    - Arch: `pacman -S ... protontricks`
    - Fedora: `dnf install ... protontricks`
 3. **Venv + Camoufox + Flask**
-4. **Smoke test**: ¿Camoufox arranca con las libs del sistema?
-   - Si falla (libs rotas, típico de Arch con update parcial): **fallback automático** → micromamba user-space (sin sudo) con pixman → wrapper `venv/camoufox-python` que resuelve las librerías
-5. **Verifica la sesión de Nexus** (cookies)
+4. **Smoke test**: does Camoufox start with the system libs?
+   - If it fails (broken libs, typical of Arch with a partial update): **automatic fallback** → micromamba user-space (no sudo) with pixman → `venv/camoufox-python` wrapper that resolves the libraries
+5. **Verifies the Nexus session** (cookies)
 
-## El wrapper `venv/camoufox-python`
+## The `venv/camoufox-python` wrapper
 
-Es el intérprete de Python del proyecto: exporta el `LD_LIBRARY_PATH` correcto (limpia el contaminado) y ejecuta el python del venv. **Todos los scripts usan el wrapper.**
+It is the project's Python interpreter: it exports the correct `LD_LIBRARY_PATH` (cleans the contaminated one) and runs the venv python. **All scripts use the wrapper.**
 
-## Requisitos mínimos
+## Minimum requirements
 
 - Python 3.10+
-- ~4 GB de disco
-- Steam con Fallout New Vegas
+- ~4 GB of disk
+- Steam with Fallout New Vegas
 
-## Referencias
+## References
 
-- [[Login Nexus]] — siguiente paso
-- [[Problemas Comunes]] — si algo falla
+- [[Login Nexus]] — next step
+- [[Problemas Comunes]] — if something fails
 """,
 
 "obsidian/02-Guías/Login Nexus.md": """---
@@ -182,40 +182,40 @@ tags: [guia, login, nexus]
 ---
 # Login Nexus
 
-El login automático a NexusMods es **la pieza más difícil del proyecto** — y quedó resuelta.
+The automatic login to NexusMods is **the hardest piece of the project** — and it was solved.
 
-## El problema
+## The problem
 
-- Nexus usa **Cloudflare Turnstile** en el login → bloquea navegadores headless
-- Playwright (Chrome): ❌ bloqueado
-- SeleniumBase UC: ❌ bloqueado
-- **Camoufox (Firefox anti-detección) headless: ✅ PASA**
+- Nexus uses **Cloudflare Turnstile** on login → blocks headless browsers
+- Playwright (Chrome): ❌ blocked
+- SeleniumBase UC: ❌ blocked
+- **Camoufox (anti-detection Firefox) headless: ✅ PASSES**
 
-## La solución
+## The solution
 
-`login_camoufox.py` (desde la UI: paso 2, o `./vnv.sh login`):
+`login_camoufox.py` (from the UI: step 2, or `./vnv.sh login`):
 
-1. Abre Camoufox headless
-2. Navega a `users.nexusmods.com/register` → click "Sign in"
-3. Completa `#user_login` + `#password` (desde el formulario de la UI o `NEXUS_USER`/`NEXUS_PASS`)
-4. Submit → Turnstile pasa (Camoufox tiene fingerprint real de Firefox)
-5. Guarda las cookies: **`nexusmods_session`** + **`cf_clearance`** en `~/.config/vnv-linux/` (permisos 600)
+1. Opens Camoufox headless
+2. Navigates to `users.nexusmods.com/register` → clicks "Sign in"
+3. Fills in `#user_login` + `#password` (from the UI form or `NEXUS_USER`/`NEXUS_PASS`)
+4. Submit → Turnstile passes (Camoufox has a real Firefox fingerprint)
+5. Saves the cookies: **`nexusmods_session`** + **`cf_clearance`** in `~/.config/vnv-linux/` (permissions 600)
 
-## Datos clave
+## Key facts
 
-- La cookie de sesión se llama **`nexusmods_session`** (NO `sid` — la renombraron)
-- `cf_clearance` demuestra que pasaste el challenge de Cloudflare (clave para descargas)
-- El login se hace **una sola vez**; las cookies duran días/semanas
+- The session cookie is called **`nexusmods_session`** (NOT `sid` — it was renamed)
+- `cf_clearance` proves you passed the Cloudflare challenge (key for downloads)
+- The login is done **only once**; the cookies last for days/weeks
 
-## Auto-recuperación
+## Self-recovery
 
-Si la sesión expira a mitad de descarga, el [[Descarga de Mods|gestor]] detecta "Log in" en la página → re-loguea solo con las credenciales guardadas (`./vnv.sh credenciales`) → sigue.
+If the session expires mid-download, the [[Descarga de Mods|manager]] detects "Log in" on the page → re-logs in by itself with the saved credentials (`./vnv.sh credenciales`) → continues.
 
-## Alternativa manual
+## Manual alternative
 
-`./vnv.sh config-cookies`: pegar la cookie `nexusmods_session` desde el navegador (F12 → Application → Cookies).
+`./vnv.sh config-cookies`: paste the `nexusmods_session` cookie from the browser (F12 → Application → Cookies).
 
-## Referencias
+## References
 
 - [[Descarga de Mods]]
 - [[Descargas - Troubleshooting]]
@@ -226,49 +226,49 @@ tags: [guia, descargas, nexus]
 ---
 # Descarga de Mods
 
-El gestor `gestor_descargas.py` descarga los 53 mods del Core con **estados, reintentos y auto-recuperación**.
+The `gestor_descargas.py` manager downloads the 53 Core mods with **states, retries and self-recovery**.
 
-## El descubrimiento clave
+## The key discovery
 
-La API de Nexus da links de descarga **solo a Premium**. El botón "Manual download" de la web:
+The Nexus API gives download links **only to Premium**. The "Manual download" button of the site:
 
-- Está en el **shadow DOM** de un web component (`<mod-download-modal>`) — invisible para dumps DOM normales
-- El endpoint real (encontrado leyendo el bundle JS de Nexus): **`/Download/?id={file_id}&game_id=130&source=ModPage`**
+- Is in the **shadow DOM** of a web component (`<mod-download-modal>`) — invisible to normal DOM dumps
+- The real endpoint (found by reading the Nexus JS bundle): **`/Download/?id={file_id}&game_id=130&source=ModPage`**
 
-Esa página muestra "Your file will be served via CDN" + botón **Download** — y funciona para **cuentas gratis**.
+That page shows "Your file will be served via CDN" + a **Download** button — and it works for **free accounts**.
 
-## Dos formatos de página
+## Two page formats
 
-| Texto | Comportamiento |
+| Text | Behavior |
 |---|---|
-| "Your download should automatically begin within a few seconds" | **Auto-descarga** (no hay botón) |
-| "Your file will be served via CDN" | **Botón Download** (hay que clickearlo) |
+| "Your download should automatically begin within a few seconds" | **Auto-download** (no button) |
+| "Your file will be served via CDN" | **Download button** (it must be clicked) |
 
-El gestor maneja ambos: espera 12s la auto-descarga → si no, clickea el botón exacto (anclado al texto "served via CDN").
+The manager handles both: waits 12s for the auto-download → if not, clicks the exact button (anchored to the "served via CDN" text).
 
-## Robustez del gestor
+## Manager robustness
 
-- **Estados persistidos** en `estado.json`: `pendiente → descargando → ok/fallo`
-- **3 intentos** por mod con backoff (15s/30s)
-- **Espera de challenges** de Cloudflare (hasta 60s)
-- **Detección de sesión expirada** → re-login automático → reintenta
-- **Verificación de integridad** (`file` no-HTML, tamaño mínimo)
-- Rate limits humanos (8-15s entre mods)
+- **Persisted states** in `estado.json`: `pending → downloading → ok/fail`
+- **3 attempts** per mod with backoff (15s/30s)
+- **Challenge waits** for Cloudflare (up to 60s)
+- **Expired session detection** → automatic re-login → retry
+- **Integrity verification** (`file` not-HTML, minimum size)
+- Human rate limits (8-15s between mods)
 
-## Comandos
+## Commands
 
 ```bash
-./vnv.sh download          # descarga lo pendiente
-./vnv.sh estado            # verifica los 53 archivos
+./vnv.sh download          # downloads what is pending
+./vnv.sh estado            # verifies the 53 files
 ./venv/camoufox-python scripts/gestor_descargas.py --solo-fallidos
 ./venv/camoufox-python scripts/gestor_descargas.py --forzar --solo 57174
 ```
 
-## Referencias
+## References
 
-- [[Login Nexus]] — la sesión que hace posible la descarga
-- [[Descargas - Troubleshooting]] — problemas resueltos
-- [[Importar a MO2]] — siguiente paso
+- [[Login Nexus]] — the session that makes the download possible
+- [[Descargas - Troubleshooting]] — solved problems
+- [[Importar a MO2]] — next step
 """,
 
 "obsidian/02-Guías/Importar a MO2.md": """---
@@ -276,46 +276,46 @@ tags: [guia, mo2, importar]
 ---
 # Importar a MO2
 
-Convierte los archivos descargados al formato que Mod Organizer 2 entiende — **automáticamente**.
+Converts the downloaded files to the format Mod Organizer 2 understands — **automatically**.
 
-## Formato de MO2
+## MO2 format
 
 ```
 ~/.local/share/modorganizer2/
-├── mods/<NombreMod>/            ← mod descomprimido
+├── mods/<ModName>/          ← extracted mod
 ├── profiles/Default/
-│   ├── modlist.txt              ← orden de mods (activos con +)
-│   └── loadorder.txt            ← orden de plugins (lo genera LOOT)
-└── downloads/                   ← archivos originales (referencia)
+│   ├── modlist.txt          ← mod order (active with +)
+│   └── loadorder.txt        ← plugin order (generated by LOOT)
+└── downloads/               ← original files (reference)
 ```
 
-## Qué hace `importar_mo2.py`
+## What `importar_mo2.py` does
 
-1. Para cada archivo en `downloads/`: descomprime en `mods/<NombreMod>/`
-   - `.7z`/`.rar` → 7z del sistema
-   - `.zip` → stdlib de Python (seguro contra path traversal)
-2. **Limpia basura**: `__MACOSX`, `.DS_Store`, `Thumbs.db`
-3. **Aplana** la carpeta raíz única (muchos mods vienen envueltos)
-4. **Borra carpetas vacías**
-5. Escribe `modlist.txt` con el orden del manifest (setup → utilities → bugfix → finish), todos activos
+1. For each file in `downloads/`: extracts it into `mods/<ModName>/`
+   - `.7z`/`.rar` → system 7z
+   - `.zip` → Python stdlib (safe against path traversal)
+2. **Cleans junk**: `__MACOSX`, `.DS_Store`, `Thumbs.db`
+3. **Flattens** the single root folder (many mods come wrapped)
+4. **Deletes empty folders**
+5. Writes `modlist.txt` with the manifest order (setup → utilities → bugfix → finish), all active
 
-## Probado
+## Tested
 
-**53/53 mods importados** con estructura correcta:
+**53/53 mods imported** with the correct structure:
 - UIO → `nvse/plugins/ui_organizer.dll` + `uio/settings.ini`
-- FaceGen (.rar) y MAC-10 (zip grande) también OK
+- FaceGen (.rar) and MAC-10 (large zip) also OK
 
-## Comandos
+## Commands
 
 ```bash
-./venv/camoufox-python scripts/importar_mo2.py              # detecta MO2
-./venv/camoufox-python scripts/importar_mo2.py --dir ~/mo2  # directorio custom
+./venv/camoufox-python scripts/importar_mo2.py              # detects MO2
+./venv/camoufox-python scripts/importar_mo2.py --dir ~/mo2  # custom directory
 ```
 
-## Referencias
+## References
 
-- [[Descarga de Mods]] — de dónde vienen los archivos
-- [[Conexión Steam]] — dónde vive MO2 en el flujo
+- [[Descarga de Mods]] — where the files come from
+- [[Conexión Steam]] — where MO2 lives in the flow
 """,
 
 "obsidian/02-Guías/Conexión Steam.md": """---
@@ -323,45 +323,45 @@ tags: [guia, steam, proton, mo2]
 ---
 # Conexión Steam ↔ MO2
 
-Cómo se conecta el modloader con Steam (paso 1 del flujo de instalación).
+How the modloader connects with Steam (step 1 of the install flow).
 
-## Realidad: no hay modloader nativo
+## Reality: there is no native modloader
 
-- **MO2/Vortex**: apps .NET de Windows → corren con **Wine/Proton**
-- **NexusMods.App** (oficial): nativa Linux pero **NO soporta FNV** (solo FO4, Cyberpunk, etc.)
-- Conclusión: **MO2 vía Proton es el estándar**
+- **MO2/Vortex**: Windows .NET apps → run with **Wine/Proton**
+- **NexusMods.App** (official): native Linux but does **NOT support FNV** (only FO4, Cyberpunk, etc.)
+- Conclusion: **MO2 via Proton is the standard**
 
-## El mecanismo
+## The mechanism
 
 ```
 Steam (FNV, appid 22380)
-   │  forzar Proton (Steam Play)
+   │  force Proton (Steam Play)
    ▼
-Prefix de Proton del juego (steamapps/compatdata/22380/pfx)
-   │  protontricks: MO2 corre DENTRO de ese prefix
+Game Proton prefix (steamapps/compatdata/22380/pfx)
+   │  protontricks: MO2 runs INSIDE that prefix
    ▼
-MO2 → botón Run → FalloutNV.exe con los mods montados (VFS)
+MO2 → Run button → FalloutNV.exe with the mods mounted (VFS)
 ```
 
-- **Protontricks** = la pieza clave: ejecuta programas en el prefix de Proton de un juego
-- **MO2-LINT** automatiza: `mo2-installer install --game fallout-new-vegas`
-- **VFS de MO2**: los mods se montan virtualmente — el directorio del juego NO se modifica
+- **Protontricks** = the key piece: runs programs in the Proton prefix of a game
+- **MO2-LINT** automates: `mo2-installer install --game fallout-new-vegas`
+- **MO2 VFS**: the mods are mounted virtually — the game directory is NOT modified
 
-## Comando
+## Command
 
 ```bash
-./vnv.sh steam          # diagnostica Steam, FNV, prefix, protontricks
-./vnv.sh steam --si     # además lanza FNV con Proton para crear el prefix (no-interactivo)
+./vnv.sh steam          # diagnoses Steam, FNV, prefix, protontricks
+./vnv.sh steam --si     # also launches FNV with Proton to create the prefix (non-interactive)
 ```
 
-## Si el prefix no existe
+## If the prefix does not exist
 
-1. Steam → FNV → Propiedades → Compatibilidad → forzar Proton
-2. Jugar una vez (crea el prefix) — o correr `./vnv.sh steam --si`
+1. Steam → FNV → Properties → Compatibility → force Proton
+2. Play once (creates the prefix) — or run `./vnv.sh steam --si`
 
-## Referencias
+## References
 
-- [[Lanzamiento del Juego]] — qué hacer después
+- [[Lanzamiento del Juego]] — what to do next
 - [[Problemas Comunes]]
 """,
 
@@ -370,30 +370,30 @@ tags: [guia, lanzamiento, mo2, teoria]
 ---
 # Lanzamiento del Juego
 
-> ⚠️ **Teoría** — este paso requiere hardware real con Steam + FNV. No probado aún.
+> ⚠️ **Theory** — this step requires real hardware with Steam + FNV. Not tested yet.
 
-## Secuencia completa
+## Complete sequence
 
-1. `mo2-installer install --game fallout-new-vegas` → MO2 en el prefix del juego
-2. `mo2-installer run --game fallout-new-vegas` → abre MO2 con el entorno Wine del juego
-3. El perfil "Default" ya tiene los 53 mods importados ([[Importar a MO2]])
-4. **LOOT** (primera vez): botón Sort en MO2 → ordena plugins → escribe `loadorder.txt`
-5. **Run** en MO2 → lanza `FalloutNV.exe` con el VFS (mods montados virtualmente)
-6. NVTF aplica heap + 4GB + vsync desde `Data/NVSE/Plugins/nvtf.ini` (lo escribe `tweaks_ini`)
-7. FNV en Proton: **fullscreen-only** — la guía VNV recomienda fullscreen + NVTF
+1. `mo2-installer install --game fallout-new-vegas` → MO2 in the game prefix
+2. `mo2-installer run --game fallout-new-vegas` → opens MO2 with the game's Wine environment
+3. The "Default" profile already has the 53 mods imported ([[Importar a MO2]])
+4. **LOOT** (first time): Sort button in MO2 → orders plugins → writes `loadorder.txt`
+5. **Run** in MO2 → launches `FalloutNV.exe` with the VFS (mods mounted virtually)
+6. NVTF applies heap + 4GB + vsync from `Data/NVSE/Plugins/nvtf.ini` (written by `tweaks_ini`)
+7. FNV on Proton: **fullscreen-only** — the VNV guide recommends fullscreen + NVTF
 
 ## Troubleshooting
 
-| Problema | Solución |
+| Problem | Solution |
 |---|---|
-| Crash al inicio | Verificar `nvtf.ini` (EnableHeapReplacement) y NVTF activo en el modlist |
-| Sin mods cargados | Lanzar DESDE MO2 (no desde Steam directo); perfil Default activo |
-| Pantalla negra | Fullscreen; probar Proton GE |
-| LOOT no ordena | Correr LOOT desde MO2; reinstalar con `mo2-installer install` |
+| Crash on start | Check `nvtf.ini` (EnableHeapReplacement) and NVTF active in the modlist |
+| No mods loaded | Launch FROM MO2 (not directly from Steam); Default profile active |
+| Black screen | Fullscreen; try Proton GE |
+| LOOT does not sort | Run LOOT from MO2; reinstall with `mo2-installer install` |
 
-## Referencias
+## References
 
-- [[Conexión Steam]] — paso previo
+- [[Conexión Steam]] — previous step
 - [[Problemas Comunes]]
 """,
 
@@ -403,35 +403,35 @@ tags: [referencia, comandos]
 # Comandos vnv.sh
 
 ```bash
-./vnv.sh ui               # 🖥️ Interfaz web (wizard, sin terminal) — EL comando principal
-./vnv.sh setup            # prepara entorno (venv, Camoufox, libs, protontricks)
-./vnv.sh login            # login automático a Nexus (Camoufox)
-./vnv.sh config-cookies   # pegar cookie manualmente (fallback)
-./vnv.sh credenciales     # guardar email+pass para re-login automático (600)
-./vnv.sh config           # guardar API key de Nexus
-./vnv.sh download         # descargar mods (gestor con estados)
-./vnv.sh update           # alias de download
-./vnv.sh estado           # verificar archivos vs manifest
-./vnv.sh steam            # diagnosticar/conectar Steam + Proton (--si no-interactivo)
-./vnv.sh install          # MO2 + importar mods + INIs + LOOT
-./vnv.sh run              # lanzar el juego vía MO2
+./vnv.sh ui               # 🖥️ Web interface (wizard, no terminal) — THE main command
+./vnv.sh setup            # prepares the environment (venv, Camoufox, libs, protontricks)
+./vnv.sh login            # automatic login to Nexus (Camoufox)
+./vnv.sh config-cookies   # paste the cookie manually (fallback)
+./vnv.sh credenciales     # save email+pass for automatic re-login (600)
+./vnv.sh config           # save the Nexus API key
+./vnv.sh download         # download mods (manager with states)
+./vnv.sh update           # alias of download
+./vnv.sh estado           # verify files vs manifest
+./vnv.sh steam            # diagnose/connect Steam + Proton (--si non-interactive)
+./vnv.sh install          # MO2 + import mods + INIs + LOOT
+./vnv.sh run              # launch the game via MO2
 ```
 
-## Scripts internos (venv/camoufox-python)
+## Internal scripts (venv/camoufox-python)
 
 ```bash
-./venv/camoufox-python scripts/actualizar.py          # metadata de la API
-./venv/camoufox-python scripts/gestor_descargas.py    # descargas (--solo-fallidos, --verificar, --forzar, --solo, --seccion)
-./venv/camoufox-python scripts/importar_mo2.py        # importar a MO2 (--dir, --solo)
+./venv/camoufox-python scripts/actualizar.py          # API metadata
+./venv/camoufox-python scripts/gestor_descargas.py    # downloads (--solo-fallidos, --verificar, --forzar, --solo, --seccion)
+./venv/camoufox-python scripts/importar_mo2.py        # import to MO2 (--dir, --solo)
 ./venv/camoufox-python scripts/login_camoufox.py      # login (NEXUS_USER/NEXUS_PASS)
 ```
 
 ## Config
 
-- `~/.config/vnv-linux/` — api_key, nexus_session, cf_clearance, credenciales (todo 600)
-- `manifest.json` — los 53 mods
-- `estado.json` — estados de descarga
-- `downloads/` — los archivos
+- `~/.config/vnv-linux/` — api_key, nexus_session, cf_clearance, credenciales (all 600)
+- `manifest.json` — the 53 mods
+- `estado.json` — download states
+- `downloads/` — the files
 """,
 
 "obsidian/03-Referencia/Estructura del Proyecto.md": """---
@@ -441,33 +441,33 @@ tags: [referencia, estructura]
 
 ```
 <BASE>/
-├── vnv.sh                    # orquestador principal (todos los comandos)
-├── setup.sh                  # setup multi-distro + wrapper
-├── ui.py                     # interfaz web (Flask + SSE)
-├── manifest.json             # los 53 mods del Core
-├── estado.json               # estados de descarga (auto-generado)
-├── BRAIN.md                  # bitácora técnica
-├── README.md                 # guía para usuarios
-├── MODS_LISTA.md             # links de descarga manual (histórico)
-├── downloads/                # los 53 mods (1.1 GB)
-├── mods/actualizados.md      # historial de cambios del manifest
+├── vnv.sh                    # main orchestrator (all commands)
+├── setup.sh                  # multi-distro setup + wrapper
+├── ui.py                     # web interface (Flask + SSE)
+├── manifest.json             # the 53 Core mods
+├── estado.json               # download states (auto-generated)
+├── BRAIN.md                  # technical log
+├── README.md                 # guide for users
+├── MODS_LISTA.md             # manual download links (historical)
+├── downloads/                # the 53 mods (1.1 GB)
+├── mods/actualizados.md      # manifest change history
 ├── scripts/
-│   ├── login_camoufox.py     # login que pasa Turnstile
-│   ├── login_nexus.py        # login manual con ventana (alternativa)
-│   ├── login_selenium.py     # alternativa Selenium (no pasa Turnstile)
-│   ├── actualizar.py         # metadata de la API (file_ids exactos)
-│   ├── gestor_descargas.py   # descargas con estados/retries/re-login
-│   ├── importar_mo2.py       # importador automático a MO2
-│   ├── descargar_browser.py  # descargador masivo (v1, reemplazado por gestor)
-│   ├── descargar_nexus.py    # descargas premium vía API
-│   └── descargar_nexus_cookies.py  # flujo cookies (v1)
+│   ├── login_camoufox.py     # login that passes Turnstile
+│   ├── login_nexus.py        # manual login with a window (alternative)
+│   ├── login_selenium.py     # Selenium alternative (does not pass Turnstile)
+│   ├── actualizar.py         # API metadata (exact file_ids)
+│   ├── gestor_descargas.py   # downloads with states/retries/re-login
+│   ├── importar_mo2.py       # automatic MO2 importer
+│   ├── descargar_browser.py  # massive downloader (v1, replaced by the manager)
+│   ├── descargar_nexus.py    # premium downloads via API
+│   └── descargar_nexus_cookies.py  # cookies flow (v1)
 ├── venv/
-│   ├── camoufox-python       # wrapper (python + libs correctas)
-│   └── libfix/               # pixman conda (fallback, si hace falta)
-└── obsidian/                 # esta bóveda
+│   ├── camoufox-python       # wrapper (python + correct libs)
+│   └── libfix/               # pixman conda (fallback, if needed)
+└── obsidian/                 # this vault
 ```
 
-## Referencias
+## References
 
 - [[Comandos vnv.sh]]
 - [[API de Nexus]]
@@ -480,35 +480,35 @@ tags: [referencia, nexus, api]
 
 ## Endpoints (v1)
 
-| Endpoint | Uso | Gratis |
+| Endpoint | Use | Free |
 |---|---|---|
-| `GET /v1/users/validate.json` | validar API key | ✅ |
-| `GET /v1/games/newvegas/mods/{id}.json` | metadata del mod | ✅ |
-| `GET /v1/games/newvegas/mods/{id}/files.json` | lista de archivos | ✅ |
-| `GET .../files/{fid}/download_link.json` | link de descarga | ❌ **solo Premium** |
+| `GET /v1/users/validate.json` | validate API key | ✅ |
+| `GET /v1/games/newvegas/mods/{id}.json` | mod metadata | ✅ |
+| `GET /v1/games/newvegas/mods/{id}/files.json` | file list | ✅ |
+| `GET .../files/{fid}/download_link.json` | download link | ❌ **Premium only** |
 
-## Descarga FREE (lo descubierto)
+## FREE download (the discovery)
 
-- **NO usar `download_link`** (403 sin Premium)
-- Endpoint web: **`https://www.nexusmods.com/Download/?id={file_id}&game_id=130&source=ModPage`**
-  - Funciona con la **cookie `nexusmods_session`** (gratis)
-  - Muestra página con "served via CDN" (botón) o "should automatically begin" (auto)
-- Widget legacy `DownloadPopUp`: muerto (redirige a la página del mod)
+- **Do NOT use `download_link`** (403 without Premium)
+- Web endpoint: **`https://www.nexusmods.com/Download/?id={file_id}&game_id=130&source=ModPage`**
+  - Works with the **`nexusmods_session` cookie** (free)
+  - Shows a page with "served via CDN" (button) or "should automatically begin" (auto)
+- Legacy `DownloadPopUp` widget: dead (redirects to the mod page)
 
 ## Login
 
-- Formulario: `users.nexusmods.com` → "Sign in" → `#user_login` + `#password` + Turnstile
-- **Camoufox headless pasa el Turnstile** (Playwright/Selenium no)
-- Cookies: `nexusmods_session` (sesión) + `cf_clearance` (Cloudflare)
+- Form: `users.nexusmods.com` → "Sign in" → `#user_login` + `#password` + Turnstile
+- **Camoufox headless passes the Turnstile** (Playwright/Selenium do not)
+- Cookies: `nexusmods_session` (session) + `cf_clearance` (Cloudflare)
 
-## Reglas
+## Rules
 
-- API key personal, gratis en nexusmods.com/settings/api-keys
-- Rate limits: ~5s entre llamadas (metadata)
-- Descargas: ritmo humano 8-15s entre mods
-- La cookie `nexusmods_session` expira → el gestor re-loguea solo
+- Personal API key, free at nexusmods.com/settings/api-keys
+- Rate limits: ~5s between calls (metadata)
+- Downloads: human pace 8-15s between mods
+- The `nexusmods_session` cookie expires → the manager re-logs in by itself
 
-## Referencias
+## References
 
 - [[Login Nexus]]
 - [[Descarga de Mods]]
@@ -519,9 +519,9 @@ tags: [referencia, mods]
 ---
 # Manifest y Mods
 
-El Core de Viva New Vegas = **53 mods** de Nexus (todos descargados y verificados).
+The Viva New Vegas Core = **53 mods** from Nexus (all downloaded and verified).
 
-## Estructura del manifest
+## Manifest structure
 
 ```json
 {
@@ -533,21 +533,21 @@ El Core de Viva New Vegas = **53 mods** de Nexus (todos descargados y verificado
 }
 ```
 
-## Secciones
+## Sections
 
-- **setup** — herramientas (steam-library-setup-tool, GitHub)
+- **setup** — tools (steam-library-setup-tool, GitHub)
 - **utilities** — NVSE, JIP LN, NVTF, xNVSE, UIO...
 - **bugfix** — YUP, Stewie Tweaks (66347), mesh fixes...
 - **finish** — Stewie Tweaks INIs (GitHub: ModdingLinked/Stewie-Tweaks-INIs)
 
-## Datos importantes
+## Important data
 
-- El file_id correcto = **MAIN más reciente** por `uploaded_timestamp` (bug corregido: antes elegía el primero → 13 mods con versión vieja)
-- **FNV 4GB Patcher**: usar el archivo **"FNV4GB for Proton"** (versión Linux/Wine)
-- **JIP LN**: el plugin (v57.30) ≠ el INI (v56.24) — la guía necesita el PLUGIN
-- Stewie Tweaks: mod 66347 (el 90824 está hidden por el autor)
+- The correct file_id = **newest MAIN** by `uploaded_timestamp` (bug fixed: it used to pick the first one → 13 mods with an old version)
+- **FNV 4GB Patcher**: use the **"FNV4GB for Proton"** file (Linux/Wine version)
+- **JIP LN**: the plugin (v57.30) ≠ the INI (v56.24) — the guide needs the PLUGIN
+- Stewie Tweaks: mod 66347 (90824 is hidden by the author)
 
-## Referencias
+## References
 
 - [[Descarga de Mods]]
 - [[Estado Actual]]
@@ -560,38 +560,38 @@ tags: [troubleshooting]
 
 ## Setup / Camoufox
 
-| Problema | Solución |
+| Problem | Solution |
 |---|---|
-| Camoufox no arranca (`libcairo... undefined symbol`) | Correr `./vnv.sh setup` → el fallback micromamba+pixman lo resuelve (libs del sistema rotas) |
-| pip install falla | Verificar `python3-venv` instalado y red |
-| Sin sudo | El setup muestra los comandos exactos para tu distro |
+| Camoufox does not start (`libcairo... undefined symbol`) | Run `./vnv.sh setup` → the micromamba+pixman fallback solves it (broken system libs) |
+| pip install fails | Check that `python3-venv` is installed and the network |
+| No sudo | The setup shows the exact commands for your distro |
 
-## Login / Sesión
+## Login / Session
 
-| Problema | Solución |
+| Problem | Solution |
 |---|---|
-| Turnstile bloquea | Usar Camoufox (no Playwright/Selenium); el login automático lo pasa |
-| Sesión expirada a mitad de descarga | El gestor detecta "Log in" → re-loguea solo (necesita `./vnv.sh credenciales`) |
-| Cookie vieja | Correr `./vnv.sh login` de nuevo |
+| Turnstile blocks | Use Camoufox (not Playwright/Selenium); the automatic login passes it |
+| Session expired mid-download | The manager detects "Log in" → re-logs in by itself (needs `./vnv.sh credenciales`) |
+| Old cookie | Run `./vnv.sh login` again |
 
-## Descargas
+## Downloads
 
-| Problema | Solución |
+| Problem | Solution |
 |---|---|
-| Cloudflare "Just a moment..." | El gestor espera hasta 60s y reintenta |
-| Archivo descargado es HTML | El gestor lo detecta (`file`) y lo borra → reintenta |
-| Mod 90824 | Está hidden por el autor — la guía actual usa el 66347 |
+| Cloudflare "Just a moment..." | The manager waits up to 60s and retries |
+| Downloaded file is HTML | The manager detects it (`file`) and deletes it → retries |
+| Mod 90824 | It is hidden by the author — the current guide uses 66347 |
 
-## Instalación / Juego
+## Install / Game
 
-| Problema | Solución |
+| Problem | Solution |
 |---|---|
-| No encuentra el juego | Editar `STEAM_LIBRARIES` en vnv.sh (ruta de tu Steam) |
-| Prefix de Proton no existe | FNV → Propiedades → Compatibilidad → forzar Proton → jugar una vez |
-| Crash al inicio | Verificar nvtf.ini y NVTF activo |
-| Sin mods cargados | Lanzar desde MO2, perfil Default activo |
+| Game not found | Edit `STEAM_LIBRARIES` in vnv.sh (your Steam path) |
+| Proton prefix does not exist | FNV → Properties → Compatibility → force Proton → play once |
+| Crash on start | Check nvtf.ini and NVTF active |
+| No mods loaded | Launch from MO2, Default profile active |
 
-## Referencias
+## References
 
 - [[Descargas - Troubleshooting]]
 - [[Lanzamiento del Juego]]
@@ -602,43 +602,43 @@ tags: [troubleshooting, descargas]
 ---
 # Descargas — Troubleshooting
 
-## Errores encontrados y resueltos
+## Errors found and solved
 
-### 1. "Manual download" no automatizable (2026)
-**Síntoma**: las filas de archivos no tienen botón de descarga en el DOM.
-**Causa**: está en el shadow DOM de `<mod-download-modal>` (web component).
-**Solución**: endpoint `/Download/?id={fid}&game_id=130` descubierto en el bundle JS.
+### 1. "Manual download" not automatable (2026)
+**Symptom**: the file rows have no download button in the DOM.
+**Cause**: it is in the shadow DOM of `<mod-download-modal>` (web component).
+**Solution**: `/Download/?id={fid}&game_id=130` endpoint discovered in the JS bundle.
 
-### 2. El descargador bajaba versiones viejas
-**Síntoma**: 44 desviaciones de versión; JIP LN bajó el INI en vez del plugin.
-**Causa**: `actualizar.py` elegía el PRIMER archivo MAIN, no el más reciente.
-**Solución**: `max(mains, key=uploaded_timestamp)` → 13 file_ids corregidos.
+### 2. The downloader fetched old versions
+**Symptom**: 44 version deviations; JIP LN downloaded the INI instead of the plugin.
+**Cause**: `actualizar.py` picked the FIRST MAIN file, not the newest one.
+**Solution**: `max(mains, key=uploaded_timestamp)` → 13 file_ids fixed.
 
-### 3. Sesión expirada no detectada
-**Síntoma**: el re-login no se disparaba.
-**Causa**: buscaba "Sign in" pero Nexus usa **"Log in"** para no-autenticados.
-**Solución**: detectar ambos + ausencia de "served via CDN".
+### 3. Expired session not detected
+**Symptom**: the re-login did not trigger.
+**Cause**: it searched for "Sign in" but Nexus uses **"Log in"** for non-authenticated users.
+**Solution**: detect both + absence of "served via CDN".
 
-### 4. Page.goto timeouts masivos (Cloudflare)
-**Síntoma**: 25 mods fallaron con timeouts tras descargas rápidas.
-**Causa**: rate limiting de Cloudflare.
-**Solución**: espera de challenge (hasta 60s) + 3 intentos con backoff + ritmo 8-15s.
+### 4. Massive page.goto timeouts (Cloudflare)
+**Symptom**: 25 mods failed with timeouts after fast downloads.
+**Cause**: Cloudflare rate limiting.
+**Solution**: challenge wait (up to 60s) + 3 attempts with backoff + 8-15s pace.
 
-### 5. Manifest duplicado (66347 ×2)
-**Causa**: al reemplazar 90824→66347 sin notar que ya existía.
-**Solución**: deduplicación → 53 mods únicos.
+### 5. Duplicated manifest (66347 ×2)
+**Cause**: replacing 90824→66347 without noticing it already existed.
+**Solution**: deduplication → 53 unique mods.
 
-## Monitoreo
+## Monitoring
 
 ```bash
-./venv/camoufox-python scripts/gestor_descargas.py --verificar   # integridad
-cat estado.json                                                   # estados por mod
-tail /tmp/descarga.log                                           # log de una corrida
+./venv/camoufox-python scripts/gestor_descargas.py --verificar   # integrity
+cat estado.json                                                   # states per mod
+tail /tmp/descarga.log                                           # log of a run
 ```
 
-> ⚠️ No lanzar dos instancias al mismo archivo de log (se pisan).
+> ⚠️ Do not launch two instances writing to the same log file (they overwrite each other).
 
-## Referencias
+## References
 
 - [[Descarga de Mods]]
 - [[Problemas Comunes]]
@@ -649,35 +649,35 @@ tags: [bitacora]
 ---
 # Cronología
 
-## 5 agosto 2026 — Día grande
+## 5 August 2026 — Big day
 
-- **Descarga FREE resuelta**: endpoint `/Download/` descubierto (tras insistencia del usuario con "Manual download")
-- 53/53 mods descargados y verificados (1.1 GB)
-- **Verificación exacta**: bug de file_ids corregido (13 mods), MAIN más reciente
-- **Gestor robusto**: estados, retries, re-login automático (probado: sesión borrada → se recuperó solo)
-- **Setup multi-distro** + wrapper de librerías (smoke test + fallback micromamba)
-- **UI web**: wizard 6 pasos con SSE en vivo — sin terminal
-- **Importador MO2 automático**: 53/53 importados
-- **Conexión Steam**: comando `steam` + protontricks + teoría del lanzamiento
-- **Bóveda de Obsidian** creada
+- **FREE download solved**: `/Download/` endpoint discovered (after the user insisted on "Manual download")
+- 53/53 mods downloaded and verified (1.1 GB)
+- **Exact verification**: file_ids bug fixed (13 mods), newest MAIN
+- **Robust manager**: states, retries, automatic re-login (tested: session deleted → it recovered by itself)
+- **Multi-distro setup** + library wrapper (smoke test + micromamba fallback)
+- **Web UI**: 6-step wizard with live SSE — no terminal
+- **Automatic MO2 importer**: 53/53 imported
+- **Steam connection**: `steam` command + protontricks + launch theory
+- **Obsidian vault** created
 
-## Descubrimientos clave (5 ago)
+## Key discoveries (5 Aug)
 
-| Descubrimiento | Impacto |
+| Discovery | Impact |
 |---|---|
-| Camoufox pasa el Turnstile headless | Login automático ✅ |
-| Cookie real = `nexusmods_session` (no `sid`) | Descargas ✅ |
-| Endpoint `/Download/?id=...` gratis | 53 mods sin Premium ✅ |
-| "Log in" ≠ "Sign in" | Re-login automático ✅ |
-| MAIN más reciente por timestamp | File_ids exactos ✅ |
+| Camoufox passes the Turnstile headless | Automatic login ✅ |
+| The real cookie is `nexusmods_session` (not `sid`) | Downloads ✅ |
+| Free `/Download/?id=...` endpoint | 53 mods without Premium ✅ |
+| "Log in" ≠ "Sign in" | Automatic re-login ✅ |
+| Newest MAIN by timestamp | Exact file_ids ✅ |
 
-## Fase previa (2-4 agosto)
+## Previous phase (2-4 August)
 
-- Exploración: Playwright, Selenium UC, LightPanda (ninguno pasó el Turnstile)
-- Xvfb/conda: callejón sin salida (libs rotas) → resuelto con wrapper
-- Login "estilo Wabbajack" (ventana real) documentado como alternativa
+- Exploration: Playwright, Selenium UC, LightPanda (none passed the Turnstile)
+- Xvfb/conda: dead end (broken libs) → solved with the wrapper
+- "Wabbajack-style" login (real window) documented as an alternative
 
-## Ver también
+## See also
 
 - [[Estado Actual]]
 - [[Objetivos y Roadmap]]
@@ -691,7 +691,7 @@ def main():
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(contenido.strip() + "\n")
         n += 1
-    print(f"✅ Bóveda de Obsidian generada: {n} archivos en {OBS}")
+    print(f"✅ Obsidian vault generated: {n} files in {OBS}")
 
 
 if __name__ == "__main__":
