@@ -65,9 +65,9 @@
     "archivo": "ISControl-75417-2-3-1688602677.7z"
   },
   "79358": {
-    "file_id": 1000178009,
+    "file_id": 1000178007,
     "estado": "ok",
-    "archivo": "Goodies - Jacobstown Water Fix 79358 1 2026-07-15T12-09Z ZORC7ytS.7z"
+    "archivo": "NVMIM - YUP Patch 79358 1.0 2026-07-15T11-19Z XdsyTaJt.7z"
   },
   "81281": {
     "file_id": 1000129652,
@@ -263,5 +263,33 @@
     "file_id": 1000177683,
     "estado": "ok",
     "archivo": "Third Person Aim Fix 96007 1.2.1 2026-07-08T15-59Z pHjneZeG.zip"
+  },
+  "58277:1000114298": {
+    "file_id": 1000114298,
+    "estado": "ok",
+    "archivo": "JIP LN Settings INI-58277-56-24-1691190751.7z",
+    "intentos": 1,
+    "ts": 1786062984.8410187
+  },
+  "66347:url:Stewie Tweaks - VNV INI": {
+    "file_id": null,
+    "estado": "ok",
+    "archivo": "Stewie_Tweaks-VNV_INI.7z",
+    "intentos": 1,
+    "ts": 1786063025.676039
+  },
+  "77073:1000114386": {
+    "file_id": 1000114386,
+    "estado": "ok",
+    "archivo": "Elijah Missing Distortion Fix-77073-1-0-1691326711.zip",
+    "intentos": 1,
+    "ts": 1786063050.1821384
+  },
+  "84171:1000150631": {
+    "file_id": 1000150631,
+    "estado": "ok",
+    "archivo": "LOD Fixes and Improvements - NVSE-84171-1-33-1745245979.7z",
+    "intentos": 1,
+    "ts": 1786063083.1978202
   }
 }

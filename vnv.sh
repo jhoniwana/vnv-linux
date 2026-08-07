@@ -156,6 +156,17 @@ EOF
   else
     ok "nvtf.ini aplicado (juego — el mod NVTF no incluye el archivo; MO2 lo ve por VFS)"
   fi
+
+  # FalloutCustom.ini de la guía (Custom INI — overrides via JIP LN NVSE).
+  # MO2 expone los INIs del perfil al juego, así que va en profiles/Default/.
+  local profini="$MO2_INSTANCE/profiles/Default"
+  mkdir -p "$profini"
+  if [[ -f "$ROOT/files/FalloutCustom.ini" ]]; then
+    cp "$ROOT/files/FalloutCustom.ini" "$profini/FalloutCustom.ini"
+    ok "FalloutCustom.ini aplicado (perfil Default)"
+  else
+    fail "Falta files/FalloutCustom.ini — no se aplicó el Custom INI"
+  fi
 }
 
 correr_loot() {
@@ -196,7 +207,7 @@ lanzar() {
   chmod u+w "$MO2_INSTANCE"/profiles/*/*.ini 2>/dev/null
   PYTHONPATH="$HOME/.local/lib/python3.13/site-packages"   "$PY" /home/jhon/.local/bin/protontricks-launch \
     --appid 22380 "$MO2_INSTANCE/ModOrganizer.exe" \
-    --profile=Default -e=NVSE
+    --profile=Default run -e NVSE
 }
 
 case "${1:-}" in

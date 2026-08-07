@@ -430,6 +430,53 @@ def nombre_mod(m):
     return re.sub(r'[\\/:*?"<>|]+', "_", (m.get("nombre") or f"mod-{m['mod_id']}").strip())
 
 
+def resolver_archivo(est, m):
+    """Resuelve el archivo principal de un mod (preferentemente vía estado.json)."""
+    info = est.get(str(m["mod_id"]))
+    if info and info.get("archivo"):
+        p = DEST / info["archivo"]
+        if p.exists():
+            return p
+    cand = sorted(DEST.glob(f"*{m['mod_id']}*"))
+    if cand:
+        return cand[0]
+    return None
+
+
+def resolver_extra(est, m, x):
+    """Resuelve el archivo de un extra (file_id o url) vía estado.json."""
+    if x.get("file_id"):
+        key = f"{m['mod_id']}:{x['file_id']}"
+    else:
+        key = f"{m['mod_id']}:url:{x['nombre']}"
+    info = est.get(key, {})
+    nombre = info.get("archivo")
+    if not nombre:
+        return None
+    p = DEST / nombre
+    return p if p.exists() else None
+
+
+def fusionar_extras(mod_dir, m, est):
+    """Mezcla los archivos extra (INIs, esps, dlls) en la carpeta del mod."""
+    for x in (m.get("extra") or []):
+        arch = resolver_extra(est, m, x)
+        if not arch:
+            print(f"      ⚠ extra sin archivo descargado: {x['nombre']}")
+            continue
+        tmp = mod_dir / ".extra_tmp"
+        if tmp.exists():
+            shutil.rmtree(tmp, ignore_errors=True)
+        if not descomprimir(arch, tmp):
+            print(f"      ⚠ no se pudo descomprimir extra: {x['nombre']}")
+            continue
+        arrumar_raizes(tmp)
+        for p in tmp.iterdir():
+            _copiar(p, mod_dir / p.name)
+        shutil.rmtree(tmp, ignore_errors=True)
+        print(f"      + extra {x['nombre']}: {arch.name[:55]}")
+
+
 def importar(mo2_dir, args):
     mods = json.load(open(MANIFEST))
     if args.solo:
@@ -448,12 +495,14 @@ def importar(mo2_dir, args):
                 shutil.rmtree(p, ignore_errors=True)
 
     ok, fail, plugins_orden = 0, [], []
+    est = {}
+    if (BASE / "estado.json").exists():
+        est = json.load(open(BASE / "estado.json"))
     for m in mods_ord:
-        archivos = sorted(DEST.glob(f"*{m['mod_id']}*"))
-        if not archivos:
+        arch = resolver_archivo(est, m)
+        if not arch:
             fail.append((m["mod_id"], "sin archivo descargado"))
             continue
-        arch = archivos[0]
         nombre = nombre_mod(m)
         mod_dir = mods_dir / nombre
         if mod_dir.exists():
@@ -470,6 +519,9 @@ def importar(mo2_dir, args):
                 print(f"  ⚠ {nombre[:50]} FOMOD: faltan {errs[:3]}")
         else:
             arrumar_raizes(mod_dir)
+
+        fusionar_extras(mod_dir, m, est)
+        normalizar_case(mod_dir)
 
         valido = tiene_contenido_valido(mod_dir)
         escribir_meta(mod_dir, arch, valido)

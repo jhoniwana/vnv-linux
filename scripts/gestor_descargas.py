@@ -62,6 +62,29 @@ def archivo_existente(mid):
     return None
 
 
+def descargar_url(url, destino):
+    """Descarga directa (no-Nexus, ej. GitHub). Devuelve (ok, nombre_archivo)."""
+    try:
+        import requests
+    except ImportError:
+        return False, None
+    try:
+        r = requests.get(url, stream=True, timeout=(30, 300),
+                         headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"})
+        r.raise_for_status()
+    except Exception:
+        return False, None
+    fname = pathlib.Path(url.split("?")[0]).name or "download"
+    out = destino / fname
+    with open(out, "wb") as fh:
+        for chunk in r.iter_content(131072):
+            fh.write(chunk)
+    if not verificar_archivo(out):
+        out.unlink(missing_ok=True)
+        return False, None
+    return True, fname
+
+
 def descargar_uno(page, mid, fid, destino, consent_ya):
     """Descarga un mod vía /Download/. Devuelve (ok, nombre_archivo, error, sin_sesion)."""
     url = f"{SITE}/Download/?id={fid}&game_id={GAME_ID}&source=ModPage"
@@ -217,10 +240,20 @@ def main():
         e = est.get(str(mid), {})
         # re-descargar si cambió el file_id
         if e.get("estado") == "ok" and e.get("file_id") == fid and not args.forzar:
-            continue
-        if args.solo_fallidos and e.get("estado") != "fallo":
-            continue
-        pendientes.append(m)
+            pass
+        elif args.solo_fallidos and e.get("estado") != "fallo":
+            pass
+        else:
+            pendientes.append((mid, fid, m.get("nombre") or f"mod-{mid}", False, None))
+        # archivos extra del mismo mod
+        for x in (m.get("extra") or []):
+            key = f"{mid}:{x.get('file_id')}" if x.get('file_id') else f"{mid}:url:{x.get('nombre')}"
+            e = est.get(key, {})
+            if e.get("estado") == "ok" and not args.forzar:
+                continue
+            if args.solo_fallidos and e.get("estado") != "fallo":
+                continue
+            pendientes.append((mid, x.get("file_id"), f"{m.get('nombre')} + {x['nombre']}", True, x))
 
     if not pendientes:
         print("✅ nada pendiente — todo descargado y al día")
@@ -243,26 +276,52 @@ def main():
         page = ctx.new_page()
         consent_ya = [False]
 
-        for i, m in enumerate(pendientes, 1):
-            mid, fid = m["mod_id"], m["file_id"]
-            nombre = (m.get("nombre") or f"mod-{mid}")[:45]
+        for i, (mid, fid, nombre, es_extra, extra) in enumerate(pendientes, 1):
+            nombre = (nombre or f"mod-{mid}")[:45]
+            if es_extra:
+                key = f"{mid}:{fid}" if fid else f"{mid}:url:{extra['nombre']}"
+            else:
+                key = str(mid)
             # borrar archivo viejo si el file_id cambió (versión equivocada)
-            viejo = archivo_existente(mid)
-            if viejo:
-                old_est = est.get(str(mid), {})
-                if old_est.get("file_id") != fid or args.forzar:
-                    viejo.unlink(missing_ok=True)
-                    print(f"    🗑 archivo viejo eliminado: {viejo.name[:50]}", flush=True)
-            print(f"[{i}/{len(pendientes)}] mod {mid} ({m['seccion']}) fid {fid} — {nombre}", flush=True)
-            est[str(mid)] = {"file_id": fid, "estado": "descargando", "intentos": 0}
+            if not es_extra:
+                viejo = archivo_existente(mid)
+                if viejo:
+                    old_est = est.get(str(mid), {})
+                    if old_est.get("file_id") != fid or args.forzar:
+                        viejo.unlink(missing_ok=True)
+                        print(f"    🗑 archivo viejo eliminado: {viejo.name[:50]}", flush=True)
+            else:
+                # borrar archivo extra viejo si existe (mismo fid, forzar)
+                for p in DEST.glob(f"*{fid}*"):
+                    if args.forzar:
+                        p.unlink(missing_ok=True)
+                        print(f"    🗑 extra viejo eliminado: {p.name[:50]}", flush=True)
+            print(f"[{i}/{len(pendientes)}] mod {mid} fid {fid} — {nombre}", flush=True)
+            est[key] = {"file_id": fid, "estado": "descargando", "intentos": 0}
             guardar_estado(est)
             exito = False
+            if es_extra and not fid:
+                # extra con URL directa (no-Nexus, ej. GitHub)
+                exito, arch = descargar_url(extra["url"], DEST)
+                if exito:
+                    est[key] = {"file_id": None, "estado": "ok", "archivo": arch,
+                                "intentos": 1, "ts": time.time()}
+                    print(f"    ✔ {arch[:60]}", flush=True)
+                    ok += 1
+                else:
+                    est[key] = {"file_id": None, "estado": "fallo",
+                                "error": "descarga URL falló", "intentos": 1, "ts": time.time()}
+                    print(f"    ✘ descarga URL falló", flush=True)
+                    fail.append((key, "descarga URL falló"))
+                guardar_estado(est)
+                time.sleep(random.uniform(3, 6))
+                continue
             for intento in range(1, args.max_intentos + 1):
                 try:
                     okd, arch, err, sin_sesion = descargar_uno(page, mid, fid, DEST, consent_ya)
                     if okd:
-                        est[str(mid)] = {"file_id": fid, "estado": "ok", "archivo": arch,
-                                         "intentos": intento, "ts": time.time()}
+                        est[key] = {"file_id": fid, "estado": "ok", "archivo": arch,
+                                    "intentos": intento, "ts": time.time()}
                         print(f"    ✔ {arch[:60]}", flush=True)
                         ok += 1
                         exito = True
@@ -285,12 +344,12 @@ def main():
                     raise RuntimeError(err or "fallo")
                 except Exception as e:
                     print(f"    ✘ intento {intento}/{args.max_intentos}: {type(e).__name__}: {str(e)[:80]}", flush=True)
-                    est[str(mid)] = {"file_id": fid, "estado": "fallo", "error": str(e)[:100],
-                                     "intentos": intento, "ts": time.time()}
+                    est[key] = {"file_id": fid, "estado": "fallo", "error": str(e)[:100],
+                                "intentos": intento, "ts": time.time()}
                     guardar_estado(est)
                     time.sleep(15 * intento)
             if not exito:
-                fail.append((mid, str(est[str(mid)].get("error", "?"))))
+                fail.append((key, str(est[key].get("error", "?"))))
             # rate limit
             time.sleep(random.uniform(8, 15))
 

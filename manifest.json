@@ -13,7 +13,13 @@
     "nombre": "JIP LN NVSE Plugin",
     "file_id": 1000132314,
     "checksum": null,
-    "version": "57.30"
+    "version": "57.30",
+    "extra": [
+      {
+        "file_id": 1000114298,
+        "nombre": "JIP LN Settings INI"
+      }
+    ]
   },
   {
     "mod_id": 62552,
@@ -107,7 +113,7 @@
     "mod_id": 79358,
     "seccion": "utilities",
     "nombre": "Viva New Vegas Resources",
-    "file_id": 1000178009,
+    "file_id": 1000178007,
     "checksum": null,
     "version": "1.0"
   },
@@ -181,7 +187,13 @@
     "nombre": "lStewieAl's Tweaks and Engine Fixes",
     "file_id": 1000177460,
     "checksum": null,
-    "version": "9.95"
+    "version": "9.95",
+    "extra": [
+      {
+        "url": "https://github.com/ModdingLinked/Stewie-Tweaks-INIs/releases/download/20197727503/Stewie_Tweaks-VNV_INI.7z",
+        "nombre": "Stewie Tweaks - VNV INI"
+      }
+    ]
   },
   {
     "mod_id": 71239,
@@ -237,7 +249,13 @@
     "nombre": "Misc Audio Tweaks and Fixes",
     "file_id": 1000132747,
     "checksum": null,
-    "version": "2.5"
+    "version": "2.5",
+    "extra": [
+      {
+        "file_id": 1000114386,
+        "nombre": "Elijah Missing Distortion Fix"
+      }
+    ]
   },
   {
     "mod_id": 77205,
@@ -341,7 +359,13 @@
     "nombre": "LOD Fixes and Improvements - NVSE",
     "file_id": 1000150632,
     "checksum": null,
-    "version": "1.33"
+    "version": "1.33",
+    "extra": [
+      {
+        "file_id": 1000150631,
+        "nombre": "LOD Fixes and Improvements"
+      }
+    ]
   },
   {
     "mod_id": 84443,
