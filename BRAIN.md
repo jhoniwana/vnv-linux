@@ -21,6 +21,14 @@ Technical log of the project: **100% automatic installer of Viva New Vegas (Core
 
 ## ✅ DEFINITIVE CLOSURE (7 aug 2026) — 100% verified by the user
 
+## ✅ BSA/DECOMPRESSOR CLOSURE (7 aug 2026, evening)
+
+- **The pink-textures/missing-mesh mystery = the old decompressor's bit30 bug** (it set bit30 on every file → the game, with the `bit30 XOR (flags&0x04)` semantics from xEdit/wbBSArchive, read them as compressed → tried zlib on raw data → failed). With the **vanilla BSAs restored** (Steam validate re-downloads the whole depot), the game runs PERFECTLY (no broken walls, no pink perks, 28 NVSE plugins, clean log).
+- **The real FNV BSA layout**: file names = a NUL-terminated section (`fln` bytes) — NOT `[len][name]` (a [len][name] parser desyncs: names >255 crash + produces BSAs the game can't read). Verified against the vanilla Steam files (`nv_deathclawsign.nif\0outfitf.nif\0...`).
+- **The official "FNV BSA Decompressor.exe" is a Delphi app based on xEdit's wbBSArchive** (strings `TwbBSArchive`, embedded zlib 1.2.8) — confirms the `compressed = bit30 XOR (flags&0x04)` semantics (GetData in wbBSA.pas).
+- **The decompressor is optional** (a perf tweak of the original mod): the vanilla DLC Mains already ship raw data. The corrected decompress.py (NUL layout + XOR) is committed/pushed (`6d1231c`) for completeness, but **there is no need to run it** — the vanilla state works.
+
+
 - **55 mods** (Core VNV + JAM 66666 + YUPDate/supplement 98514 with `d20Fixes.esm`), 50 active + 5 root + Fixed ESMs.
 - **Canonical VNV Core load order** of 23 plugins (YUP 1st, d20Fixes after YUP, Placement Fixes last, JAM at the end) — loadorder/plugins sync.
 - **CORRECT Fixed ESMs REBUILD**: the problem was the SOURCE — the esms copied from the user's old setup (mtimes 1999) were not the ones from the current depot → xdelta3 with a source ±bytes → esm with valid TES4 but 233K records and **0 dialogues** (vs 465K/18.2K of the correct one) → crash `0x00AA991C` during dialogue init (context: YUP "Doctors" records — topic 0002284F, info 000377F6). After `steam steam://validate/22380` (the esms aligned with the depot), `port.py --force` produces the correct build (465,054 records, DIALOG 18,215). **Rule: Steam verify must precede uefix** (and re-run 4gb/bsa afterwards — verify reverts everything).
