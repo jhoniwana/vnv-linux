@@ -61,6 +61,21 @@ components; every one of them is a no-op on the current depot:
 - **FINAL: the mod is NOT part of the pipeline. Not needed. Vanilla = optimal.**
   Documented in `fnv-bsa-decompressor-linux/README.md` (deep investigation section).
 
+## 🚨 CRITICAL BUG FOUND BY THE FULL TEST (7 aug 2026, 17:40) — THE REAL ROOT CAUSE
+
+- `scripts/root_mods.py` had `"bsa"` in `ORDEN = ["xnvse","4gb","epic","bsa","uefix"]`
+  → **every `./vnv.sh install` (and `root`) run RE-DECOMPRESSED `Fallout - Meshes.bsa`
+  and `Fallout - Misc.bsa`** (the two zlib BSAs that must never be decompressed).
+- That is why the game kept crashing at startup ("File not found (2)") / breaking walls
+  after EVERY Steam validate + install cycle: the pipeline itself re-broke what the
+  validate had just fixed. The decompressor was never the user's fault — the pipeline was.
+- **Fix (84375c5)**: `bsa` removed from the automatic order; only reachable via
+  `--solo bsa` (research). Verified: re-running `install` leaves all 21 BSAs vanilla
+  (0 records with bit30).
+- **Restore after the test**: Steam validate re-downloaded Meshes.bsa (4.5GB, 17:56) —
+  confirmed bfFlags=0x87 zlib, bit30=0 on all 3 big BSAs.
+
+
 ## ✅ BSA/DECOMPRESSOR CLOSURE (7 aug 2026, evening)
 
 - **The pink-textures/missing-mesh mystery = the old decompressor's bit30 bug** (it set bit30 on every file → the game, with the `bit30 XOR (flags&0x04)` semantics from xEdit/wbBSArchive, read them as compressed → tried zlib on raw data → failed). With the **vanilla BSAs restored** (Steam validate re-downloads the whole depot), the game runs PERFECTLY (no broken walls, no pink perks, 28 NVSE plugins, clean log).
