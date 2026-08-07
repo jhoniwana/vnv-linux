@@ -46,7 +46,10 @@ def estado_actual():
     manifest = leer_json(BASE / "manifest.json", [])
     estado = leer_json(BASE / "estado.json", {})
     n_mods = sum(1 for m in manifest if m.get("file_id"))
-    n_ok = sum(1 for v in estado.values() if v.get("estado") == "ok")
+    # estado.json también guarda los tools/root (4GB, BSA, xNVSE...) — contar
+    # solo los mods del manifest para que el progreso sea 55/55 y no 60/55
+    man_ids = {str(m.get("mod_id")) for m in manifest}
+    n_ok = sum(1 for k, v in estado.items() if k in man_ids and v.get("estado") == "ok")
     n_arch = len([p for p in DEST.iterdir() if p.is_file()]) if DEST.exists() else 0
     sesion = (CONFIG_DIR / "nexus_session").exists() and (CONFIG_DIR / "nexus_session").stat().st_size > 0
     setup = VENV_PY.exists()
@@ -81,11 +84,12 @@ def ejecutar(accion, cmd, env_extra=None):
         env.update(env_extra)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                             text=True, bufsize=1, env=env, cwd=str(BASE))
-    jobs[jid] = {"q": q, "proc": proc, "fin": False}
+    jobs[jid] = {"q": q, "proc": proc, "fin": False, "lineas": []}
 
     def lector():
         for linea in proc.stdout:
             q.put(linea)
+            jobs[jid]["lineas"].append(linea)
         proc.wait()
         q.put(None)
         with jobs_lock:
@@ -145,12 +149,20 @@ def api_accion(accion):
 
 @app.route("/api/log/<jid>")
 def api_log(jid):
-    """SSE: stream of the job log."""
+    """SSE: stream of the job log. Late reconnects replay the buffered lines."""
     def gen():
-        q = jobs.get(jid, {}).get("q")
-        if q is None:
+        job = jobs.get(jid)
+        if job is None:
             yield "data: {\"fin\": true, \"linea\": \"job not found\"}\n\n"
             return
+        # job ya terminado: reproducir las líneas acumuladas + fin (un SSE
+        # reconectado a un job viejo no debe quedarse en pings infinitos)
+        if job["fin"]:
+            for l in job["lineas"]:
+                yield f"data: {json.dumps({'linea': l.rstrip()})}\n\n"
+            yield "data: {\"fin\": true}\n\n"
+            return
+        q = job["q"]
         while True:
             try:
                 linea = q.get(timeout=1)
