@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import struct
 import subprocess
 import sys
 from pathlib import Path
@@ -74,6 +75,50 @@ def buscar_juego():
     return None
 
 
+def verificar_paso(paso, game_dir, mo2_dir):
+    """Verificación POST-paso: comprueba el resultado REAL (no solo el rc).
+
+    Returns (ok: bool, detalle: str). Cada port define aquí su prueba de oro.
+    """
+    try:
+        if paso == "xnvse":
+            dlls = ["nvse_1_4.dll", "nvse_steam_loader.dll", "nvse_loader.exe"]
+            faltan = [d for d in dlls if not (game_dir / d).exists()]
+            return (not faltan), f"NVSE DLLs: {', '.join(faltan) or 'todas presentes'}"
+        if paso == "4gb":
+            exe = (game_dir / "FalloutNV.exe").read_bytes()
+            if exe[:2] != b"MZ":
+                return False, "FalloutNV.exe no es un PE válido"
+            pe_off = struct.unpack("<I", exe[0x3C:0x40])[0]
+            chars = struct.unpack("<H", exe[pe_off + 22: pe_off + 24])[0]
+            laa = bool(chars & 0x20)
+            return laa, f"LAA: {'0xA620 aplicado' if laa else 'NO aplicado (chars=%#x)' % chars}"
+        if paso == "epic":
+            return True, "no-op en Steam (LAA ya aplicado)"
+        if paso == "uefix":
+            fixed = mo2_dir / "mods" / "Fixed ESMs"
+            esms = ["FalloutNV.esm", "DeadMoney.esm", "HonestHearts.esm",
+                    "OldWorldBlues.esm", "LonesomeRoad.esm", "GunRunnersArsenal.esm"]
+            faltan = [e for e in esms if not (fixed / e).exists()]
+            notes4 = [e for e in esms if (fixed / e).exists() and (fixed / e).read_bytes()[:4] != b"TES4"]
+            if faltan or notes4:
+                return False, f"esms: faltan {faltan or '—'}, no-TES4 {notes4 or '—'}"
+            return True, "6/6 esms TES4 válidos"
+        if paso == "bsa":
+            return True, "research-only (no parte del orden automático)"
+    except Exception as e:
+        return False, f"verificación falló: {e}"
+    return True, "sin verificación definida"
+
+
+FALLBACKS = {
+    # paso: comandos de re-ejecución si la verificación falla (una sola vez)
+    "xnvse": ["--solo", "xnvse"],
+    "4gb": ["--solo", "4gb"],
+    "uefix": ["--solo", "uefix"],  # el propio port re-aplica con --force vía root_mods
+}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--game-dir")
@@ -103,6 +148,22 @@ def main():
         if r.returncode != 0:
             return fail(f"step {p} failed (rc={r.returncode})")
         ok(f"step {p} completed")
+        # --- verificación post-paso + fallback ---
+        vok, det = verificar_paso(p, game_dir, mo2_dir)
+        if vok:
+            ok(f"verify {p}: {det}")
+            continue
+        info(f"verify {p} FAILED: {det} — reintentando ({p})...")
+        r = subprocess.run([str(PY), str(script), "--game-dir", str(game_dir)]
+                           + (["--dest", str(fixed)] if p == "uefix" else [])
+                           + (["--force"] if p == "uefix" else []))
+        if r.returncode != 0:
+            return fail(f"fallback step {p} failed (rc={r.returncode})")
+        vok, det = verificar_paso(p, game_dir, mo2_dir)
+        if not vok:
+            return fail(f"verify {p} failed even after retry: {det} — "
+                        f"run 'steam steam://validate/22380' then './vnv.sh install' again")
+        ok(f"verify {p} (tras fallback): {det}")
 
     if "uefix" in pasos and fixed.exists():
         modlist = mo2_dir / "profiles" / "Default" / "modlist.txt"

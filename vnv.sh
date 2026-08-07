@@ -490,6 +490,12 @@ case "${1:-}" in
     buscar_juego
     "$PY" scripts/esm_fixes.py --game-dir "$GAME_DIR" --dest "${ESMFIX_DEST:-$HOME/.local/share/modorganizer2/mods/Fixed ESMs}" "${@:2}"
     ;;
+  salud)
+    # Full health check: verifies EVERY component (exe/LAA, NVSE, BSAs, INIs,
+    # Fixed ESMs, downloads, session, MO2). Exit 0 = everything OK.
+    necesita_setup
+    "$PY" scripts/salud.py "${@:2}"
+    ;;
   *)
     echo "Usage: $0 {setup|login|config-cookies|config|download|estado|install|loot|run|mo2|steam-add|bsa|bsa-verify|esmfix}"
     ;;
