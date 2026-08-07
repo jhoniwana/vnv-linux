@@ -9,32 +9,37 @@ Mensaje para el agente que continúe este proyecto. Léelo completo antes de act
 **vnv-linux**: instalador 100% automático del Core de **Viva New Vegas** (53 mods de Fallout New Vegas) para **Linux + Steam**.
 
 - Repo público: `https://github.com/jhoniwana/vnv-linux` (rama `main`)
-- Código local: `/home/shot/vnv-linux/`
+- Código local: `/home/jhon/vivanewvegas/vnv/`
 - Documentación completa: `BRAIN.md` (bitácora técnica) + `obsidian/` (bóveda de 17 docs con wikilinks)
-- **El pipeline completo está construido y probado EXCEPTO la instalación real con el juego.**
+- **El pipeline completo está construido, probado en vivo y el juego llega al menú con todos los mods.**
 
-## 2. ESTADO ACTUAL (verificado en vivo)
+## 2. ESTADO ACTUAL (verificado en vivo, 6 ago 2026)
 
 | Componente | Estado |
 |---|---|
-| 53 mods descargados (1.1 GB en `downloads/`) | ✅ verificados (0 HTML, versiones correctas) |
+| 53 mods descargados + 4 extras (1.1 GB en `downloads/`) | ✅ auditoría completa: 53/53 main + 4/4 extras, 0 HTML |
 | Login automático a Nexus (Camoufox pasa Turnstile) | ✅ probado |
 | Gestor de descargas (estados, retries, re-login) | ✅ probado (auto-recuperación: sesión borrada → se recuperó solo) |
 | Setup multi-distro (Debian/Ubuntu/Arch/Fedora/openSUSE) | ✅ probado en Arch/EndeavourOS |
 | UI web (`./vnv.sh ui` — wizard 6 pasos, sin terminal) | ✅ probado (SSE en vivo) |
-| Importador automático a MO2 (53/53) | ✅ probado |
-| Comando `steam` (diagnóstico Proton appid 22380) | ✅ script listo, no probado en máquina con Steam |
-| Instalación real (MO2-LINT, Wine, LOOT, lanzar juego) | 🟡 **NO probado — requiere hardware con el juego** |
+| Importador automático a MO2 | ✅ **re-import e2e**: 53/53, modlist 55 líneas, loadorder 21 plugins en orden de guía |
+| Root mods (xNVSE, 4GB, EGS, BSA decompressor, UEM Fixes) | ✅ idempotente, re-corrido OK; LAA=0xA620, BSA descomprimidos, Fixed ESMs SHA1 OK |
+| Tweaks de INI (nvtf.ini heap/4GB/VRAM + FalloutCustom.ini) | ✅ contenido exacto de la guía |
+| `./vnv.sh estado` vs manifest | ✅ 53/53 OK, problemas 0 |
+| LOOT (lootcli) | ✅ valida sobre copia no-destructiva (`./vnv.sh loot`) |
+| **Lanzamiento real del juego** | ✅ **el juego llega al menú principal con los 53 mods + 27 plugins NVSE** |
+| Comando `steam` (diagnóstico Proton appid 22380) | ✅ probado (protontricks-launch es el método de lanzamiento) |
+
+### Bugs encontrados en la auditoría y sus fixes
+- **MO2 2.5.2 trunca `plugins.txt` al apagar tras sesión de juego** (deja solo `FalloutNV.esm`; el `loadorder.txt` queda intacto). Reproducido 2 veces. **Fix**: `lanzar()` re-sincroniza `plugins.txt` desde `loadorder.txt` antes de cada launch (vnv.sh:214-226).
+- **lootcli standalone no ve el VFS de MO2** → re-escribía `plugins.txt` con ~10 plugins. **Fix**: `./vnv.sh loot` valida sobre una copia en `/tmp/opencode/loot_plugins.txt` (no-destructivo) y se sacó LOOT del `install` (vnv.sh:172-192).
 
 ## 3. LO QUE FALTA (priorizado)
 
-### 3.1 PRINCIPAL — Probar la instalación real en una máquina con Steam + FNV
-En la máquina del usuario (tiene Steam con Fallout New Vegas):
-1. `git clone https://github.com/jhoniwana/vnv-linux && cd vnv-linux`
-2. **En Steam**: FNV (appid 22380) → Propiedades → Compatibilidad → forzar Proton → jugar una vez (crea el prefix `steamapps/compatdata/22380/pfx`)
-3. `./vnv.sh ui` → correr los 6 pasos en orden (o en terminal: `./vnv.sh setup` → `./vnv.sh login` → `./vnv.sh download` → `./vnv.sh steam --si` → `./vnv.sh install` → `./vnv.sh run`)
-4. Verificar: MO2-LINT instala MO2 en el prefix del juego (vía protontricks), los 53 mods importados, INI tweaks aplicados, LOOT ordena, el juego arranca con los mods
-5. **Reportar cualquier fallo** con el log de la UI (la UI muestra el output en vivo)
+### 3.1 Principal — nada del pipeline. Solo queda pulido:
+- Probar `./vnv.sh setup` en una distro que no sea Arch (Debian/Ubuntu — sección 3.4)
+- Social preview del repo (sección 3.2)
+- Seguridad: regenerar credenciales (sección 3.5)
 
 ### 3.2 Repo — Social Preview (ícono al compartir)
 GitHub NO permite avatar por repo. Para que el gecko oficial del juego aparezca al compartir el link:
@@ -61,6 +66,11 @@ Las credenciales del usuario estuvieron expuestas en chats:
 - Correr `./vnv.sh credenciales` (guarda email+pass con permisos 600 para el re-login automático)
 - Las cookies de sesión (`nexus_session` + `cf_clearance` en `~/.config/vnv-linux/`) se regeneran con `./vnv.sh login`
 
+### 3.6 Repos root privados + payload UE ESMs (IMPORTANTE)
+- Los 5 root repos (`epic-games-patcher-linux`, `fnv-4gb-patch-linux`, `fnv-bsa-decompressor-linux`, `ue-esm-fixes-linux`, `xnvse-linux`) son **PRIVADOS** por decisión del usuario (contienen binarios/BSAs con copyright). No volverlos públicos.
+- El `.mpi` de Ultimate Edition ESM Fixes (220 MB) **no está en el repo** (límite GitHub de 100 MB). `ue-esm-fixes-linux/port.py` lo extrae del `.7z` en `downloads/` con 7z a `~/.cache/vnv-uefix/`. Requisito: `7z` instalado.
+- Los submods de los 5 root repos se instalan como repos git anidados (NO trackeados por el repo principal, `a1b8295`).
+
 ## 4. CÓMO FUNCIONA (lo esencial para no romper nada)
 
 ### Login y descargas (el gran logro)
@@ -72,11 +82,12 @@ Las credenciales del usuario estuvieron expuestas en chats:
 - **Siempre usar el wrapper**: `./venv/camoufox-python` (python del venv con LD_LIBRARY_PATH correcto) — NUNCA `python3` directo para los scripts de Nexus.
 
 ### Instalación
-- **MO2-LINT** (`mo2-installer`) instala MO2 en el prefix de Proton del juego vía protontricks
-- `scripts/importar_mo2.py` descomprime los 53 mods a `mods/<Nombre>/` + escribe `profiles/Default/modlist.txt`
-- `tweaks_ini` escribe `Data/NVSE/Plugins/nvtf.ini` (heap + 4GB)
-- LOOT: primera vez botón Sort en MO2
-- El juego se lanza DESDE MO2 (no desde Steam directo) — el VFS de MO2 monta los mods
+- **MO2-LINT** (`mo2-installer`) instala MO2 en el prefix de Proton del juego vía protontricks (`mo2-lint install --unattended`)
+- `scripts/importar_mo2.py` descomprime los 53 mods a `mods/<Nombre>/` + escribe `profiles/Default/modlist.txt` (root mods con `-`, Fixed ESMs con `+`)
+- `scripts/root_mods.py` delega en los 5 root repos (xnvse/4gb/epic/bsa/uefix); **epic es no-op en Steam** (detecta LAA ya aplicado)
+- `tweaks_ini` escribe `Data/NVSE/Plugins/nvtf.ini` (heap+4GB) + `profiles/Default/FalloutCustom.ini`
+- El juego se lanza DESDE MO2: `ModOrganizer.exe --profile=Default run -e NVSE` (CLI MO2 2.5.2; `-e` es flag sin valor). `-e=NVSE` NO funciona.
+- El load order viene en el orden de la guía (== LOOT); `./vnv.sh loot` lo valida sin tocarlo.
 
 ### Setup
 - `setup.sh`: detecta distro → deps del sistema (con o sin sudo) → venv + Camoufox + Flask → smoke test → si las libs del sistema están rotas, fallback micromamba+pixman (sin sudo) → crea el wrapper
@@ -96,4 +107,4 @@ Las credenciales del usuario estuvieron expuestas en chats:
 - `obsidian/` — bóveda documental (Inicio.md es el hub)
 - `README.md` — guía de usuario
 - `scripts/gen_obsidian.py` — regenera la bóveda si cambia la doc
-- Comandos: `./vnv.sh {ui|setup|login|config-cookies|credenciales|config|download|estado|steam|install|run}`
+- Comandos: `./vnv.sh {ui|setup|login|config-cookies|credenciales|config|download|estado|install|loot|run}`

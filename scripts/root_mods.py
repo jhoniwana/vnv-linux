@@ -7,10 +7,10 @@ En MO2 quedan desactivados a propósito (importar_mo2.py les pone '-').
 Cada paso delega en su port nativo Linux (repos/):
   xnvse   → repos/xnvse-linux/port.py
   4gb     → repos/fnv-4gb-patch-linux/port.py
-  epic    → repos/epic-games-patcher-linux/port.py (SOLO EGS; en Steam se omite)
+  epic    → repos/epic-games-patcher-linux/port.py (no-op en Steam: detecta LAA ya aplicado)
   bsa     → repos/fnv-bsa-decompressor-linux/decompress.py
   uefix   → repos/ue-esm-fixes-linux/port.py (mod "Fixed ESMs")
-  all     → xnvse + 4gb + bsa + uefix (epic se omite en Steam)
+  all     → xnvse + 4gb + bsa + uefix (epic es no-op en Steam)
 
 Sin Wine/Proton: todo corre nativo en Linux.
 """

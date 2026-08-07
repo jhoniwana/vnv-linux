@@ -17,6 +17,26 @@ Bitácora técnica del proyecto: **instalador 100% automático de Viva New Vegas
 
 ---
 
+## ✅ VALIDACIÓN FINAL COMPLETA (6 ago 2026) — TODO PROBADO EN VIVO
+
+Pipeline completo verificado de punta a punta en la máquina del usuario (Steam + FNV):
+- **Descargas**: 53/53 main + 4/4 extras, 0 HTML (auditoría vs manifest+estado.json)
+- **`install` e2e idempotente** (re-corrido tras push): 53/53 re-importados, modlist 55 líneas, loadorder 21 en orden de guía, root mods re-ejecutados OK, tweaks INI aplicados
+- **Juego lanzado y confirmado en menú principal**: 27 plugins NVSE cargados (`nvse.log`), VFS MO2 completo, `run -e NVSE` correcto, cierre limpio
+- **Estado del juego**: LAA=0xA620 + nvse_steam_loader importado, BSAs descomprimidos (ver 8265), Fixed ESMs con tamaños correctos
+- **UI web** sirve OK (curl), `bash -n` + `py_compile` de todos los scripts OK
+
+### Bugs encontrados en la validación (todos con fix):
+1. **MO2 2.5.2 trunca `plugins.txt` al apagar** tras sesión de juego (deja `FalloutNV.esm` solo; `loadorder.txt` intacto). Reproducido 2×. Fix en `lanzar()`: regenera `plugins.txt` = cabecera + `*` por línea del `loadorder.txt` si difieren (vnv.sh:214-226).
+2. **lootcli standalone no ve el VFS de MO2** → re-escribe `plugins.txt` con ~10 plugins si se apunta al perfil real. Fix: `./vnv.sh loot` valida sobre copia `/tmp/opencode/loot_plugins.txt`; LOOT sacado del `install` (vnv.sh:172-192).
+
+### Repos post-push
+- `jhoniwana/vnv-linux` **público** (rama main, `a5ea1a7`); 5 root repos **privados** por decisión del usuario.
+- `.mpi` de UEM Fixes (220 MB) fuera del repo (límite GitHub 100 MB); `port.py` lo extrae del `.7z` con 7z a `~/.cache/vnv-uefix/`.
+- `epic` en Steam = no-op (root_mods.py:10,13).
+
+---
+
 ## 📚 LO APRENDIDO (por área)
 
 ### API de Nexus (v1)
