@@ -21,6 +21,21 @@ Technical log of the project: **100% automatic installer of Viva New Vegas (Core
 
 ## ✅ DEFINITIVE CLOSURE (7 aug 2026) — 100% verified by the user
 
+
+## ✅ DECOMPRESSOR FINAL ANSWER (7 aug 2026, night)
+
+- Real header field order (xEdit wbBSA.pas): magic | version | offset | **bfFlags** |
+  folderCount | fileCount | folderNameLen | fileNameLen | bfFileFlags. Compression
+  default = `bfFlags & 0x04`; per-file: `bit30 XOR (bfFlags & 0x04)`.
+- The vanilla 11 "0x100" BSAs are **already raw** on the current depot → the VNV
+  decompressor mod is a no-op (it was for the old compressed DLC era).
+- Meshes.bsa / Misc.bsa DO contain zlib and decompress fine with the corrected tool
+  (Meshes 1.06GB → 2.31GB, bit30 SET, nifs raw) — **but the 32-bit game crashes at
+  startup** ("File not found (2)") because the decompressed archives exceed the 3GB
+  address space. The original mod never touches them for exactly this reason.
+- **Conclusion: do not run the decompressor on the current depot.** Vanilla BSAs =
+  the optimal, working state. The corrected tool (xEdit layout + XOR semantics +
+  preserved nameOffsets, commit f5f22a3) is kept for reference/completeness.
 ## ✅ BSA/DECOMPRESSOR CLOSURE (7 aug 2026, evening)
 
 - **The pink-textures/missing-mesh mystery = the old decompressor's bit30 bug** (it set bit30 on every file → the game, with the `bit30 XOR (flags&0x04)` semantics from xEdit/wbBSArchive, read them as compressed → tried zlib on raw data → failed). With the **vanilla BSAs restored** (Steam validate re-downloads the whole depot), the game runs PERFECTLY (no broken walls, no pink perks, 28 NVSE plugins, clean log).
