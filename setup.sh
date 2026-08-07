@@ -68,7 +68,10 @@ deps_sistema() {
     info "passwordless sudo available — installing dependencies automatically..."
     case "$DISTRO" in
       debian|ubuntu|linuxmint|pop)
-        sudo apt update -qq && sudo apt install -y -qq libgtk-3-0 libasound2t64 libasound2 libdbus-glib-1-2 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxdamage1 libxrandr2 libxtst6 libpango-1.0-0 libcairo2 libpixman-1-0 libnss3 libxss1 libegl1 libxkbcommon0 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 libglib2.0-0 curl bzip2 python3-venv 2>/dev/null && ok "deps installed" || fail "apt failed"
+        # libasound2 es un paquete VIRTUAL en Ubuntu 24.04 (solo libasound2t64):
+        # instalarlo falla TODO el apt → separar en dos installs tolerantes
+        sudo apt update -qq 2>/dev/null || true
+        sudo apt install -y -qq libgtk-3-0 libasound2t64 libdbus-glib-1-2 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxdamage1 libxrandr2 libxtst6 libpango-1.0-0 libcairo2 libpixman-1-0 libnss3 libxss1 libegl1 libxkbcommon0 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 libglib2.0-0 curl bzip2 python3-venv 2>/dev/null && ok "deps installed" || fail "apt failed"
         ;;
       arch|manjaro|endeavouros)
         sudo pacman -S --needed --noconfirm gtk3 alsa-lib libxcomposite libxdamage libxrandr libxtst pango cairo pixman nss libxss libegl libxkbcommon atk at-spi2-core libcups libdrm libgbm glib2 curl bzip2 python 2>/dev/null && ok "deps installed" || fail "pacman failed"
