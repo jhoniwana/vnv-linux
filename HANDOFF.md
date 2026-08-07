@@ -33,10 +33,12 @@ Mensaje para el agente que continúe este proyecto. Léelo completo antes de act
 ### Bugs encontrados en la auditoría y sus fixes
 - **MO2 2.5.2 trunca `plugins.txt` al apagar tras sesión de juego** (deja solo `FalloutNV.esm`; el `loadorder.txt` queda intacto). Reproducido 2 veces. **Fix**: `lanzar()` re-sincroniza `plugins.txt` desde `loadorder.txt` antes de cada launch (vnv.sh:214-226).
 - **lootcli standalone no ve el VFS de MO2** → re-escribía `plugins.txt` con ~10 plugins. **Fix**: `./vnv.sh loot` valida sobre una copia en `/tmp/opencode/loot_plugins.txt` (no-destructivo) y se sacó LOOT del `install` (vnv.sh:172-192).
+- **CRASH "error de Tale of Two Wastelands" al lanzar el juego (CAUSA RAIZ)**: `actualizar.py` elige el MAIN más reciente del mod 90593 "Vanilla Placement Fixes", que resultó ser la versión **TTW** (`Placement Fixes TTW`, file_id `1000152141`, v1.8) → `Placement Fixes.esm` requería `TaleOfTwoWastelands.esm` y el juego crasheaba al inicio. **Fix**: file_id corregido a `1000152138` (`Placement Fixes` vanilla v1.8), re-descargado (`Placement Fixes-90593-1-8-1747772681.7z`), re-importado, masters verificados (`FalloutNV/HonestHearts/OldWorldBlues/LonesomeRoad.esm` — sin TTW). Para detectar estos casos: escanear masters de plugins con `TES4` + size u32 en 0x04 y subrecords con tamaño **u16** (`<4sH`), buscando `MAST`.
 
 ## 3. LO QUE FALTA (priorizado)
 
 ### 3.1 Principal — nada del pipeline. Solo queda pulido:
+- Verificar en un `./vnv.sh run` final que el juego llega al menú con los 21 plugins SIN masters TTW (crash ya corregido, ver sección 2)
 - Probar `./vnv.sh setup` en una distro que no sea Arch (Debian/Ubuntu — sección 3.4)
 - Social preview del repo (sección 3.2)
 - Seguridad: regenerar credenciales (sección 3.5)
