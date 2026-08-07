@@ -1,37 +1,37 @@
 ---
 tags: [inicio, vnv]
 ---
-# ⚡ Viva New Vegas Linux — Bóveda de Documentación
+# ⚡ Viva New Vegas Linux — Documentation Vault
 
-Proyecto: instalador **100% automático** del Core de Viva New Vegas (53 mods) para Fallout New Vegas en Linux/Steam.
+Project: **100% automatic** installer of the Viva New Vegas Core (53 mods) for Fallout New Vegas on Linux/Steam.
 
-## 🧭 Navegación
+## 🧭 Navigation
 
-- [[Visión General]] — qué es y cómo funciona
-- [[Estado Actual]] — qué está hecho y qué falta
-- [[Objetivos y Roadmap]] — hacia dónde va
+- [[Visión General]] — what it is and how it works
+- [[Estado Actual]] — what is done and what is missing
+- [[Objetivos y Roadmap]] — where it is going
 
-## 📚 Guías (paso a paso)
+## 📚 Guides (step by step)
 
-1. [[Setup del Entorno]] — preparar la máquina (multi-distro)
-2. [[Login Nexus]] — cuenta y sesión automática
-3. [[Descarga de Mods]] — el gestor con estados y retries
-4. [[Importar a MO2]] — convertir descargas al formato MO2
-5. [[Conexión Steam]] — Proton + protontricks (paso 1)
-6. [[Lanzamiento del Juego]] — MO2 Run + LOOT (paso 2, teoría)
+1. [[Setup del Entorno]] — prepare the machine (multi-distro)
+2. [[Login Nexus]] — automatic account and session
+3. [[Descarga de Mods]] — the manager with states and retries
+4. [[Importar a MO2]] — convert downloads to the MO2 format
+5. [[Conexión Steam]] — Proton + protontricks (step 1)
+6. [[Lanzamiento del Juego]] — MO2 Run + LOOT (step 2, theory)
 
-## 🛠️ Referencia
+## 🛠️ Reference
 
-- [[Comandos vnv.sh]] — todos los comandos
-- [[Estructura del Proyecto]] — archivos y scripts
-- [[API de Nexus]] — endpoints y límites
-- [[Manifest y Mods]] — los 53 mods del Core
+- [[Comandos vnv.sh]] — all the commands
+- [[Estructura del Proyecto]] — files and scripts
+- [[API de Nexus]] — endpoints and limits
+- [[Manifest y Mods]] — the 53 Core mods
 
 ## 🐛 Troubleshooting
 
-- [[Problemas Comunes]] — fallos típicos y soluciones
-- [[Descargas - Troubleshooting]] — desafíos de Cloudflare y sesión
+- [[Problemas Comunes]] — typical failures and solutions
+- [[Descargas - Troubleshooting]] — Cloudflare and session challenges
 
-## 📅 Bitácora
+## 📅 Log
 
-- [[Cronología]] — línea de tiempo del desarrollo
+- [[Cronología]] — development timeline

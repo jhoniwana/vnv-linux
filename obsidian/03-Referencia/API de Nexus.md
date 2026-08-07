@@ -5,35 +5,35 @@ tags: [referencia, nexus, api]
 
 ## Endpoints (v1)
 
-| Endpoint | Uso | Gratis |
+| Endpoint | Use | Free |
 |---|---|---|
-| `GET /v1/users/validate.json` | validar API key | ✅ |
-| `GET /v1/games/newvegas/mods/{id}.json` | metadata del mod | ✅ |
-| `GET /v1/games/newvegas/mods/{id}/files.json` | lista de archivos | ✅ |
-| `GET .../files/{fid}/download_link.json` | link de descarga | ❌ **solo Premium** |
+| `GET /v1/users/validate.json` | validate API key | ✅ |
+| `GET /v1/games/newvegas/mods/{id}.json` | mod metadata | ✅ |
+| `GET /v1/games/newvegas/mods/{id}/files.json` | file list | ✅ |
+| `GET .../files/{fid}/download_link.json` | download link | ❌ **Premium only** |
 
-## Descarga FREE (lo descubierto)
+## FREE download (the discovery)
 
-- **NO usar `download_link`** (403 sin Premium)
-- Endpoint web: **`https://www.nexusmods.com/Download/?id={file_id}&game_id=130&source=ModPage`**
-  - Funciona con la **cookie `nexusmods_session`** (gratis)
-  - Muestra página con "served via CDN" (botón) o "should automatically begin" (auto)
-- Widget legacy `DownloadPopUp`: muerto (redirige a la página del mod)
+- **Do NOT use `download_link`** (403 without Premium)
+- Web endpoint: **`https://www.nexusmods.com/Download/?id={file_id}&game_id=130&source=ModPage`**
+  - Works with the **`nexusmods_session` cookie** (free)
+  - Shows a page with "served via CDN" (button) or "should automatically begin" (auto)
+- Legacy `DownloadPopUp` widget: dead (redirects to the mod page)
 
 ## Login
 
-- Formulario: `users.nexusmods.com` → "Sign in" → `#user_login` + `#password` + Turnstile
-- **Camoufox headless pasa el Turnstile** (Playwright/Selenium no)
-- Cookies: `nexusmods_session` (sesión) + `cf_clearance` (Cloudflare)
+- Form: `users.nexusmods.com` → "Sign in" → `#user_login` + `#password` + Turnstile
+- **Camoufox headless passes the Turnstile** (Playwright/Selenium do not)
+- Cookies: `nexusmods_session` (session) + `cf_clearance` (Cloudflare)
 
-## Reglas
+## Rules
 
-- API key personal, gratis en nexusmods.com/settings/api-keys
-- Rate limits: ~5s entre llamadas (metadata)
-- Descargas: ritmo humano 8-15s entre mods
-- La cookie `nexusmods_session` expira → el gestor re-loguea solo
+- Personal API key, free at nexusmods.com/settings/api-keys
+- Rate limits: ~5s between calls (metadata)
+- Downloads: human pace 8-15s between mods
+- The `nexusmods_session` cookie expires → the manager re-logs in by itself
 
-## Referencias
+## References
 
 - [[Login Nexus]]
 - [[Descarga de Mods]]

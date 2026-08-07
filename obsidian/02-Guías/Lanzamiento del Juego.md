@@ -3,28 +3,28 @@ tags: [guia, lanzamiento, mo2, teoria]
 ---
 # Lanzamiento del Juego
 
-> ⚠️ **Teoría** — este paso requiere hardware real con Steam + FNV. No probado aún.
+> ⚠️ **Theory** — this step requires real hardware with Steam + FNV. Not tested yet.
 
-## Secuencia completa
+## Complete sequence
 
-1. `mo2-installer install --game fallout-new-vegas` → MO2 en el prefix del juego
-2. `mo2-installer run --game fallout-new-vegas` → abre MO2 con el entorno Wine del juego
-3. El perfil "Default" ya tiene los 53 mods importados ([[Importar a MO2]])
-4. **LOOT** (primera vez): botón Sort en MO2 → ordena plugins → escribe `loadorder.txt`
-5. **Run** en MO2 → lanza `FalloutNV.exe` con el VFS (mods montados virtualmente)
-6. NVTF aplica heap + 4GB + vsync desde `Data/NVSE/Plugins/nvtf.ini` (lo escribe `tweaks_ini`)
-7. FNV en Proton: **fullscreen-only** — la guía VNV recomienda fullscreen + NVTF
+1. `mo2-installer install --game fallout-new-vegas` → MO2 in the game prefix
+2. `mo2-installer run --game fallout-new-vegas` → opens MO2 with the game's Wine environment
+3. The "Default" profile already has the 53 mods imported ([[Importar a MO2]])
+4. **LOOT** (first time): Sort button in MO2 → orders plugins → writes `loadorder.txt`
+5. **Run** in MO2 → launches `FalloutNV.exe` with the VFS (mods mounted virtually)
+6. NVTF applies heap + 4GB + vsync from `Data/NVSE/Plugins/nvtf.ini` (written by `tweaks_ini`)
+7. FNV on Proton: **fullscreen-only** — the VNV guide recommends fullscreen + NVTF
 
 ## Troubleshooting
 
-| Problema | Solución |
+| Problem | Solution |
 |---|---|
-| Crash al inicio | Verificar `nvtf.ini` (EnableHeapReplacement) y NVTF activo en el modlist |
-| Sin mods cargados | Lanzar DESDE MO2 (no desde Steam directo); perfil Default activo |
-| Pantalla negra | Fullscreen; probar Proton GE |
-| LOOT no ordena | Correr LOOT desde MO2; reinstalar con `mo2-installer install` |
+| Crash on start | Check `nvtf.ini` (EnableHeapReplacement) and NVTF active in the modlist |
+| No mods loaded | Launch FROM MO2 (not directly from Steam); Default profile active |
+| Black screen | Fullscreen; try Proton GE |
+| LOOT does not sort | Run LOOT from MO2; reinstall with `mo2-installer install` |
 
-## Referencias
+## References
 
-- [[Conexión Steam]] — paso previo
+- [[Conexión Steam]] — previous step
 - [[Problemas Comunes]]

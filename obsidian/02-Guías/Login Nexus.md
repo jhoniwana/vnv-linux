@@ -3,40 +3,40 @@ tags: [guia, login, nexus]
 ---
 # Login Nexus
 
-El login automático a NexusMods es **la pieza más difícil del proyecto** — y quedó resuelta.
+The automatic login to NexusMods is **the hardest piece of the project** — and it was solved.
 
-## El problema
+## The problem
 
-- Nexus usa **Cloudflare Turnstile** en el login → bloquea navegadores headless
-- Playwright (Chrome): ❌ bloqueado
-- SeleniumBase UC: ❌ bloqueado
-- **Camoufox (Firefox anti-detección) headless: ✅ PASA**
+- Nexus uses **Cloudflare Turnstile** on login → blocks headless browsers
+- Playwright (Chrome): ❌ blocked
+- SeleniumBase UC: ❌ blocked
+- **Camoufox (anti-detection Firefox) headless: ✅ PASSES**
 
-## La solución
+## The solution
 
-`login_camoufox.py` (desde la UI: paso 2, o `./vnv.sh login`):
+`login_camoufox.py` (from the UI: step 2, or `./vnv.sh login`):
 
-1. Abre Camoufox headless
-2. Navega a `users.nexusmods.com/register` → click "Sign in"
-3. Completa `#user_login` + `#password` (desde el formulario de la UI o `NEXUS_USER`/`NEXUS_PASS`)
-4. Submit → Turnstile pasa (Camoufox tiene fingerprint real de Firefox)
-5. Guarda las cookies: **`nexusmods_session`** + **`cf_clearance`** en `~/.config/vnv-linux/` (permisos 600)
+1. Opens Camoufox headless
+2. Navigates to `users.nexusmods.com/register` → clicks "Sign in"
+3. Fills in `#user_login` + `#password` (from the UI form or `NEXUS_USER`/`NEXUS_PASS`)
+4. Submit → Turnstile passes (Camoufox has a real Firefox fingerprint)
+5. Saves the cookies: **`nexusmods_session`** + **`cf_clearance`** in `~/.config/vnv-linux/` (permissions 600)
 
-## Datos clave
+## Key facts
 
-- La cookie de sesión se llama **`nexusmods_session`** (NO `sid` — la renombraron)
-- `cf_clearance` demuestra que pasaste el challenge de Cloudflare (clave para descargas)
-- El login se hace **una sola vez**; las cookies duran días/semanas
+- The session cookie is called **`nexusmods_session`** (NOT `sid` — it was renamed)
+- `cf_clearance` proves you passed the Cloudflare challenge (key for downloads)
+- The login is done **only once**; the cookies last for days/weeks
 
-## Auto-recuperación
+## Self-recovery
 
-Si la sesión expira a mitad de descarga, el [[Descarga de Mods|gestor]] detecta "Log in" en la página → re-loguea solo con las credenciales guardadas (`./vnv.sh credenciales`) → sigue.
+If the session expires mid-download, the [[Descarga de Mods|manager]] detects "Log in" on the page → re-logs in by itself with the saved credentials (`./vnv.sh credenciales`) → continues.
 
-## Alternativa manual
+## Manual alternative
 
-`./vnv.sh config-cookies`: pegar la cookie `nexusmods_session` desde el navegador (F12 → Application → Cookies).
+`./vnv.sh config-cookies`: paste the `nexusmods_session` cookie from the browser (F12 → Application → Cookies).
 
-## Referencias
+## References
 
 - [[Descarga de Mods]]
 - [[Descargas - Troubleshooting]]

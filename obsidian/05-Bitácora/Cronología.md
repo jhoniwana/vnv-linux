@@ -3,60 +3,35 @@ tags: [bitacora]
 ---
 # Cronología
 
-## 6 agosto 2026 — 🏆 EL JUEGO LLEGA AL MENÚ CON MODS
+## 5 August 2026 — Big day
 
-- **Validación completa del pipeline**: BSAs descomprimidos (v2) + exe 4GB + xNVSE + 53 mods + Fixed ESMs → menú principal con mods (Stewie Tweaks en Settings)
-- **Bug crítico encontrado y arreglado**: la descompresión v1 (flags=0) crasheaba el juego; el fix = mantener flags=0x100 + bit 30 (0x40000000) en cada size + data raw (spec UESP)
-- **Steam validation restaura el exe vanilla** → re-aplicar 4GB después (fix en el port: detecta LAA+import NVSE)
-- **Input automation**: XTest roto → uinput/evdev (`scripts/uikey.py`) — teclado real en GNOME
-- MO2 "Launch Steam" = falso positivo (busca Steam.exe Windows); "Continue" es seguro
-- El juego nunca había corrido de verdad (el run de ayer era el launcher colgado)
+- **FREE download solved**: `/Download/` endpoint discovered (after the user insisted on "Manual download")
+- 53/53 mods downloaded and verified (1.1 GB)
+- **Exact verification**: file_ids bug fixed (13 mods), newest MAIN
+- **Robust manager**: states, retries, automatic re-login (tested: session deleted → it recovered by itself)
+- **Multi-distro setup** + library wrapper (smoke test + micromamba fallback)
+- **Web UI**: 6-step wizard with live SSE — no terminal
+- **Automatic MO2 importer**: 53/53 imported
+- **Steam connection**: `steam` command + protontricks + launch theory
+- **Obsidian vault** created
 
-## 5 agosto 2026 — UE ESM Fixes: port nativo RESUELTO
+## Key discoveries (5 Aug)
 
-- **Breakthrough**: los parches `.xd3` del `.mpi` están **comprimidos con LZ4 Frame** (magic `04 22 4D 18`) — por eso los streams se veían ilegibles/corruptos
-- **Manifiesto real** `_package/index.json` (LZ4): valida solo `FalloutNV.exe` (8 SHA1), los esm van crudos a xdelta3; sin cadena de parches
-- **Repo `repos/ue-esm-fixes-linux/`** (commit `89cfef1`): `port.py` (LZ4 + xdelta3 nativo) probado end-to-end → 6 esm corregidos (FalloutNV 330MB, etc.), adler32 verificado
-- `xdelta3` 3.1.0 compilado desde fuente a `~/.local/bin`
-- FalloutNV.exe local matchea el hash soportado `0021023E...`
-
-## 5 agosto 2026 — Fase 2: Root mods + plan nativo
-
-- **Commit `08ca4d5`**: `importar_mo2.py` con raíces de datos válidas FNV + motor FOMOD + loadorder de la guía (20 plugins); `vnv.sh` con MO2-LINT; reimport completo 53/53 mods válidos.
-- **`scripts/root_mods.py`** (paso "root mods" de la guía): xnvse + 4GB probados en juego real OK; epic omitido correctamente en Steam; bsa/uefix rotos con `wine` plano (ver BRAIN.md).
-- **Descubrimiento**: `wine` no corre GUIs en el prefix Proton (errores setupapi) → hay que usar `protontricks-launch 22380`.
-- **Decisión del usuario**: reimplementar nativo en Linux el BSA Decompressor y el extractor del `.mpi` de UE ESM Fixes (formato BSA v105) + **crear un git repo por cada root mod** (xnvse, 4gb, epic, bsa, uefix).
-- **Lección shell**: `pkill -f` con patrón presente en la propia línea de comando se mata a sí mismo → timeout.
-
-## 5 agosto 2026 — Día grande
-
-- **Descarga FREE resuelta**: endpoint `/Download/` descubierto (tras insistencia del usuario con "Manual download")
-- 53/53 mods descargados y verificados (1.1 GB)
-- **Verificación exacta**: bug de file_ids corregido (13 mods), MAIN más reciente
-- **Gestor robusto**: estados, retries, re-login automático (probado: sesión borrada → se recuperó solo)
-- **Setup multi-distro** + wrapper de librerías (smoke test + fallback micromamba)
-- **UI web**: wizard 6 pasos con SSE en vivo — sin terminal
-- **Importador MO2 automático**: 53/53 importados
-- **Conexión Steam**: comando `steam` + protontricks + teoría del lanzamiento
-- **Bóveda de Obsidian** creada
-
-## Descubrimientos clave (5 ago)
-
-| Descubrimiento | Impacto |
+| Discovery | Impact |
 |---|---|
-| Camoufox pasa el Turnstile headless | Login automático ✅ |
-| Cookie real = `nexusmods_session` (no `sid`) | Descargas ✅ |
-| Endpoint `/Download/?id=...` gratis | 53 mods sin Premium ✅ |
-| "Log in" ≠ "Sign in" | Re-login automático ✅ |
-| MAIN más reciente por timestamp | File_ids exactos ✅ |
+| Camoufox passes the Turnstile headless | Automatic login ✅ |
+| The real cookie is `nexusmods_session` (not `sid`) | Downloads ✅ |
+| Free `/Download/?id=...` endpoint | 53 mods without Premium ✅ |
+| "Log in" ≠ "Sign in" | Automatic re-login ✅ |
+| Newest MAIN by timestamp | Exact file_ids ✅ |
 
-## Fase previa (2-4 agosto)
+## Previous phase (2-4 August)
 
-- Exploración: Playwright, Selenium UC, LightPanda (ninguno pasó el Turnstile)
-- Xvfb/conda: callejón sin salida (libs rotas) → resuelto con wrapper
-- Login "estilo Wabbajack" (ventana real) documentado como alternativa
+- Exploration: Playwright, Selenium UC, LightPanda (none passed the Turnstile)
+- Xvfb/conda: dead end (broken libs) → solved with the wrapper
+- "Wabbajack-style" login (real window) documented as an alternative
 
-## Ver también
+## See also
 
 - [[Estado Actual]]
 - [[Objetivos y Roadmap]]

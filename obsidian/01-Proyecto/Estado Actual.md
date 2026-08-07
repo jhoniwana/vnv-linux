@@ -3,35 +3,29 @@ tags: [proyecto, estado]
 ---
 # Estado Actual
 
-## ✅ Completado (probado en vivo)
+## ✅ Done (tested live)
 
-| Componente | Estado |
+| Component | Status |
 |---|---|
-| Manifest con 53 mods (file_id correctos) | ✅ |
-| Login Nexus automático (Camoufox pasa Turnstile) | ✅ |
-| Descarga FREE de los 53 mods (1.1 GB) | ✅ verificados, 0 HTML |
-| Verificación exacta vs API (MAIN más reciente) | ✅ 13 file_ids corregidos |
-| Gestor de descargas (estados + retries + re-login) | ✅ |
-| Setup multi-distro + wrapper de librerías | ✅ |
-| UI web (wizard 6 pasos, logs en vivo SSE) | ✅ |
-| Importador automático a MO2 (53/53) | ✅ |
-| Comando `steam` (diagnóstico Proton) | ✅ |
-| Root mods: xNVSE + 4GB (nativos) en juego real | ✅ |
-| Epic Games Patcher (omisión en Steam) | ✅ |
-| UE ESM Fixes: port nativo (repo `uefix-linux-port`) | ✅ 6 esm generados |
+| Manifest with 53 mods (correct file_ids) | ✅ |
+| Automatic Nexus login (Camoufox passes Turnstile) | ✅ |
+| FREE download of the 53 mods (1.1 GB) | ✅ verified, 0 HTML |
+| Exact verification vs API (newest MAIN) | ✅ 13 file_ids fixed |
+| Download manager (states + retries + re-login) | ✅ |
+| Multi-distro setup + library wrapper | ✅ |
+| Web UI (6-step wizard, live SSE logs) | ✅ |
+| Automatic MO2 importer (53/53) | ✅ |
+| `steam` command (Proton diagnostics) | ✅ |
 
-## 🟡 Pendiente (requiere hardware real con el juego)
+## 🟡 Pending (requires real hardware with the game)
 
-- Root mods nativos: BSA Decompressor (rewrite BSAs v105) — único pendiente
-- Git repo por cada root mod restante (bsa, xnvse, 4gb, epic)
-- Integrar `root_mods.py` con los ports nativos y en `vnv.sh install` + commitear
-- Probar `install` completo en máquina con Steam + FNV (MO2-LINT, Wine, LOOT)
-- Primer lanzamiento del juego con los mods
-- Probar el setup en Debian real (solo probado en Arch)
+- Test a full `install` on a machine with Steam + FNV (MO2-LINT, Wine, LOOT)
+- First game launch with the mods
+- Test the setup on real Debian (only tested on Arch)
 
-## 📦 Entregables
+## 📦 Deliverables
 
-- Repo: `/home/shot/vnv-linux/`
-- 53 mods en `downloads/` (1.1 GB)
-- Bitácora técnica: [[Cronología]] y `BRAIN.md`
-- Esta bóveda de Obsidian
+- Repo: `<BASE>/`
+- 53 mods in `downloads/` (1.1 GB)
+- Technical log: [[Cronología]] and `BRAIN.md`
+- This Obsidian vault

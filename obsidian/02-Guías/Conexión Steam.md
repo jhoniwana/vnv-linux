@@ -3,43 +3,43 @@ tags: [guia, steam, proton, mo2]
 ---
 # Conexión Steam ↔ MO2
 
-Cómo se conecta el modloader con Steam (paso 1 del flujo de instalación).
+How the modloader connects with Steam (step 1 of the install flow).
 
-## Realidad: no hay modloader nativo
+## Reality: there is no native modloader
 
-- **MO2/Vortex**: apps .NET de Windows → corren con **Wine/Proton**
-- **NexusMods.App** (oficial): nativa Linux pero **NO soporta FNV** (solo FO4, Cyberpunk, etc.)
-- Conclusión: **MO2 vía Proton es el estándar**
+- **MO2/Vortex**: Windows .NET apps → run with **Wine/Proton**
+- **NexusMods.App** (official): native Linux but does **NOT support FNV** (only FO4, Cyberpunk, etc.)
+- Conclusion: **MO2 via Proton is the standard**
 
-## El mecanismo
+## The mechanism
 
 ```
 Steam (FNV, appid 22380)
-   │  forzar Proton (Steam Play)
+   │  force Proton (Steam Play)
    ▼
-Prefix de Proton del juego (steamapps/compatdata/22380/pfx)
-   │  protontricks: MO2 corre DENTRO de ese prefix
+Game Proton prefix (steamapps/compatdata/22380/pfx)
+   │  protontricks: MO2 runs INSIDE that prefix
    ▼
-MO2 → botón Run → FalloutNV.exe con los mods montados (VFS)
+MO2 → Run button → FalloutNV.exe with the mods mounted (VFS)
 ```
 
-- **Protontricks** = la pieza clave: ejecuta programas en el prefix de Proton de un juego
-- **MO2-LINT** automatiza: `mo2-installer install --game fallout-new-vegas`
-- **VFS de MO2**: los mods se montan virtualmente — el directorio del juego NO se modifica
+- **Protontricks** = the key piece: runs programs in the Proton prefix of a game
+- **MO2-LINT** automates: `mo2-installer install --game fallout-new-vegas`
+- **MO2 VFS**: the mods are mounted virtually — the game directory is NOT modified
 
-## Comando
+## Command
 
 ```bash
-./vnv.sh steam          # diagnostica Steam, FNV, prefix, protontricks
-./vnv.sh steam --si     # además lanza FNV con Proton para crear el prefix (no-interactivo)
+./vnv.sh steam          # diagnoses Steam, FNV, prefix, protontricks
+./vnv.sh steam --si     # also launches FNV with Proton to create the prefix (non-interactive)
 ```
 
-## Si el prefix no existe
+## If the prefix does not exist
 
-1. Steam → FNV → Propiedades → Compatibilidad → forzar Proton
-2. Jugar una vez (crea el prefix) — o correr `./vnv.sh steam --si`
+1. Steam → FNV → Properties → Compatibility → force Proton
+2. Play once (creates the prefix) — or run `./vnv.sh steam --si`
 
-## Referencias
+## References
 
-- [[Lanzamiento del Juego]] — qué hacer después
+- [[Lanzamiento del Juego]] — what to do next
 - [[Problemas Comunes]]

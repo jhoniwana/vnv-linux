@@ -3,31 +3,31 @@ tags: [guia, setup, multi-distro]
 ---
 # Setup del Entorno
 
-> Prepara la máquina en cualquier distro Linux. Se ejecuta solo desde la UI (paso 1) o con `./vnv.sh setup`.
+> Prepares the machine on any Linux distro. It runs only from the UI (step 1) or with `./vnv.sh setup`.
 
-## Qué hace `setup.sh`
+## What `setup.sh` does
 
-1. **Detecta la distro** (`/etc/os-release`)
-2. **Dependencias del sistema**: muestra (o instala con sudo si está disponible) los paquetes para GTK3, NSS, cairo, pixman, protontricks...
+1. **Detects the distro** (`/etc/os-release`)
+2. **System dependencies**: shows (or installs with sudo if available) the packages for GTK3, NSS, cairo, pixman, protontricks...
    - Debian/Ubuntu: `apt install ... protontricks`
    - Arch: `pacman -S ... protontricks`
    - Fedora: `dnf install ... protontricks`
 3. **Venv + Camoufox + Flask**
-4. **Smoke test**: ¿Camoufox arranca con las libs del sistema?
-   - Si falla (libs rotas, típico de Arch con update parcial): **fallback automático** → micromamba user-space (sin sudo) con pixman → wrapper `venv/camoufox-python` que resuelve las librerías
-5. **Verifica la sesión de Nexus** (cookies)
+4. **Smoke test**: does Camoufox start with the system libs?
+   - If it fails (broken libs, typical of Arch with a partial update): **automatic fallback** → micromamba user-space (no sudo) with pixman → `venv/camoufox-python` wrapper that resolves the libraries
+5. **Verifies the Nexus session** (cookies)
 
-## El wrapper `venv/camoufox-python`
+## The `venv/camoufox-python` wrapper
 
-Es el intérprete de Python del proyecto: exporta el `LD_LIBRARY_PATH` correcto (limpia el contaminado) y ejecuta el python del venv. **Todos los scripts usan el wrapper.**
+It is the project's Python interpreter: it exports the correct `LD_LIBRARY_PATH` (cleans the contaminated one) and runs the venv python. **All scripts use the wrapper.**
 
-## Requisitos mínimos
+## Minimum requirements
 
 - Python 3.10+
-- ~4 GB de disco
-- Steam con Fallout New Vegas
+- ~4 GB of disk
+- Steam with Fallout New Vegas
 
-## Referencias
+## References
 
-- [[Login Nexus]] — siguiente paso
-- [[Problemas Comunes]] — si algo falla
+- [[Login Nexus]] — next step
+- [[Problemas Comunes]] — if something fails

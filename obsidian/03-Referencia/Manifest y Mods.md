@@ -3,9 +3,9 @@ tags: [referencia, mods]
 ---
 # Manifest y Mods
 
-El Core de Viva New Vegas = **53 mods** de Nexus (todos descargados y verificados).
+The Viva New Vegas Core = **53 mods** from Nexus (all downloaded and verified).
 
-## Estructura del manifest
+## Manifest structure
 
 ```json
 {
@@ -17,21 +17,21 @@ El Core de Viva New Vegas = **53 mods** de Nexus (todos descargados y verificado
 }
 ```
 
-## Secciones
+## Sections
 
-- **setup** — herramientas (steam-library-setup-tool, GitHub)
+- **setup** — tools (steam-library-setup-tool, GitHub)
 - **utilities** — NVSE, JIP LN, NVTF, xNVSE, UIO...
 - **bugfix** — YUP, Stewie Tweaks (66347), mesh fixes...
 - **finish** — Stewie Tweaks INIs (GitHub: ModdingLinked/Stewie-Tweaks-INIs)
 
-## Datos importantes
+## Important data
 
-- El file_id correcto = **MAIN más reciente** por `uploaded_timestamp` (bug corregido: antes elegía el primero → 13 mods con versión vieja)
-- **FNV 4GB Patcher**: usar el archivo **"FNV4GB for Proton"** (versión Linux/Wine)
-- **JIP LN**: el plugin (v57.30) ≠ el INI (v56.24) — la guía necesita el PLUGIN
-- Stewie Tweaks: mod 66347 (el 90824 está hidden por el autor)
+- The correct file_id = **newest MAIN** by `uploaded_timestamp` (bug fixed: it used to pick the first one → 13 mods with an old version)
+- **FNV 4GB Patcher**: use the **"FNV4GB for Proton"** file (Linux/Wine version)
+- **JIP LN**: the plugin (v57.30) ≠ the INI (v56.24) — the guide needs the PLUGIN
+- Stewie Tweaks: mod 66347 (90824 is hidden by the author)
 
-## Referencias
+## References
 
 - [[Descarga de Mods]]
 - [[Estado Actual]]
