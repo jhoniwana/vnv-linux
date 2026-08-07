@@ -44,6 +44,9 @@ Requirements: Steam with **Fallout New Vegas** installed and run once with Proto
 ./vnv.sh login          # Nexus login (step 2)
 ./vnv.sh download       # downloads mods with states and retries (step 3)
 ./vnv.sh estado         # verifies the 53 files
+./vnv.sh bsa            # decompress the game BSAs (xEdit semantics fix)
+./vnv.sh bsa-verify     # verify CRC64 name hashes without writing
+./vnv.sh esmfix         # apply Ultimate Edition ESM Fixes (xdelta patches)
 ./vnv.sh install        # MO2 + INIs + LOOT (step 4)
 ./vnv.sh run            # launches the game (step 5)
 ```

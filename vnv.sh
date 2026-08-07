@@ -453,7 +453,25 @@ case "${1:-}" in
     necesita_setup
     "$PY" scripts/agregar_a_steam.py "${@:2}"
     ;;
+  bsa)
+    # Decompress the game BSAs (fixed port — xEdit semantics)
+    necesita_setup
+    buscar_juego
+    "$PY" scripts/bsa_decompressor.py --game-dir "$GAME_DIR" "${@:2}"
+    ;;
+  bsa-verify)
+    # Verify CRC64 name hashes without writing
+    necesita_setup
+    buscar_juego
+    "$PY" scripts/bsa_decompressor.py --game-dir "$GAME_DIR" --verify "${@:2}"
+    ;;
+  esmfix)
+    # Apply Ultimate Edition ESM Fixes (xdelta patches)
+    necesita_setup
+    buscar_juego
+    "$PY" scripts/esm_fixes.py --game-dir "$GAME_DIR" --dest "${ESMFIX_DEST:-$HOME/.local/share/modorganizer2/mods/Fixed ESMs}" "${@:2}"
+    ;;
   *)
-    echo "Usage: $0 {setup|login|config-cookies|config|download|estado|install|loot|run|mo2|steam-add}"
+    echo "Usage: $0 {setup|login|config-cookies|config|download|estado|install|loot|run|mo2|steam-add|bsa|bsa-verify|esmfix}"
     ;;
 esac

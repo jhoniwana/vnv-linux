@@ -150,6 +150,28 @@ Full pipeline verified end to end on the user's machine (Steam + FNV):
 - **Wabbajack**: the guide has an official Wabbajack for VNV Extended (not Core) — works on Linux via Jackify (★721) — a valid alternative if the user accepts Extended.
 - **FINAL VERDICT (closed)**: free downloading from Nexus is NOT headless-automatable by design (2026). Paths: Premium (descargar_nexus.py, ready) / human clicking (MODS_LISTA.md) / official app.
 
+## 🔧 LINUX PORTS OF TOOLS (own repos, wired into vnv.sh)
+
+| Tool | Repo | Script in vnv-linux | Command |
+|---|---|---|---|
+| FNV BSA Decompressor | `fnv-bsa-decompressor-linux` | `scripts/bsa_decompressor.py` | `./vnv.sh bsa` / `bsa-verify` |
+| Ultimate Edition ESM Fixes | `ue-esm-fixes-linux` | `scripts/esm_fixes.py` | `./vnv.sh esmfix` |
+| xNVSE | `xnvse-linux` | — (uses the repo) | — |
+| Epic Games Patcher | `epic-games-patcher-linux` | — | — |
+| FNV 4GB Patcher | `fnv-4gb-patch-linux` | — | — |
+
+### ⚠️ CRITICAL BSA BUG FIXED (pink textures / "!")
+- The original port used `0x100` as the compression flag and wrote every file with bit 30 set.
+- The game (xEdit `wbBSArchive.pas`): `ARCHIVE_COMPRESS = 0x04`, `FILE_SIZE_COMPRESS = 0x40000000` — a file is compressed if `bit30 XOR (header & 0x04)`.
+- On the vanilla FNV BSAs (flags 0x100 WITHOUT 0x04) the game reads bit30 = compressed -> zlib on raw data -> **pink textures + "!" meshes in the DLCs**.
+- Fix: exact xEdit semantics + only set bit30 when the header declares compression by default. Validated with synthetic BSAs (0x100 and 0x104).
+- **Repair**: re-run `./vnv.sh bsa` on the already-processed BSAs (the data is intact — only the flag was wrong) + `./vnv.sh bsa-verify` (CRC64). Plan B: Steam -> verify integrity.
+
+### ⚠️ ESM FIXES IMPROVED
+- The original port matched patch<->ESM by SIZE (fragile — two ESMs of similar size -> xdelta3 fails or patches the wrong one).
+- Fix: the `.mpi` index stores the names (`oldworldblues.esm.xd3`, `deadmoney.esm.xd3`...) -> match by NAME (6/6).
+- Guard: refuses `--dest` = the game's `Data/` folder (never overwrites the vanilla ESMs).
+
 ## 🔑 Executive summary of the state (last update)
 | Component | State |
 |---|---|
