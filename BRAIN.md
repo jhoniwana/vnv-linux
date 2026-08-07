@@ -36,6 +36,31 @@ Technical log of the project: **100% automatic installer of Viva New Vegas (Core
 - **Conclusion: do not run the decompressor on the current depot.** Vanilla BSAs =
   the optimal, working state. The corrected tool (xEdit layout + XOR semantics +
   preserved nameOffsets, commit f5f22a3) is kept for reference/completeness.
+
+## ✅ DECOMPRESSOR — 100% NOT NEEDED, VERIFIED ON ALL 3 FRONTS (7 aug 2026, late)
+
+The VNV guide + the mod page + the exe were all investigated. The mod has 3
+components; every one of them is a no-op on the current depot:
+
+| Component (per VNV guide) | Verified reality | Needed |
+|---|---|---|
+| Decompress 11 BSAs (perf: no zlib at load) | All 11 "0x100" BSAs ship already raw; bit30 on every record; 30/30 files raw | **NO** |
+| "Fixes certain audio files that would not play in vanilla" | All `.wav` extracted from DeadMoney/HonestHearts/OldWorldBlues - Sounds.bsa are standard raw `RIFF....WAVE` — the game reads them directly | **NO** |
+| Full `SArchiveList` (21 BSAs) required together with the mod | The VNV guide: "The SArchiveList tweak is only needed if you used the BSA Decompressor... make sure the entire list of archives is on one line" — now applied **permanently** by `tweaks_ini` in the 3 game INIs (commit `ad840e3`); survives Steam re-validation (`Fallout_default.ini` gets reset to 6 by verify — fixed) | Done |
+
+- **Root cause of the pink textures / missing meshes (all sessions)**: the OLD v1.0
+  bit30 bug of this port, NOT the address space. Vanilla BSAs restored via Steam
+  validate → game perfect.
+- **v1.2 fix**: folder names copied **verbatim** (`[len][name]` blob) — a re-encode
+  could shift the name table by one byte → "File not found (2)" at startup (the
+  suspected cause of the first Meshes.bsa crash in the Linux test; unconfirmed and
+  moot — the mod is a no-op regardless).
+- **Why it "works on Windows"**: it doesn't do anything more there — the original
+  tool also never touches Meshes/Textures on Windows (32-bit there too). The premise
+  "works on Windows / not on Linux" was false; only my Meshes experiment differed.
+- **FINAL: the mod is NOT part of the pipeline. Not needed. Vanilla = optimal.**
+  Documented in `fnv-bsa-decompressor-linux/README.md` (deep investigation section).
+
 ## ✅ BSA/DECOMPRESSOR CLOSURE (7 aug 2026, evening)
 
 - **The pink-textures/missing-mesh mystery = the old decompressor's bit30 bug** (it set bit30 on every file → the game, with the `bit30 XOR (flags&0x04)` semantics from xEdit/wbBSArchive, read them as compressed → tried zlib on raw data → failed). With the **vanilla BSAs restored** (Steam validate re-downloads the whole depot), the game runs PERFECTLY (no broken walls, no pink perks, 28 NVSE plugins, clean log).

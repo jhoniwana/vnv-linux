@@ -471,13 +471,15 @@ case "${1:-}" in
     "$PY" scripts/agregar_a_steam.py "${@:2}"
     ;;
   bsa)
-    # Decompress the game BSAs (fixed port — xEdit semantics)
+    # ⚠️ NOT NEEDED on the current depot (all 11 target BSAs ship raw; audio is
+    # already valid RIFF WAVE — see README "Tools you do NOT need"). Kept only
+    # for research: do NOT run Meshes.bsa/Misc.bsa (32-bit game crashes).
     necesita_setup
     buscar_juego
     "$PY" scripts/bsa_decompressor.py --game-dir "$GAME_DIR" "${@:2}"
     ;;
   bsa-verify)
-    # Verify CRC64 name hashes without writing
+    # Verify CRC64 name hashes without writing (harmless, useful for checks)
     necesita_setup
     buscar_juego
     "$PY" scripts/bsa_decompressor.py --game-dir "$GAME_DIR" --verify "${@:2}"

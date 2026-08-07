@@ -44,7 +44,7 @@ Requirements: Steam with **Fallout New Vegas** installed and run once with Proto
 ./vnv.sh login          # Nexus login (step 2)
 ./vnv.sh download       # downloads mods with states and retries (step 3)
 ./vnv.sh estado         # verifies the 53 files
-./vnv.sh bsa            # decompress the game BSAs (xEdit semantics fix)
+./vnv.sh bsa            # ⚠️ NOT needed on the current depot (see "Tools you do NOT need")
 ./vnv.sh bsa-verify     # verify CRC64 name hashes without writing
 ./vnv.sh esmfix         # apply Ultimate Edition ESM Fixes (xdelta patches)
 ./vnv.sh install        # MO2 + INIs + LOOT (step 4)
@@ -71,7 +71,6 @@ The installer delegates to 5 native repos (no Wine for the heavy lifting), all
 | Tool | Repo | What it does |
 |---|---|---|
 | **NVSE / xNVSE** | `fnv-4gb-patch-linux` | 4GB/LAA patch + NVSE auto-load via `nvse_steam_loader` |
-| **FNV BSA Decompressor** | `fnv-bsa-decompressor-linux` | decompresses the 11 BSAs with flag 0x100 (bit30 + raw, game-compatible) |
 | **UE ESM Fixes** | `ue-esm-fixes-linux` | extracts and applies the xdelta3 patches from the `.mpi` (LZ4 frames) → Fixed ESMs |
 | **Epic Games Patcher** | `epic-games-patcher-linux` | EGS patching (no-op on Steam: detects LAA already applied) |
 | **xNVSE** | `xnvse-linux` | installs the NVSE xNVSE DLLs into the game |
@@ -82,6 +81,17 @@ Notes:
   from another machine, run `steam steam://validate/22380` first (see its README:
   patches with a different source → corrupted ESMs that crash the game during dialogue init).
 - Steam verify reverts 4GB/BSAs/ESMs → run `./vnv.sh root` afterwards.
+
+## 🛑 Tools you do NOT need (verified 2026-08-07)
+
+| Tool | Why it is not needed | Evidence |
+|---|---|---|
+| **FNV BSA Decompressor** | The 11 BSAs it decompresses already ship **raw** on the current Steam depot (old compressed-DLC era relic); the `.wav` audio files it "fixes" are already standard `RIFF....WAVE`; the only remaining BSAs with zlib (`Meshes.bsa`, `Misc.bsa`) must never be decompressed (32-bit game → startup crash). It also requires the full 21-BSA `SArchiveList`, which the installer already applies permanently | header parse of all 21 BSAs (30/30 files raw, bit30 on every record) + `.wav` extracted from the 3 DLC Sounds BSAs + VNV guide + decompiled official exe (xEdit wbBSArchive) |
+| **FNV 4GB Patcher (EGS variant)** | Only relevant for the Epic Games Store version; on Steam the LAA flag is already handled (`0xA620`) — the Steam launcher (`nvse_steam_loader`) loads NVSE automatically | `fnv-4gb-patch-linux` reports "LAA already applied" on Steam |
+
+The complete technical investigation lives in
+**`repos/fnv-bsa-decompressor-linux/README.md`** (deep investigation section) and
+**`BRAIN.md`** (`DECOMPRESSOR — 100% NOT NEEDED`).
 
 ## 📜 Legal
 
