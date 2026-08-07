@@ -43,12 +43,15 @@ Mensaje para el agente que continúe este proyecto. Léelo completo antes de act
 - **Errores de mallas/texturas (1145 → ~0)**: kf (`h2hattack`, `1hpaim`...), muros de Goodsprings (`NVGSRmWall01-03`...), 10mm Pre-Order, texturas de cuerpo (`00000007modbodyfemale`) — TODOS causados por la cadena de bugs de arriba (Fixed ESMs corruptos + JIP faltante + saves incompatibles). BSAs verificadas 100% correctas: las 11 comprimidas con bit30 en TODOS los records, data raw válida (nif `Gamebryo`/dds `DDS `).
 - **Saves incompatibles**: las partidas (oct 2025 + autosave 22:06) se crearon con otra instalación/era de esms (formids reenumerados por los UE fixes) → al cargarlas: statics rotos ("!"), armas DLC rosadas, texturas de cuerpo con formid viejo. **Fix**: saves movidos a backup; **partida nueva = todo OK** (verificado por el usuario: texturas y contenido perfectos).
 - **El juego AUTO-CARGA el último save** (nvse.log `DoLoadGameHook: autosave.fos` sin interacción) → al testear configuraciones hay que vaciar `Saves/` o el test carga la partida vieja.
+- **Load order INCORRECTO (crash de diálogos al inicio, intermitente)**: YUP iba 8º en vez de 1º → las ediciones de YUP sobre diálogos (Doctors, OWB) ganaban sobre las de UPNVSE+ → condiciones con referencias rotas → ACCESS VIOLATION determinista (0x00AA991C, contexto TESTopicInfo 000377F6 "Last modified by YUP"). **Fix**: loadorder/plugins en orden canónico VNV Core (YUP 1º tras los esms base, Placement Fixes último) + GUIAS_PLUGINS del script alineado (fade38a).
+- **`importar_mo2.py` re-activaba mods desactivados manualmente**: el modlist se regeneraba de cero y "Fixed ESMs" (carpeta existente) volvía a `+` → los esms corruptos recargados → crash. **Fix**: el script preserva el estado +/- del modlist previo (0ffc8ce).
+- **"Some EDIDs are conflicting" (JGNVSE)**: benigno — conflictos de formids DLC vanilla (los UE fixes los corregirían) + duplicado conocido YUP/UPNVSE+ (`UPNVSEPVendorQuestItemSCRIPT`).
 
 ## 3. LO QUE FALTA (priorizado)
 
 ### 3.1 Principal — nada del pipeline. Solo queda pulido:
-- **Rebuild de Fixed ESMs (opcional pero recomendado)**: los parches del `.mpi` de UE ESM Fixes no matchean el vanilla actual (±20B DeadMoney / ±8KB FalloutNV) → esms corruptos. Investigar la versión de esms que usa el .mpi (o reconstruir los esms fijados de otra forma). Sin esto, los saves viejos no cargan bien (los formids reenumerados no existen). Con partida nueva NO hace falta.
-- **Sprint y "ver contenedores sin abrir"**: son features de **JAM (Just Assorted Mods)**, que NO está en VNV Core. Si se quieren: agregar el mod 66666 al manifest (main + preset de INI de la guía) como opcional.
+- **Rebuild de Fixed ESMs (opcional)**: los parches del `.mpi` (v1.03, jun 2026) no matchean los esms de este depot (±20B DeadMoney / ±8KB FalloutNV — el Data es vanilla legítimo según verify de Steam) → esms corruptos. Sin esto: los formids DLC quedan en conflicto (vanilla) → JGNVSE avisa "Some EDIDs are conflicting" (benigno, el juego corre bien). Investigar la versión de esms que usa el .mpi.
+- **Sprint y "ver contenedores sin abrir"**: features de **JAM (Just Assorted Mods, mod 66666 v4.6)** — YA AGREGADO al manifest + importado + en loadorder (22 plugins). Config vía MCM en el juego (el Custom INI del Patch Emporium ya no existe online — el repo fue borrado; el extra queda registrado sin descargar).
 - Probar `./vnv.sh setup` en una distro que no sea Arch (Debian/Ubuntu — sección 3.4)
 - Social preview del repo (sección 3.2)
 - Seguridad: regenerar credenciales (sección 3.5)
