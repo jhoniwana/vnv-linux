@@ -194,6 +194,23 @@ EOF
   else
     fail "Missing files/FalloutCustom.ini — Custom INI not applied"
   fi
+
+  # SArchiveList completo (21 BSAs, orden vanilla, Update.bsa al final = mayor
+  # prioridad) en los 3 inis. Steam validate restaura Fallout_default.ini a la
+  # lista base de 6 → sin esto las BSAs de DLC quedan sin registrar.
+  local sar_list="Fallout - Textures.bsa, Fallout - Textures2.bsa, Fallout - Meshes.bsa, Fallout - Voices1.bsa, Fallout - Sound.bsa, Fallout - Misc.bsa, DeadMoney - Main.bsa, DeadMoney - Sounds.bsa, HonestHearts - Main.bsa, HonestHearts - Sounds.bsa, OldWorldBlues - Main.bsa, OldWorldBlues - Sounds.bsa, LonesomeRoad - Main.bsa, LonesomeRoad - Sounds.bsa, GunRunnersArsenal - Main.bsa, GunRunnersArsenal - Sounds.bsa, ClassicPack - Main.bsa, CaravanPack - Main.bsa, MercenaryPack - Main.bsa, TribalPack - Main.bsa, Update.bsa"
+  local inis_bsa=(
+    "$GAME_DIR/Fallout_default.ini"
+    "$HOME/.local/share/Steam/steamapps/compatdata/22380/pfx/drive_c/users/steamuser/Documents/My Games/FalloutNV/Fallout.ini"
+    "$HOME/.local/share/Steam/steamapps/compatdata/22380/pfx/drive_c/users/steamuser/Documents/My Games/FalloutNV/FalloutPrefs.ini"
+  )
+  for ini_b in "${inis_bsa[@]}"; do
+    if [[ -f "$ini_b" ]]; then
+      chmod u+w "$ini_b" 2>/dev/null
+      sed -i "s|^SArchiveList=.*|SArchiveList=$sar_list|" "$ini_b" 2>/dev/null
+    fi
+  done
+  ok "SArchiveList: 21 BSAs applied (game INIs — survives Steam re-validation)"
 }
 
 correr_loot() {
