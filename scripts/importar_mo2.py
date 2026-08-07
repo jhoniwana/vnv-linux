@@ -103,13 +103,13 @@ GUIAS_PLUGINS = [
     "NVMIM.esp",
     "NVMIM - YUP Patch.esp",
     "NVMIM - YUPDate Patch.esp",
-    "fixy crap ue.esp",
+    "FNV FaceGen Fix.esp",
     "Strip Lights Region Fix.esm",
+    "Landscape Disposition Fix.esm",
     "Landscape Texture Improvements.esm",
     "Landscape Texture Improvements - YUP Patch.esm",
-    "Landscape Disposition Fix.esm",
+    "fixy crap ue.esp",
     "Placement Fixes.esm",
-    "FNV FaceGen Fix.esp",
 ]
 
 # Orden de display del modlist (arriba = mayor prioridad). En la guía se instalan
