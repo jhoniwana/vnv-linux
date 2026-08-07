@@ -11,6 +11,8 @@
 #   ./vnv.sh run            → lanza el juego vía MO2 (Steam → "Launch Mod Organizer")
 #   ./vnv.sh mo2            → abre el gestor MO2 (GUI); se inicia el juego desde ahí
 #                             (lanzar-mo2.sh es el acceso directo para agregar a Steam)
+#   ./vnv.sh steam-add      → agrega "Fallout New Vegas (VNV)" a Steam como juego no-Steam
+#                             (abre MO2 al hacer clic; requiere Steam cerrado)
 #   ./vnv.sh update         → alias de download (actualiza manifest + mods)
 #
 # Funciona en: Debian, Ubuntu, Arch, Fedora, openSUSE y derivadas.
@@ -418,7 +420,11 @@ case "${1:-}" in
     buscar_juego
     abrir_mo2
     ;;
+  steam-add)
+    necesita_setup
+    "$PY" scripts/agregar_a_steam.py "${@:2}"
+    ;;
   *)
-    echo "Uso: $0 {setup|login|config-cookies|config|download|estado|install|loot|run|mo2}"
+    echo "Uso: $0 {setup|login|config-cookies|config|download|estado|install|loot|run|mo2|steam-add}"
     ;;
 esac
