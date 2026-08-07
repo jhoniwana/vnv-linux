@@ -432,15 +432,22 @@ def nombre_mod(m):
 
 def resolver_archivo(est, m):
     """Resuelve el archivo principal de un mod (preferentemente vía estado.json)."""
+    extras_archivos = {est.get(k, {}).get("archivo")
+                       for k, v in est.items() if ":" in k}
+    def es_archivo_main(p):
+        # el main NO puede ser el archivo de un extra (estados cruzados históricos)
+        return p.exists() and p.name not in extras_archivos
     info = est.get(str(m["mod_id"]))
     if info and info.get("archivo"):
         p = DEST / info["archivo"]
-        if p.exists():
+        if es_archivo_main(p):
             return p
-    cand = sorted(DEST.glob(f"*{m['mod_id']}*"))
+    cand = [p for p in sorted(DEST.glob(f"*{m['mod_id']}*")) if es_archivo_main(p)]
     if cand:
-        return cand[0]
-    return None
+        return cand[-1]  # el más reciente por nombre (timestamp)
+    # último recurso: cualquiera
+    cand = sorted(DEST.glob(f"*{m['mod_id']}*"))
+    return cand[-1] if cand else None
 
 
 def resolver_extra(est, m, x):
@@ -582,6 +589,17 @@ def importar(mo2_dir, args):
     for gp in GUIAS_PLUGINS:
         if gp.lower() in plugins_lower:
             loadorder.append(plugins_lower[gp.lower()])
+    # mods fuera de la guía (JAM, d20Fixes, etc.): se preservan del loadorder
+    # previo y van al final (la guía: los mods propios quedan al final).
+    if (profile_dir / "loadorder.txt").exists():
+        prev = [p.strip("\r") for p in
+                (profile_dir / "loadorder.txt").read_text(errors="ignore").splitlines()
+                if p.strip() and not p.startswith("#")]
+        conocidos = {x.lower() for x in loadorder}
+        for p in prev:
+            if p.lower() not in conocidos:
+                loadorder.append(p)
+                conocidos.add(p.lower())
     # con --solo: el perfil ya tiene el loadorder completo (los demás mods están
     # importados). NO reconstruir desde cero: preservar el orden previo EXACTO y
     # solo INSERTAR los plugins nuevos del mod importado (después de su master).

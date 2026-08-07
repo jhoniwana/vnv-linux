@@ -142,15 +142,17 @@ instalar_libfix() {
 
 crear_wrapper() {
   # wrapper: python del venv + LD_LIBRARY_PATH correcto (si hace falta libfix)
+  # Rutas RELATIVAS al propio wrapper → el proyecto es movible/portable.
   local EXTRA_LD=""
   if [[ -f "$LIBFIX/lib/libpixman-1.so" ]]; then
-    EXTRA_LD="$LIBFIX/lib"
+    EXTRA_LD='$DIR/libfix/lib'
   fi
   cat > "$WRAPPER" <<EOF
 #!/usr/bin/env bash
 # Wrapper generado por setup.sh — usa las libs correctas para Camoufox
+DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
 export LD_LIBRARY_PATH="$EXTRA_LD\${LD_LIBRARY_PATH:+:\$LD_LIBRARY_PATH}"
-exec "$VENV/bin/python" "\$@"
+exec "\$DIR/bin/python" "\$@"
 EOF
   chmod +x "$WRAPPER"
   ok "wrapper creado: $WRAPPER"

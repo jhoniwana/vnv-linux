@@ -6,7 +6,7 @@ muestra la página de descarga con botón "Download" (junto a "served via CDN").
 Click → descarga el archivo real. Funciona para cuentas gratis.
 
 Uso:
-    LD_LIBRARY_PATH=/home/shot/xvfb-env/lib ./venv/bin/python scripts/descargar_browser.py [--seccion utilities|bugfix] [--solo MOD_ID] [--resume]
+    ./venv/camoufox-python scripts/descargar_browser.py [--seccion utilities|bugfix] [--solo MOD_ID] [--resume]
 """
 import argparse
 import json

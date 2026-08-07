@@ -247,9 +247,7 @@
   "90593": {
     "file_id": 1000152138,
     "estado": "ok",
-    "archivo": "Placement Fixes-90593-1-8-1747772681.7z",
-    "intentos": 1,
-    "ts": 1786070336.0931778
+    "archivo": "Placement Fixes-90593-1-8-1747772681.7z"
   },
   "91705": {
     "file_id": 1000160476,
@@ -297,23 +295,12 @@
   "66666": {
     "file_id": 1000133586,
     "estado": "ok",
-    "archivo": "Just Assorted Mods-66666-4-6-1717763151.7z",
-    "intentos": 1,
-    "ts": 1786078186.9639273
-  },
-  "66666:url:JAM Custom INI (VNV Patch Emporium)": {
-    "file_id": null,
-    "estado": "fallo",
-    "error": "descarga URL falló",
-    "intentos": 1,
-    "ts": 1786081413.6390188
+    "archivo": "Just Assorted Mods-66666-4-6-1717763151.7z"
   },
   "98514": {
     "file_id": 1000179156,
     "estado": "ok",
-    "archivo": "Supplementary Fixes And Tweaks 98514 1.0.4 2026-08-04T19-06Z snU1b0oV.7z",
-    "intentos": 1,
-    "ts": 1786081189.1312737
+    "archivo": "Supplementary Fixes And Tweaks 98514 1.0.4 2026-08-04T19-06Z snU1b0oV.7z"
   },
   "66666:1000132850": {
     "file_id": 1000132850,

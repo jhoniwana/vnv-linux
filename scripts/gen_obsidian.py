@@ -105,7 +105,7 @@ tags: [proyecto, estado]
 
 ## 📦 Entregables
 
-- Repo: `/home/shot/vnv-linux/`
+- Repo: `<BASE>/`
 - 53 mods en `downloads/` (1.1 GB)
 - Bitácora técnica: [[Cronología]] y `BRAIN.md`
 - Esta bóveda de Obsidian
@@ -440,7 +440,7 @@ tags: [referencia, estructura]
 # Estructura del Proyecto
 
 ```
-/home/shot/vnv-linux/
+<BASE>/
 ├── vnv.sh                    # orquestador principal (todos los comandos)
 ├── setup.sh                  # setup multi-distro + wrapper
 ├── ui.py                     # interfaz web (Flask + SSE)

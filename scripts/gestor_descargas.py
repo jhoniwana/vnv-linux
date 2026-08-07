@@ -240,7 +240,13 @@ def main():
         e = est.get(str(mid), {})
         # re-descargar si cambió el file_id
         if e.get("estado") == "ok" and e.get("file_id") == fid and not args.forzar:
-            pass
+            # validar que el archivo del main no sea el de un extra (cruces históricos)
+            extra_archivos = [est.get(f"{mid}:{x.get('file_id')}", {}).get("archivo")
+                              if x.get("file_id") else None
+                              for x in (m.get("extra") or [])]
+            if e.get("archivo") in extra_archivos:
+                print(f"    ⚠ {mid}: estado del main cruzado con un extra — re-descargando", flush=True)
+                pendientes.append((mid, fid, m.get("nombre") or f"mod-{mid}", False, None))
         elif args.solo_fallidos and e.get("estado") != "fallo":
             pass
         else:

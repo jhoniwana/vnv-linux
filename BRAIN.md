@@ -19,6 +19,19 @@ Bitácora técnica del proyecto: **instalador 100% automático de Viva New Vegas
 
 ## ✅ VALIDACIÓN FINAL COMPLETA (6 ago 2026) — TODO PROBADO EN VIVO
 
+## ✅ CIERRE DEFINITIVO (7 ago 2026) — verificado al 100% por el usuario
+
+- **55 mods** (Core VNV + JAM 66666 + YUPDate/supplement 98514 con `d20Fixes.esm`), 50 activos + 5 root + Fixed ESMs.
+- **Load order canónico VNV Core** de 23 plugins (YUP 1º, d20Fixes tras YUP, Placement Fixes último, JAM al final) — sync loadorder/plugins.
+- **Fixed ESMs REBUILD CORRECTO**: el problema era la FUENTE — los esms copiados del setup viejo del usuario (mtimes 1999) no eran los del depot actual → xdelta3 con fuente ±bytes → esm con TES4 válido pero 233K records y **0 diálogos** (vs 465K/18.2K del correcto) → crash `0x00AA991C` en init de diálogos (contexto: records YUP "Doctors" — topic 0002284F, info 000377F6). Tras `steam steam://validate/22380` (los esms se alinearon al depot), `port.py --force` produce el build correcto (465.054 records, DIALOG 18.215). **Regla: el verify de Steam debe preceder al uefix** (y re-correr 4gb/bsa después — el verify revierte todo).
+- **JGNVSE**: tras los Fixed ESMs correctos, los "EDIDs conflicting" DLC (WeapNVDLC00Faderator, FadeToBlackAndBack..., NVDLC03TTank*) DESAPARECIERON. Queda 1 benigno: `UPNVSEPVendorQuestItemSCRIPT` (YUP vs UPNVSE+, conocido).
+- **Error log del juego**: 1.5 KB = ruido vanilla benigno (RagdollConstraint rdt, "misnamed BSA" ×10, swaps de textura opcionales, animation group notes). 0 MASTERFILE, 0 MODEL ERROR reales.
+- **28 plugins NVSE** cargados (incl. JIP LN v57.30, LOD Fixes v1.33 con su INI, VanillaPlusTerrain, FART...).
+- **JAM - VNV Configuration** (1000132850, `config/JustMods.ini`) = preset oficial de VNV (sprint y QOL vía MCM) — el "JAM Custom INI" del Patch Emporium (repo borrado) ya no se usa.
+- **Limpieza**: sin descargas stale, sin mods extra en MO2, 1 entrada de estado vieja eliminada, backups de saves/mods viejos borrados.
+- **`importar_mo2.py`**: `--solo` preserva loadorder EXACTO (inserta el plugin nuevo tras su master) y el modlist preserva estados +/- (b7782f3, 0ffc8ce, fade38a).
+
+
 Pipeline completo verificado de punta a punta en la máquina del usuario (Steam + FNV):
 - **Descargas**: 53/53 main + 4/4 extras, 0 HTML (auditoría vs manifest+estado.json)
 - **`install` e2e idempotente** (re-corrido tras push): 53/53 re-importados, modlist 55 líneas, loadorder 21 en orden de guía, root mods re-ejecutados OK, tweaks INI aplicados
