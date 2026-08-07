@@ -9,6 +9,8 @@
 #   ./vnv.sh estado         → verifica archivos vs manifest (53/53, integridad)
 #   ./vnv.sh install        → MO2-LINT + prefix Proton + importar mods + INIs + LOOT
 #   ./vnv.sh run            → lanza el juego vía MO2 (Steam → "Launch Mod Organizer")
+#   ./vnv.sh mo2            → abre el gestor MO2 (GUI); se inicia el juego desde ahí
+#                             (lanzar-mo2.sh es el acceso directo para agregar a Steam)
 #   ./vnv.sh update         → alias de download (actualiza manifest + mods)
 #
 # Funciona en: Debian, Ubuntu, Arch, Fedora, openSUSE y derivadas.
@@ -198,12 +200,10 @@ correr_loot() {
   fi
 }
 
-lanzar() {
-  info "Lanzando Fallout New Vegas vía MO2 (NVSE)..."
-  if [[ ! -f "$MO2_INSTANCE/ModOrganizer.exe" ]]; then
-    fail "MO2 no está instalado — corré ./vnv.sh install"
-    return 1
-  fi
+# Preparación común antes de tocar el prefix: Steam corriendo, INIs escribibles,
+# y lista activa (plugins.txt) sincronizada desde loadorder.txt (MO2 2.5.2 la
+# trunca al apagar tras una sesión de juego).
+preparar_lanzamiento() {
   if ! pgrep -f "steamwebhelper" >/dev/null 2>&1; then
     info "Steam no está corriendo — arrancándolo (lo necesita el juego)..."
     nohup steam >/dev/null 2>&1 &
@@ -211,9 +211,6 @@ lanzar() {
   fi
   # los INIs del perfil deben ser escribibles (el juego los modifica al arrancar)
   chmod u+w "$MO2_INSTANCE"/profiles/*/*.ini 2>/dev/null
-  # MO2 2.5.2 trunca plugins.txt (lista activa) al apagar tras una sesión de juego
-  # (deja solo FalloutNV.esm). El loadorder se conserva, así que re-sincronizamos
-  # la lista activa desde loadorder.txt antes de cada launch.
   local prof="$MO2_INSTANCE/profiles/Default"
   if [[ -f "$prof/loadorder.txt" ]]; then
     if ! diff -q <(grep -v '^#' "$prof/loadorder.txt") <(grep -v '^#' "$prof/plugins.txt" | sed 's/^\*//') >/dev/null 2>&1; then
@@ -224,9 +221,32 @@ lanzar() {
       } > "$prof/plugins.txt"
     fi
   fi
+}
+
+lanzar() {
+  info "Lanzando Fallout New Vegas vía MO2 (NVSE)..."
+  if [[ ! -f "$MO2_INSTANCE/ModOrganizer.exe" ]]; then
+    fail "MO2 no está instalado — corré ./vnv.sh install"
+    return 1
+  fi
+  preparar_lanzamiento
   PYTHONPATH="$HOME/.local/lib/python3.13/site-packages"   "$PY" /home/jhon/.local/bin/protontricks-launch \
     --appid 22380 "$MO2_INSTANCE/ModOrganizer.exe" \
     --profile=Default run -e NVSE
+}
+
+# Abre el GESTOR (GUI de Mod Organizer) en el prefix del juego: se ven los mods
+# y desde ahí se inicia el juego (botón Play con NVSE seleccionado).
+abrir_mo2() {
+  info "Abriendo el gestor Mod Organizer (GUI)..."
+  if [[ ! -f "$MO2_INSTANCE/ModOrganizer.exe" ]]; then
+    fail "MO2 no está instalado — corré ./vnv.sh install"
+    return 1
+  fi
+  preparar_lanzamiento
+  PYTHONPATH="$HOME/.local/lib/python3.13/site-packages"   "$PY" /home/jhon/.local/bin/protontricks-launch \
+    --appid 22380 "$MO2_INSTANCE/ModOrganizer.exe" \
+    --profile=Default
 }
 
 case "${1:-}" in
@@ -394,7 +414,11 @@ case "${1:-}" in
     buscar_juego
     lanzar
     ;;
+  mo2)
+    buscar_juego
+    abrir_mo2
+    ;;
   *)
-    echo "Uso: $0 {setup|login|config-cookies|config|download|estado|install|loot|run}"
+    echo "Uso: $0 {setup|login|config-cookies|config|download|estado|install|loot|run|mo2}"
     ;;
 esac
