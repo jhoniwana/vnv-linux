@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import pathlib
 import struct
 import subprocess
 import sys
@@ -146,6 +147,33 @@ def main():
         info(f"== step {p}: {script.name} ==")
         r = subprocess.run(cmd)
         if r.returncode != 0:
+            # fallback del uefix: el .mpi NO matchea los ESMs del depot actual
+            # (diferencias ±bytes — error conocido, ver BRAIN.md). Si existe una
+            # instalación anterior con Fixed ESMs válidos, heredarlos en vez de
+            # fallar: es el mismo juego, los ESMs parcheados son idénticos.
+            if p == "uefix":
+                info(f"step uefix failed (rc={r.returncode}) — trying to inherit Fixed ESMs from a previous install...")
+                heredado = False
+                for cand in [pathlib.Path.home() / ".local/share/modorganizer2",
+                             mo2_dir.parent / "modorganizer2"]:
+                    src_fixed = cand / "mods" / "Fixed ESMs"
+                    if src_fixed.exists() and (src_fixed / "FalloutNV.esm").exists():
+                        if str(cand) != str(mo2_dir):
+                            import shutil
+                            fixed.mkdir(parents=True, exist_ok=True)
+                            for esm in src_fixed.glob("*.esm"):
+                                shutil.copy2(esm, fixed / esm.name)
+                            ok(f"inherited {len(list(fixed.glob('*.esm')))} Fixed ESMs from {cand}")
+                            heredado = True
+                            break
+                if heredado:
+                    vok, det = verificar_paso("uefix", game_dir, mo2_dir)
+                    if vok:
+                        ok(f"verify uefix (heredado): {det}")
+                        continue
+                return fail(f"step {p} failed (rc={r.returncode}) — and no valid Fixed ESMs "
+                            f"to inherit. The .mpi patches don't match the current Steam depot "
+                            f"(known issue, see BRAIN.md); you need Fixed ESMs from a working install.")
             return fail(f"step {p} failed (rc={r.returncode})")
         ok(f"step {p} completed")
         # --- verificación post-paso + fallback ---
