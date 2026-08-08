@@ -523,14 +523,19 @@ const RAW=[
 ['Immersive Sound Overhaul Lite','1.2.0',68,'Audio'],['Weapon Sound Replacements Vol. 1','1.4.0',120,'Audio'],
 ['Mojave Ambient Loops','1.0.1',42,'Audio'],['Mojave Music Tweaks','1.1.0',25,'Audio'],
 ['Footstep Sound Realism','1.0.0',18,'Audio'],['UI Sound Polish','1.0.3',3,'Audio']];
-const buildMods=()=>RAW.map((r,i)=>({id:i+1,name:r[0],ver:r[1],size:r[2],sec:r[3],status:'pending',pct:0,retried:false,scriptFail:r[0].includes('Clarity')}));
+const buildMods=(list)=>{
+  const src=list&&list.length?list:RAW;
+  return src.map((r,i)=>({id:r.id!=null?r.id:i+1,name:r.name!=null?r.name:r[0],ver:r.version!=null?r.version:r[1],
+    size:r.size_mb!=null?r.size_mb:r[2],sec:r.section!=null?r.section:r[3],
+    status:r.status||'pending',pct:0,retried:false,scriptFail:false}));
+};
 const TOTAL_MB=sumSize(buildMods());
 const NEED_GB=(TOTAL_MB/1024+0.5).toFixed(1);
 
 /* ============ state ============ */
 const S={ mode:null, busy:false, view:'wizard',
   done:{setup:true,login:false,credenciales:false,descargar:false,instalar:false,jugar:false},
-  mods:buildMods(), modsOk:0, modsTotal:55, stage4:null,
+  mods:buildMods(), modsOk:0, modsTotal:55, stage4:null, liveMods:null,
   sesion:{steam:'off',nexus:'off',user:null}, draftU:'',draftP:'',
   filtro:{q:'',sec:'All'}, autoScroll:true };
 const ORDER=['setup','login','credenciales','descargar','instalar'];
@@ -782,7 +787,9 @@ function applyEstado(d){ if(!d) return;
   S.done.setup=d.setup==='ok'||d.setup===true;
   S.done.login=!!(d.sesion&&d.sesion.steam&&d.sesion.steam!=='offline');
   S.done.credenciales=d.credenciales==='ok'||!!(d.sesion&&d.sesion.nexus&&d.sesion.nexus!=='offline');
-  if(typeof d.mods_ok==='number'){ S.modsOk=d.mods_ok; S.mods.forEach((m,i)=>{ m.status=i<d.mods_ok?'done':'pending'; }); }
+  if(typeof d.mods_ok==='number'){ S.modsOk=d.mods_ok;
+    if(S.liveMods&&S.liveMods.length){ S.liveMods.forEach(x=>{ const m=S.mods.find(y=>y.id===x.id); if(m) m.status=x.status; }); }
+    else S.mods.forEach((m,i)=>{ m.status=i<d.mods_ok?'done':'pending'; }); }
   S.done.descargar=d.archivos==='ok'||S.modsOk>=S.modsTotal;
   S.done.instalar=(d.mo2==='ok'&&S.done.descargar)||d.juego==='ok';
   syncAll(); }
@@ -839,7 +846,8 @@ function wire(){
 (async function boot(){
   initTheme(); buildChips(); wire();
   const d=await tryLive();
-  if(d){ S.mode='live'; applyEstado(d); setInterval(()=>tryLive().then(applyEstado),3000); }
+  if(d){ S.mode='live'; applyEstado(d); setInterval(()=>tryLive().then(applyEstado),3000);
+    try{ const r=await fetch('/api/mods'); if(r.ok){ const ml=await r.json(); S.liveMods=ml; S.mods=buildMods(ml); S.modsTotal=ml.length; } }catch(e){} }
   else { S.mode='demo'; seedDemoLogs(); }
   const mb=byId('mode-badge');
   mb.innerHTML=`<i class="dot"></i>${S.mode==='live'?'LIVE':'DEMO'}`;

@@ -132,6 +132,42 @@ def api_estado():
     return jsonify(estado_actual())
 
 
+@app.route("/api/mods")
+def api_mods():
+    """Mods reales para la vista SUPPLY del wizard Pip-Boy:
+    [{id, name, version, size_mb, section, status}] — lee manifest.json +
+    estado.json (status: done/downloading/fail/pending)."""
+    manifest = leer_json(BASE / "manifest.json", [])
+    estado = leer_json(BASE / "estado.json", {})
+    mods = []
+    for m in manifest:
+        if not m.get("file_id"):
+            continue
+        mid = str(m["mod_id"])
+        st = estado.get(mid, {})
+        if st.get("estado") == "ok":
+            status = "done"
+        elif st.get("estado") == "fallo":
+            status = "fail"
+        elif st.get("estado") == "descargando":
+            status = "downloading"
+        else:
+            status = "pending"
+        size_mb = 0.0
+        archivo = st.get("archivo")
+        if archivo and (BASE / "downloads" / archivo).exists():
+            size_mb = round((BASE / "downloads" / archivo).stat().st_size / 1048576, 1)
+        mods.append({
+            "id": m["mod_id"],
+            "name": m["nombre"],
+            "version": m.get("version") or "?",
+            "size_mb": size_mb,
+            "section": m.get("seccion") or "otros",
+            "status": status,
+        })
+    return jsonify(mods)
+
+
 @app.route("/api/accion/<accion>", methods=["POST"])
 def api_accion(accion):
     body = request.get_json(silent=True) or {}

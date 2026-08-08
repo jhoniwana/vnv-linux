@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>VNV-LINUX · VAULT-TEC INSTALLER — Viva New Vegas para Linux</title>
+<meta name="description" content="Instalador 100% automático de Viva New Vegas (Core) para Fallout New Vegas en Linux/Steam. Tema Pip-Boy.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23050a06'/%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='%2345ff7d' stroke-width='4'/%3E%3Cpath d='M32 16 L36.7 26.6 L48 27.6 L39.4 35 L42.2 46.4 L32 40.2 L21.8 46.4 L24.6 35 L16 27.6 L27.3 26.6 Z' fill='%2345ff7d'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/vt323@latest/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@latest/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@latest/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@latest/700.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#050a06;--bg2:#071107;--panel:#0a160b;--panel2:#0d1d10;--screen:#020602;
+  --line:#1c3b23;--line2:#2c5a35;--tx:#b9ffcb;--tx2:#7bd795;--tx3:#4d9164;
+  --grn:#45ff7d;--grn2:#2fd45f;--ink:#03140a;--amb:#ffb648;--red:#ff6257;--blu:#7ec8ff;
+  --glow:0 0 9px rgba(69,255,125,.4);--vt:'VT323',monospace;--mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  --shadow:0 10px 30px rgba(0,0,0,.5);
+}
+html{scrollbar-color:var(--line2) var(--bg)}
+body{margin:0;font-family:var(--mono);background:var(--bg);color:var(--tx);font-size:14px;line-height:1.6}
+::selection{background:var(--grn);color:var(--ink)}
+.crt{position:fixed;inset:0;pointer-events:none;z-index:5;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px)}
+.crt-vig{position:fixed;inset:0;pointer-events:none;z-index:4;background:radial-gradient(125% 105% at 50% 42%,transparent 58%,rgba(0,0,0,.5) 100%)}
+.wrap{max-width:980px;margin:0 auto;padding:0 24px 60px;position:relative;z-index:6}
+.robco{font:600 10px var(--mono);letter-spacing:.14em;color:var(--tx3);text-transform:uppercase;padding:8px 24px;border-bottom:1px dashed var(--line);background:var(--bg2)}
+header{display:flex;align-items:center;gap:14px;padding:22px 0 8px}
+.logo-frame{width:64px;height:64px;flex:none;background:var(--screen);border:2px solid var(--line2);box-shadow:inset 0 0 14px rgba(0,0,0,.8),0 0 10px rgba(69,255,125,.15);display:grid;place-items:center;border-radius:8px;overflow:hidden}
+.logo-frame img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+h1{font:400 38px/1 var(--vt);letter-spacing:2px;color:var(--tx);text-shadow:var(--glow)}
+.brand span{display:block;font:600 10px var(--mono);letter-spacing:.18em;color:var(--tx3);text-transform:uppercase}
+.plate{font:400 15px var(--vt);letter-spacing:1px;color:var(--amb);border:1px solid var(--line2);padding:3px 10px;background:var(--panel2);margin-left:auto;white-space:nowrap}
+h2{font:400 22px var(--vt);letter-spacing:1px;color:var(--grn);margin:36px 0 12px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h2::before{content:"▸ ";color:var(--amb)}
+h3{font:600 13px var(--mono);letter-spacing:.08em;color:var(--tx2);margin:22px 0 8px;text-transform:uppercase}
+p{margin:8px 0;color:var(--tx)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;box-shadow:var(--shadow)}
+.card b{color:var(--grn);display:block;margin-bottom:6px}
+.card ul{margin:6px 0 0 18px;color:var(--tx2);font-size:13px}
+.card li{margin:3px 0}
+code{font-family:var(--mono);background:var(--screen);border:1px solid var(--line);padding:1px 6px;border-radius:4px;color:var(--lok);font-size:12.5px}
+pre{background:var(--screen);border:1px solid var(--line);border-radius:8px;padding:16px;overflow-x:auto;margin:10px 0;font-family:var(--mono);font-size:12.5px;color:var(--lok)}
+pre .c{color:var(--tx3)}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12.5px}
+th{font:600 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line2)}
+td{padding:7px 10px;border-bottom:1px solid var(--line);color:var(--tx2);vertical-align:top}
+tr:hover td{background:var(--panel2);color:var(--tx)}
+a{color:var(--grn);text-decoration:none;border-bottom:1px dashed var(--line2)}
+a:hover{color:var(--amb);border-bottom-color:var(--amb)}
+.btn{display:inline-block;background:var(--panel2);border:1px solid var(--line2);color:var(--grn);font:600 12px var(--mono);letter-spacing:.06em;padding:10px 18px;border-radius:8px;text-decoration:none;transition:all .15s}
+.btn:hover{background:var(--grn);color:var(--ink);border-color:var(--grn);box-shadow:var(--glow)}
+.cta{margin:26px 0 6px;text-align:center}
+.pill{display:inline-block;font:400 13px var(--vt);letter-spacing:1px;border:1px solid var(--line2);padding:2px 10px;border-radius:4px;color:var(--tx2);margin-right:6px}
+.pill.ok{color:var(--grn);border-color:var(--grn)}
+.pill.warn{color:var(--amb);border-color:var(--amb)}
+.pill.red{color:var(--red);border-color:var(--red)}
+.pill.blu{color:var(--blu);border-color:var(--blu)}
+footer{margin-top:50px;padding-top:14px;border-top:1px dashed var(--line);color:var(--tx3);font-size:12px;text-align:center}
+.steps{counter-reset:step;margin:14px 0}
+.step{border:1px solid var(--line);border-left:3px solid var(--grn);border-radius:8px;padding:14px 18px;margin:12px 0;background:var(--panel)}
+.step b{color:var(--grn)}
+.step .n{font:400 20px var(--vt);color:var(--amb);margin-right:8px}
+@media (max-width:640px){h1{font-size:28px}.plate{display:none}}
+</style>
+</head>
+<body>
+<div class="crt"></div><div class="crt-vig"></div>
+<div class="robco">ROBCO INDUSTRIES (TM) TERMLINK PROTOCOL · VNV-LINUX VAULT-TEC INSTALLER · DOCS v1.0</div>
+<div class="wrap">
+
+<header>
+  <div class="logo-frame"><img src="../assets/gecko.png" alt="Gecko VNV"></div>
+  <div class="brand">
+    <h1>VNV-LINUX</h1>
+    <span>VAULT-TEC INSTALLER · VIVA NEW VEGAS FOR LINUX</span>
+  </div>
+  <div class="plate">PIP-BOY 3000 MK-IV</div>
+</header>
+
+<p class="pill ok">✓ VERIFIED · 55 MODS</p>
+<p class="pill warn">LINUX + STEAM</p>
+<p class="pill blu">100% AUTOMATIC</p>
+
+<p style="margin-top:14px">Bienvenido, morador del yermo. <b style="color:var(--grn)">VNV-Linux</b> instala automáticamente el modpack
+<b>Viva New Vegas (Core)</b> — 55 mods, mod organizer, NVSE, parches y ajustes de INI — en tu Fallout New Vegas
+de Steam con Linux. Un solo comando y el Pip-Boy hace el resto.</p>
+
+<div class="cta">
+  <a class="btn" href="https://github.com/jhoniwana/vnv-linux">▸ VISITAR EL REPOSITORIO EN GITHUB</a>
+</div>
+
+<h2>Qué hace por ti</h2>
+<div class="grid">
+  <div class="card"><b>▸ Paso 1 · SURVEY</b>Detecta tu distro (Debian, Ubuntu, Arch, Fedora, openSUSE…) e instala Python, Camoufox y las librerías del sistema. Todo con retries y diagnóstico.</div>
+  <div class="card"><b>▸ Paso 2 · STEAM</b>Diagnostica Steam, Fallout New Vegas y el prefix de Proton. Crea el entorno para que Mod Organizer 2 funcione dentro del prefix del juego.</div>
+  <div class="card"><b>▸ Paso 3 · NEXUS</b>Login automático en Nexus Mods (pasa el captcha Turnstile sin intervención) y guarda la sesión para descargar gratis.</div>
+  <div class="card"><b>▸ Paso 4 · SUPPLY</b>Descarga los 55 mods del Core con verificación de integridad, reintentos y continuidad si se corta la luz (estado persistente).</div>
+  <div class="card"><b>▸ Paso 5 · DEPLOY</b>Crea la instancia de MO2, importa los 55 mods en el orden canónico, aplica los root mods nativos (xNVSE, 4GB, ESM Fixes) con verificación post-paso.</div>
+  <div class="card"><b>▸ LAUNCH</b>Lanza el juego desde MO2 con todos los mods montados vía VFS. Sin Wine para los root mods: todo corre nativo en Linux.</div>
+</div>
+
+<h2>Cómo empezar</h2>
+<p>Requisitos: <b style="color:var(--tx)">Steam con Fallout New Vegas</b> (ejecutado una vez con Proton), una cuenta
+<b style="color:var(--tx)">gratis de Nexus Mods</b> y ~4 GB de espacio.</p>
+<div class="steps">
+  <div class="step"><span class="n">1</span><b>Clona e inicia</b>
+    <pre>git clone https://github.com/jhoniwana/vnv-linux
+cd vnv-linux
+./vnv.sh ui</pre>
+    <p>Se abre un navegador con el asistente Pip-Boy — cada paso con su botón y progreso en vivo.</p>
+  </div>
+  <div class="step"><span class="n">2</span><b>Modo terminal (opcional)</b>
+    <pre>./vnv.sh setup        <span class="c"># entorno (multi-distro, auto-instala deps)</span>
+./vnv.sh login        <span class="c"># cookies de Nexus (pasa Turnstile)</span>
+./vnv.sh download     <span class="c"># descarga los 55 mods (1.1 GB, con retries)</span>
+./vnv.sh install      <span class="c"># MO2 + mods + root mods + INIs + LOOT</span>
+./vnv.sh salud        <span class="c"># 12 chequeos de salud (exit 0 = sano)</span>
+./vnv.sh run          <span class="c"># lanza el juego</span></pre>
+  </div>
+  <div class="step"><span class="n">3</span><b>Juega</b>
+    <p>Nuevo juego → verifica <b style="color:var(--tx)">Stewie Tweaks en Settings</b> = mods cargados. Sprint y QOL desde MCM (JAM).</p>
+  </div>
+</div>
+
+<h2>Comandos</h2>
+<table>
+  <tr><th>Comando</th><th>Qué hace</th></tr>
+  <tr><td><code>./vnv.sh ui</code></td><td>Asistente web Pip-Boy (sin terminal)</td></tr>
+  <tr><td><code>./vnv.sh setup</code></td><td>Entorno: deps del sistema + venv + Camoufox + smoke test</td></tr>
+  <tr><td><code>./vnv.sh login</code></td><td>Login Nexus automático (Turnstile incluido)</td></tr>
+  <tr><td><code>./vnv.sh credenciales</code></td><td>Guarda email+contraseña (600) para re-login automático</td></tr>
+  <tr><td><code>./vnv.sh download</code></td><td>Descarga los 55 mods con retries y verificación</td></tr>
+  <tr><td><code>./vnv.sh estado</code></td><td>Verifica descargas vs manifest</td></tr>
+  <tr><td><code>./vnv.sh install</code></td><td>MO2 + importación + root mods + INIs (idempotente)</td></tr>
+  <tr><td><code>./vnv.sh loot</code></td><td>Valida el load order contra LOOT (sin tocar el perfil)</td></tr>
+  <tr><td><code>./vnv.sh salud</code></td><td>12 chequeos: exe/LAA, NVSE, BSAs, INIs, ESMs, descargas, MO2</td></tr>
+  <tr><td><code>./vnv.sh esmfix</code></td><td>UE ESM Fixes (xdelta3 nativo + validación estructural)</td></tr>
+  <tr><td><code>./vnv.sh run</code></td><td>Lanza el juego vía MO2 (NVSE)</td></tr>
+  <tr><td><code>./vnv.sh mo2</code></td><td>Abre el Mod Organizer 2</td></tr>
+</table>
+
+<h2>Root mods nativos (sin Wine)</h2>
+<p>Cada root mod de la guía VNV fue portado a un ejecutable/script nativo de Linux — sin Wine para el trabajo pesado:</p>
+<table>
+  <tr><th>Port</th><th>Repo</th><th>Qué hace</th></tr>
+  <tr><td><b style="color:var(--grn)">xNVSE</b></td><td><a href="https://github.com/jhoniwana/xnvse-linux">xnvse-linux</a></td><td>Instala las DLLs del Script Extender en la raíz del juego</td></tr>
+  <tr><td><b style="color:var(--grn)">4GB</b></td><td><a href="https://github.com/jhoniwana/fnv-4gb-patch-linux">fnv-4gb-patch-linux</a></td><td>Parchea LAA 4GB en FalloutNV.exe (verificado en el header PE)</td></tr>
+  <tr><td><b style="color:var(--grn)">UE ESM Fixes</b></td><td><a href="https://github.com/jhoniwana/ue-esm-fixes-linux">ue-esm-fixes-linux</a></td><td>Extrae los patches LZ4/xdelta3 del .mpi y repara los 6 ESMs</td></tr>
+  <tr><td><span class="pill warn">no-op en Steam</span></td><td><a href="https://github.com/jhoniwana/epic-games-patcher-linux">epic-games-patcher-linux</a></td><td>Solo para la versión de Epic Games</td></tr>
+  <tr><td><span class="pill red">NO USAR</span></td><td><a href="https://github.com/jhoniwana/fnv-bsa-decompressor-linux">fnv-bsa-decompressor-linux</a></td><td>Investigación: en el depot actual es un no-op (BSAs ya raw) — mantener vanilla</td></tr>
+</table>
+
+<h2>Ingeniería detrás</h2>
+<div class="grid">
+  <div class="card"><b>▸ Login Nexus</b>Camoufox (Firefox anti-detección) pasa Turnstile headless. La cookie real es <code>nexusmods_session</code> (+ <code>cf_clearance</code>), guardada con permisos 600.</div>
+  <div class="card"><b>▸ Descargas gratis</b>Endpoint <code>/Download/?id=…&amp;game_id=130</code> funciona sin Premium; el botón vive en el shadow DOM de un web component — resuelto inspeccionando el bundle JS de Nexus.</div>
+  <div class="card"><b>▸ BSA analizado</b>El formato real del header (xEdit wbBSA.pas): compresión = <code>bit30 XOR (flags &amp; 0x04)</code>. Verdict: el decompressor es no-op en el depot actual.</div>
+  <div class="card"><b>▸ ESM Fixes</b>El .mpi envuelve los parches VCDIFF en frames LZ4; validación bit-exacta contra el instalador oficial vía Proton (SHA1 idéntico).</div>
+  <div class="card"><b>▸ Continuidad</b>Las descargas sobreviven apagones (estado persistente) — probado con 2 interrupciones reales.</div>
+  <div class="card"><b>▸ Cross-distro</b>Verificado en Ubuntu 24.04, Arch Linux y EndeavourOS (docker + real): setup de cero, fallbacks limpios, salud 12/12.</div>
+</div>
+
+<h2>FAQ</h2>
+<div class="step"><b>¿Los mods están en el repo?</b>
+  <p>No. El repo solo descarga los 55 mods con TU sesión de Nexus (gratis). No redistribuye nada con copyright.</p></div>
+<div class="step"><b>¿Necesito Wine?</b>
+  <p>Solo para MO2 (corre dentro del prefix de Proton). Los root mods (NVSE, 4GB, ESM Fixes) son nativos — sin Wine.</p></div>
+<div class="step"><b>Steam verificó el juego y algo se rompió</b>
+  <p>Es normal: el verify revierte los root mods y los INIs. Vuelve a correr <code>./vnv.sh install</code> (idempotente) y listo.</p></div>
+<div class="step"><b>¿El BSA Decompressor de la guía?</b>
+  <p>No lo necesitas. Los 11 BSAs que toca ya vienen sin comprimir en el depot actual (2026). Usar el mod no aporta nada.</p></div>
+<div class="step"><b>¿Saves viejas?</b>
+  <p>Las partidas de otra instalación no son compatibles (formids re-renumerados por los ESM Fixes). Empezá un juego nuevo.</p></div>
+
+<footer>
+  ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM · COPYRIGHT 2075-2077 · VNV-LINUX PROJECT ·<br>
+  Fallout New Vegas © Bethesda — los mods pertenecen a sus autores · Hecho con geckos y amor al yermo
+</footer>
+
+</div>
+</body>
+</html>
