@@ -487,10 +487,11 @@ case "${1:-}" in
     "$PY" scripts/bsa_decompressor.py --game-dir "$GAME_DIR" --verify "${@:2}"
     ;;
   esmfix)
-    # Apply Ultimate Edition ESM Fixes (xdelta patches)
+    # Apply Ultimate Edition ESM Fixes (xdelta patches) — PORT nuevo
+    # (matching por nombre + validación + auto-inherit de ESMs previos).
     necesita_setup
     buscar_juego
-    "$PY" scripts/esm_fixes.py --game-dir "$GAME_DIR" --dest "${ESMFIX_DEST:-$HOME/.local/share/modorganizer2/mods/Fixed ESMs}" "${@:2}"
+    "$PY" repos/ue-esm-fixes-linux/port.py --game-dir "$GAME_DIR" --dest "${ESMFIX_DEST:-$HOME/.local/share/modorganizer2/mods/Fixed ESMs}" "${@:2}"
     ;;
   salud)
     # Full health check: verifies EVERY component (exe/LAA, NVSE, BSAs, INIs,

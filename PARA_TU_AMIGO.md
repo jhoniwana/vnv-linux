@@ -51,7 +51,8 @@ cd vnv-linux
 - **The mods are NOT in the repo** (copyright of their authors). They are downloaded
   automatically with YOUR Nexus account.
 - The game runs on a **new game** — saves from another installation are not compatible.
-- If Steam updates the game (verify), run `./vnv.sh root` afterwards (re-applies 4GB,
-  BSAs and Fixed ESMs).
+- If Steam updates the game (verify), run `./vnv.sh install` afterwards (re-applies
+  4GB, NVSE, Fixed ESMs and the INI tweaks). The BSA Decompressor is NOT used
+  (vanilla BSAs are optimal).
 - Sprint and QOL: JAM is configured in-game (ESC → Mod Configuration → Just Assorted Mods).
 - Any questions: the error log is in `HANDOFF.md` and `BRAIN.md`.

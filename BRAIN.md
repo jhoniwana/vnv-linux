@@ -248,7 +248,7 @@ Full pipeline verified end to end on the user's machine (Steam + FNV):
 | Tool | Repo | Script in vnv-linux | Command |
 |---|---|---|---|
 | FNV BSA Decompressor | `fnv-bsa-decompressor-linux` | `scripts/bsa_decompressor.py` | `./vnv.sh bsa` / `bsa-verify` |
-| Ultimate Edition ESM Fixes | `ue-esm-fixes-linux` | `scripts/esm_fixes.py` | `./vnv.sh esmfix` |
+| Ultimate Edition ESM Fixes | `ue-esm-fixes-linux` | `repos/ue-esm-fixes-linux/port.py` | `./vnv.sh esmfix` |
 | xNVSE | `xnvse-linux` | — (uses the repo) | — |
 | Epic Games Patcher | `epic-games-patcher-linux` | — | — |
 | FNV 4GB Patcher | `fnv-4gb-patch-linux` | — | — |

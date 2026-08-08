@@ -54,8 +54,8 @@ Message for the agent that continues this project. Read it completely before act
   - `modlist.txt`: **preserves the previous +/- state** (manual toggles survive — fix 0ffc8ce).
   - `loadorder.txt`/`plugins.txt`: canonical VNV Core order (GUIAS_PLUGINS) — MO2 2.5.2 format: **WITHOUT `*`**, CRLF, header.
   - `--solo MOD_ID`: re-imports ONE mod **without touching the lists** (preserves exact loadorder and inserts the new plugin after its master — fix b7782f3).
-- **`scripts/root_mods.py`** — delegates to the 5 root repos: `xnvse` (copies dlls + steam_loader), `4gb` (native LAA patch), `epic` (no-op on Steam), `bsa` (decompress.py — the 11 BSAs with 0x100 → bit30 + raw), `uefix` (port.py — xdelta3 patches from the .mpi).
-  - ⚠️ **CRITICAL ORDER**: Steam verify reverts the 4GB and the esms → if `steam steam://validate/22380` is run, `./vnv.sh root` (4gb + bsa + uefix) must be re-run AFTERWARDS.
+- **`scripts/root_mods.py`** — delegates to the 4 root repos: `xnvse` (copies dlls + steam_loader), `4gb` (native LAA patch), `epic` (no-op on Steam), `uefix` (port.py — xdelta3 patches from the .mpi). The `bsa` step was REMOVED (2026-08-07): the decompressor is a no-op on the current depot and re-decompressing Meshes/Misc crashes the 32-bit game — research-only via `--solo bsa`.
+  - ⚠️ **CRITICAL ORDER**: Steam verify reverts the 4GB, NVSE and the esms → if `steam steam://validate/22380` is run, `./vnv.sh install` (4gb + xnvse + uefix) must be re-run AFTERWARDS.
 - **`repos/ue-esm-fixes-linux/port.py`** — extracts the LZ4/xdelta3 patches from the `.mpi` and applies them to the Data esms. ⚠️ **The patches demand the EXACT vanilla esms of the current depot** (esms copied by the user from another machine do NOT match → corrupted esms with a valid TES4 header but missing records → dialogue crash). After a Steam verify the esms are correct and the rebuild succeeds.
 - **`vnv.sh preparar_lanzamiento()`** — re-syncs `plugins.txt` from `loadorder.txt` if MO2 desynced them (MO2 2.5.2 rewrites them on close).
 - **`vnv.sh correr_loot()`** — LOOT validates against a COPY (lootcli can't see MO2's VFS) — never touches the profile.

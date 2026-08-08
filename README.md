@@ -4,7 +4,7 @@
   <img src="assets/gecko.png" alt="Gecko de Fallout New Vegas" width="160">
 </p>
 
-**100% automatic** installer of the Viva New Vegas Core (53 mods) for Fallout New Vegas on Linux.
+**100% automatic** installer of the Viva New Vegas Core (55 mods) for Fallout New Vegas on Linux.
 
 > 🎮 **A single command and it holds your hand:**
 > ```bash
@@ -21,8 +21,8 @@
 |---|---|
 | 1 · Environment | Installs Python + Camoufox + libraries (works on Debian, Ubuntu, Arch, Fedora, openSUSE) |
 | 2 · Nexus account | Automatic login (free, once) — passes the captcha on its own |
-| 3 · Downloads | Downloads the 53 mods with automatic retries and integrity verification |
-| 4 · Installation | Detects the game on Steam, creates the MO2 instance (MO2-LINT), imports the 53 mods, applies the INI tweaks, prepares LOOT |
+| 3 · Downloads | Downloads the 55 mods with automatic retries and integrity verification |
+| 4 · Installation | Detects the game on Steam, creates the MO2 instance (MO2-LINT), imports the 55 mods, applies the INI tweaks, prepares LOOT |
 | 5 · Play | Opens Steam → "Launch Mod Organizer" → Run, and FNV starts with everything loaded |
 
 ## 🚀 Getting started
@@ -43,10 +43,10 @@ Requirements: Steam with **Fallout New Vegas** installed and run once with Proto
 ./vnv.sh setup          # prepares the environment (the UI does this in step 1)
 ./vnv.sh login          # Nexus login (step 2)
 ./vnv.sh download       # downloads mods with states and retries (step 3)
-./vnv.sh estado         # verifies the 53 files
+./vnv.sh estado         # verifies the 55 files
 ./vnv.sh bsa            # ⚠️ NOT needed on the current depot (see "Tools you do NOT need")
 ./vnv.sh bsa-verify     # verify CRC64 name hashes without writing
-./vnv.sh esmfix         # apply Ultimate Edition ESM Fixes (xdelta patches)
+./vnv.sh esmfix         # apply UE ESM Fixes (port nuevo: matching por nombre + validación + inherit)
 ./vnv.sh install        # MO2 + INIs + LOOT (step 4)
 ./vnv.sh run            # launches the game (step 5)
 ```
