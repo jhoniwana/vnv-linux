@@ -1,8 +1,19 @@
-# [VNV] VNV Linux — Viva New Vegas for Linux/Steam
+# [VNV] VNV Linux - Viva New Vegas for Linux/Steam
 
-<p align="center">
-  <img src="assets/gecko.png" alt="Gecko de Fallout New Vegas" width="160">
-</p>
+<div align="center">
+
+![CI](https://img.shields.io/github/actions/workflow/status/jhoniwana/vnv-linux/ci.yml?label=CI)
+![License](https://img.shields.io/github/license/jhoniwana/vnv-linux)
+![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-45ff7d)
+![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Steam%20%7C%20Proton-2fd45f)
+
+<img src="assets/gecko.png" alt="VNV Gecko mascot" width="160">
+
+**Fully automatic installer of the Viva New Vegas (Core) modpack - 55 mods - for Fallout New Vegas on Linux/Steam.**
+
+Try it live: **[https://jhoniwana.github.io/vnv-linux/](https://jhoniwana.github.io/vnv-linux/)**
+
+</div>
 
 **100% automatic** installer of the Viva New Vegas Core (55 mods) for Fallout New Vegas on Linux.
 
