@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """VNV Linux — full health check. Verifies EVERY component of the install:
 
-  game/exe  → FalloutNV.exe present, PE valid, LAA 0xA620 applied
-  NVSE      → nvse_1_4.dll + nvse_steam_loader.dll + nvse_loader.exe in game root
-  BSAs      → 21 BSAs vanilla: the 4 zlib ones still compressed (bit30=0 on
+  game/exe  -> FalloutNV.exe present, PE valid, LAA 0xA620 applied
+  NVSE      -> nvse_1_4.dll + nvse_steam_loader.dll + nvse_loader.exe in game root
+  BSAs      -> 21 BSAs vanilla: the 4 zlib ones still compressed (bit30=0 on
               first record), the 11 "0x100" still raw, no bit30 anywhere
-  INIs      → SArchiveList with all 21 BSAs in the 3 game INIs
-  Fixed ESMs→ 6 esms present in MO2 with valid TES4 magic
-  Downloads → manifest vs estado.json (all mods "ok") + files on disk
-  Session   → Nexus session cookie present (downloads would fail without it)
-  MO2       → mo2-lint present, MO2 instance + Default profile exist,
+  INIs      -> SArchiveList with all 21 BSAs in the 3 game INIs
+  Fixed ESMs-> 6 esms present in MO2 with valid TES4 magic
+  Downloads -> manifest vs estado.json (all mods "ok") + files on disk
+  Session   -> Nexus session cookie present (downloads would fail without it)
+  MO2       -> mo2-lint present, MO2 instance + Default profile exist,
               loadorder/modlist readable
 
 Exit code 0 = everything OK, 1 = at least one problem (details printed).
@@ -79,7 +79,7 @@ def main():
     check("juego instalado", g is not None, str(g) if g else "FalloutNV.exe no encontrado en Steam")
     if g is None:
         for nombre, ok, detalle in results:
-            print(f"{'✔' if ok else '✘'} {nombre}: {detalle}")
+            print(f"{'[OK]' if ok else '[FAIL]'} {nombre}: {detalle}")
         return 1
 
     # 1) exe + LAA
@@ -166,14 +166,14 @@ def main():
     print()
     problemas = 0
     for nombre, ok, detalle in results:
-        print(f"  {'✔' if ok else '✘'} {nombre:22s} — {detalle}")
+        print(f"  {'[OK]' if ok else '[FAIL]'} {nombre:22s} — {detalle}")
         if not ok:
             problemas += 1
     print()
     if problemas:
-        print(f"❌ {problemas} problema(s) — fix: ./vnv.sh install  (si BSAs: steam://validate/22380 primero)")
+        print(f"[ERROR] {problemas} problema(s) — fix: ./vnv.sh install  (si BSAs: steam://validate/22380 primero)")
         return 1
-    print("✅ TODO EL SISTEMA SANO")
+    print("[OK] TODO EL SISTEMA SANO")
     return 0
 
 

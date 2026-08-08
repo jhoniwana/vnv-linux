@@ -34,7 +34,7 @@ h1{font:400 38px/1 var(--vt);letter-spacing:2px;color:var(--tx);text-shadow:var(
 .brand span{display:block;font:600 10px var(--mono);letter-spacing:.18em;color:var(--tx3);text-transform:uppercase}
 .plate{font:400 15px var(--vt);letter-spacing:1px;color:var(--amb);border:1px solid var(--line2);padding:3px 10px;background:var(--panel2);margin-left:auto;white-space:nowrap}
 h2{font:400 22px var(--vt);letter-spacing:1px;color:var(--grn);margin:36px 0 12px;border-bottom:1px solid var(--line);padding-bottom:6px}
-h2::before{content:"▸ ";color:var(--amb)}
+h2::before{content:"> ";color:var(--amb)}
 h3{font:600 13px var(--mono);letter-spacing:.08em;color:var(--tx2);margin:22px 0 8px;text-transform:uppercase}
 p{margin:8px 0;color:var(--tx)}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:14px}
@@ -81,7 +81,7 @@ footer{margin-top:50px;padding-top:14px;border-top:1px dashed var(--line);color:
   <div class="plate">PIP-BOY 3000 MK-IV</div>
 </header>
 
-<p class="pill ok">✓ VERIFIED · 55 MODS</p>
+<p class="pill ok">[OK] VERIFIED · 55 MODS</p>
 <p class="pill warn">LINUX + STEAM</p>
 <p class="pill blu">100% AUTOMATIC</p>
 
@@ -90,17 +90,17 @@ footer{margin-top:50px;padding-top:14px;border-top:1px dashed var(--line);color:
 Steam Fallout New Vegas on Linux. One command and the Pip-Boy does the rest.</p>
 
 <div class="cta">
-  <a class="btn" href="https://github.com/jhoniwana/vnv-linux">▸ VISITAR EL REPOSITORIO EN GITHUB</a>
+  <a class="btn" href="https://github.com/jhoniwana/vnv-linux">> VISIT THE REPOSITORY ON GITHUB</a>
 </div>
 
 <h2>What it does for you</h2>
 <div class="grid">
-  <div class="card"><b>▸ Step 1 · SURVEY</b>Detects your distro (Debian, Ubuntu, Arch, Fedora, openSUSE…) and installs Python, Camoufox and the system libraries. With retries and diagnostics.</div>
-  <div class="card"><b>▸ Step 2 · STEAM</b>Diagnoses Steam, Fallout New Vegas and the Proton prefix. Sets up the environment so Mod Organizer 2 runs inside the game's prefix.</div>
-  <div class="card"><b>▸ Step 3 · NEXUS</b>Automatic Nexus Mods login (passes the Turnstile captcha on its own) and saves the session for free downloads.</div>
-  <div class="card"><b>▸ Step 4 · SUPPLY</b>Downloads the 55 Core mods with integrity verification, retries and power-outage continuity (persistent state).</div>
-  <div class="card"><b>▸ Step 5 · DEPLOY</b>Creates the MO2 instance, imports the 55 mods in canonical order, applies the native root mods (xNVSE, 4GB, ESM Fixes) with post-step verification.</div>
-  <div class="card"><b>▸ LAUNCH</b>Launches the game from MO2 with all mods mounted via VFS. No Wine for the root mods: everything runs natively on Linux.</div>
+  <div class="card"><b>> Step 1 · SURVEY</b>Detects your distro (Debian, Ubuntu, Arch, Fedora, openSUSE…) and installs Python, Camoufox and the system libraries. With retries and diagnostics.</div>
+  <div class="card"><b>> Step 2 · STEAM</b>Diagnoses Steam, Fallout New Vegas and the Proton prefix. Sets up the environment so Mod Organizer 2 runs inside the game's prefix.</div>
+  <div class="card"><b>> Step 3 · NEXUS</b>Automatic Nexus Mods login (passes the Turnstile captcha on its own) and saves the session for free downloads.</div>
+  <div class="card"><b>> Step 4 · SUPPLY</b>Downloads the 55 Core mods with integrity verification, retries and power-outage continuity (persistent state).</div>
+  <div class="card"><b>> Step 5 · DEPLOY</b>Creates the MO2 instance, imports the 55 mods in canonical order, applies the native root mods (xNVSE, 4GB, ESM Fixes) with post-step verification.</div>
+  <div class="card"><b>> LAUNCH</b>Launches the game from MO2 with all mods mounted via VFS. No Wine for the root mods: everything runs natively on Linux.</div>
 </div>
 
 <h2>Getting started</h2>
@@ -122,7 +122,7 @@ cd vnv-linux
 ./vnv.sh run          <span class="c"># launches the game</span></pre>
   </div>
   <div class="step"><span class="n">3</span><b>Play</b>
-    <p>New game → check <b style="color:var(--tx)">Stewie Tweaks in Settings</b> = mods loaded. Sprint and QOL from MCM (JAM).</p>
+    <p>New game -> check <b style="color:var(--tx)">Stewie Tweaks in Settings</b> = mods loaded. Sprint and QOL from MCM (JAM).</p>
   </div>
 </div>
 
@@ -156,12 +156,12 @@ cd vnv-linux
 
 <h2>The engineering behind it</h2>
 <div class="grid">
-  <div class="card"><b>▸ Nexus login</b>Camoufox (anti-detection Firefox) passes Turnstile headless. The real cookie is <code>nexusmods_session</code> (+ <code>cf_clearance</code>), saved with 600 permissions.</div>
-  <div class="card"><b>▸ Free downloads</b>Endpoint <code>/Download/?id=…&amp;game_id=130</code> works without Premium; the button lives in a web component's shadow DOM — solved by inspecting Nexus's JS bundle.</div>
-  <div class="card"><b>▸ BSA analyzed</b>The real header format (xEdit wbBSA.pas): compression = <code>bit30 XOR (flags &amp; 0x04)</code>. Verdict: the decompressor is a no-op on the current depot.</div>
-  <div class="card"><b>▸ ESM Fixes</b>The .mpi wraps the VCDIFF patches in LZ4 frames; bit-exact validation against the official installer via Proton (identical SHA1).</div>
-  <div class="card"><b>▸ Continuity</b>Downloads survive power outages (persistent state) — proven with 2 real interruptions.</div>
-  <div class="card"><b>▸ Cross-distro</b>Verified on Ubuntu 24.04, Arch Linux and EndeavourOS (docker + real): fresh setup, clean fallbacks, 12/12 health.</div>
+  <div class="card"><b>> Nexus login</b>Camoufox (anti-detection Firefox) passes Turnstile headless. The real cookie is <code>nexusmods_session</code> (+ <code>cf_clearance</code>), saved with 600 permissions.</div>
+  <div class="card"><b>> Free downloads</b>Endpoint <code>/Download/?id=…&amp;game_id=130</code> works without Premium; the button lives in a web component's shadow DOM — solved by inspecting Nexus's JS bundle.</div>
+  <div class="card"><b>> BSA analyzed</b>The real header format (xEdit wbBSA.pas): compression = <code>bit30 XOR (flags &amp; 0x04)</code>. Verdict: the decompressor is a no-op on the current depot.</div>
+  <div class="card"><b>> ESM Fixes</b>The .mpi wraps the VCDIFF patches in LZ4 frames; bit-exact validation against the official installer via Proton (identical SHA1).</div>
+  <div class="card"><b>> Continuity</b>Downloads survive power outages (persistent state) — proven with 2 real interruptions.</div>
+  <div class="card"><b>> Cross-distro</b>Verified on Ubuntu 24.04, Arch Linux and EndeavourOS (docker + real): fresh setup, clean fallbacks, 12/12 health.</div>
 </div>
 
 
@@ -170,7 +170,7 @@ cd vnv-linux
 <div class="grid">
   <figure style="margin:0">
     <a href="screenshots/ui-wizard.png"><img src="screenshots/ui-wizard.png" alt="VNV wizard main view" style="width:100%;border:1px solid var(--line2);border-radius:8px;box-shadow:var(--shadow)"></a>
-    <figcaption style="color:var(--tx3);font-size:11.5px;margin-top:6px">The 5-step wizard (SURVEY → STEAM → NEXUS → SUPPLY → DEPLOY)</figcaption>
+    <figcaption style="color:var(--tx3);font-size:11.5px;margin-top:6px">The 5-step wizard (SURVEY -> STEAM -> NEXUS -> SUPPLY -> DEPLOY)</figcaption>
   </figure>
   <figure style="margin:0">
     <a href="screenshots/ui-mods.png"><img src="screenshots/ui-mods.png" alt="VNV supply view with the 55 real mods" style="width:100%;border:1px solid var(--line2);border-radius:8px;box-shadow:var(--shadow)"></a>
@@ -199,7 +199,7 @@ cd vnv-linux
     <p><b style="color:var(--tx)">INSTALL &amp; CONFIGURE</b> creates the MO2 instance, imports the 55 mods in canonical order, applies the native root mods (xNVSE, 4GB, UE ESM Fixes) — every step verified after running, with automatic fallbacks.</p>
   </div>
   <div class="step"><span class="n">6</span><b>LAUNCH</b>
-    <p>Hit <b style="color:var(--tx)">LAUNCH GAME</b>. In-game: check <b style="color:var(--tx)">Settings → Stewie Tweaks</b> to confirm the mods are loaded. Sprint and QOL: MCM → Just Assorted Mods. Welcome to the Mojave.</p>
+    <p>Hit <b style="color:var(--tx)">LAUNCH GAME</b>. In-game: check <b style="color:var(--tx)">Settings -> Stewie Tweaks</b> to confirm the mods are loaded. Sprint and QOL: MCM -> Just Assorted Mods. Welcome to the Mojave.</p>
   </div>
 </div>
 <h2>FAQ</h2>
@@ -218,19 +218,19 @@ cd vnv-linux
 <h2>Credits</h2>
 <p>This project stands on the shoulders of the wasteland. Everything used is credited here:</p>
 <div class="grid">
-  <div class="card"><b>▸ Viva New Vegas (the guide)</b>
+  <div class="card"><b>> Viva New Vegas (the guide)</b>
     <ul>
       <li>Author: <b>Qolore7</b> (the modding guide this installer automates)</li>
       <li>Site: <a href="https://vivanewvegas.moddinglinked.com">vivanewvegas.moddinglinked.com</a></li>
       <li>Its Core list = the 55 mods this installer downloads and configures</li>
     </ul>
   </div>
-  <div class="card"><b>▸ The 55 mod authors</b>
+  <div class="card"><b>> The 55 mod authors</b>
     <p>Every mod (YUP, xNVSE, JIP LN, Stewie Tweaks, NVTF, kNVSE, JAM and the rest) belongs to its
     Nexus Mods author. This project only downloads and installs them with your session — it
     redistributes nothing.</p>
   </div>
-  <div class="card"><b>▸ Original tools ported to Linux</b>
+  <div class="card"><b>> Original tools ported to Linux</b>
     <ul>
       <li><a href="https://www.nexusmods.com/newvegas/mods/67883">xNVSE</a> (xSE team)</li>
       <li><a href="https://www.nexusmods.com/newvegas/mods/62552">FNV 4GB Patcher</a> (RoyBatty)</li>
@@ -239,14 +239,14 @@ cd vnv-linux
       <li><a href="https://www.nexusmods.com/newvegas/mods/65854">FNV BSA Decompressor</a> (Qolore7 — research only)</li>
     </ul>
   </div>
-  <div class="card"><b>▸ Reverse-engineering references</b>
+  <div class="card"><b>> Reverse-engineering references</b>
     <ul>
       <li><b>xEdit / xSE</b> — <code>wbBSArchive.pas</code> (the real FNV BSA format and its XOR compression semantics)</li>
       <li><b>UESP wiki</b> — BSA v104/v105 format reference</li>
       <li><b>ModdingLinked</b> — VNV documentation and structure</li>
     </ul>
   </div>
-  <div class="card"><b>▸ Software used</b>
+  <div class="card"><b>> Software used</b>
     <ul>
       <li><b>Camoufox</b> (anti-detection Firefox) — <a href="https://github.com/daijro/camoufox">daijro/camoufox</a></li>
       <li><b>Mod Organizer 2</b> — <a href="https://github.com/ModOrganizer2/modorganizer">ModOrganizer2/modorganizer</a></li>
@@ -255,7 +255,7 @@ cd vnv-linux
       <li><b>Fonts</b>: VT323 + JetBrains Mono (SIL OFL) via Fontsource CDN</li>
     </ul>
   </div>
-  <div class="card"><b>▸ The gecko mascot</b>
+  <div class="card"><b>> The gecko mascot</b>
     <p>Original fan-made <b>GREEN GECKO</b> sprite art generated for this project (poses: thumbs-up,
     walk, sleep, hurt, salute). No Nexus/LoversLab or mod art was used.</p>
   </div>

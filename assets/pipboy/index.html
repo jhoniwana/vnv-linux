@@ -8,8 +8,8 @@
 <meta name="description" content="Fully automatic Viva New Vegas (Core) installer for Fallout New Vegas on Linux/Steam. Pip-Boy themed wizard.">
 <!--
   vnv-linux · wizard UI (single-file build) · FALLOUT / PIP-BOY THEME
-  Backend contract (UNCHANGED): GET /api/estado · POST /api/accion/<a> → {job_id} · GET /api/log/<job_id> (SSE)
-  Optional NEW additive endpoint: GET /api/mods → [{name, version, size_mb, section, status}] (reads manifest.json + estado.json)
+  Backend contract (UNCHANGED): GET /api/estado · POST /api/accion/<a> -> {job_id} · GET /api/log/<job_id> (SSE)
+  Optional NEW additive endpoint: GET /api/mods -> [{name, version, size_mb, section, status}] (reads manifest.json + estado.json)
   Art: original fan-made GREEN GECKO mascot sprites generated for this project (poses: thumbs-up / walk / sleep / hurt / salute),
   displayed inside dark "Pip-Boy screens". No Nexus/LoversLab or mod art used. Fonts: VT323 + JetBrains Mono (OFL, Fontsource CDN).
   Icons: inline SVG sprite, lucide-derived paths (ISC).
@@ -154,7 +154,7 @@ header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px
 .perk.done .perk-letter{background:var(--grn);color:var(--ink);border-color:var(--grn)}
 .perk.active .perk-letter{color:var(--grn);border-color:var(--grn)}
 .perk-tt h3{margin:0;font:400 22px/1 var(--vt);letter-spacing:1.5px;color:var(--tx);text-shadow:var(--glow)}
-.perk.active .perk-tt h3::after{content:'▮';color:var(--grn);animation:blink 1s steps(1) infinite;margin-left:4px}
+.perk.active .perk-tt h3::after{content:'|';color:var(--grn);animation:blink 1s steps(1) infinite;margin-left:4px}
 .perk-sub{margin:3px 0 0;font:600 9.5px var(--mono);letter-spacing:.12em;color:var(--tx3);text-transform:uppercase}
 .perk-sprite{width:62px;height:62px;flex:none;margin-left:auto;object-fit:cover;background:var(--screen);border:1px solid var(--line2);box-shadow:inset 0 0 10px rgba(0,0,0,.8)}
 .perk.active .perk-sprite{animation:bob 1s ease-in-out infinite}
@@ -191,10 +191,10 @@ header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px
 .logs{position:sticky;top:118px;display:flex;flex-direction:column;max-height:calc(100vh - 140px);min-height:420px;background:var(--screen);border:2px solid var(--line);box-shadow:inset 0 0 40px rgba(0,0,0,.8)}
 .logs-head{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .logs-head h3{margin:0;font:400 20px/1 var(--vt);letter-spacing:2px;color:var(--grn);text-shadow:var(--glow);display:flex;gap:8px;align-items:center}
-.logs-head h3::before{content:'◉';animation:blink 2s infinite}
+.logs-head h3::before{content:'o';animation:blink 2s infinite}
 .log-body{flex:1;overflow:auto;padding:10px 12px;font:12px/1.75 var(--mono);min-height:280px}
 .logs-empty{color:var(--tx3);text-align:center;padding:48px 12px;font-size:12px}
-.logs-empty::after{content:'▮';animation:blink 1s steps(1) infinite;margin-left:4px}
+.logs-empty::after{content:'|';animation:blink 1s steps(1) infinite;margin-left:4px}
 .lg{margin-bottom:6px}
 .lg-head{width:100%;display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);padding:7px 10px;color:var(--tx2);font:600 11px var(--mono);letter-spacing:.1em;cursor:pointer;text-align:left;text-transform:uppercase}
 .lg-head .chev{transition:.2s}
@@ -383,8 +383,8 @@ footer a:hover{color:var(--grn)}
   </section>
 
   <nav class="tabs" role="tablist">
-    <button class="tab on" data-view="wizard" role="tab">PIP-OS ▸ INSTALLER</button>
-    <button class="tab" data-view="mods" role="tab">▸ MODS INVENTORY <span class="cnt" id="tab-mods-cnt">0/55</span></button>
+    <button class="tab on" data-view="wizard" role="tab">PIP-OS > INSTALLER</button>
+    <button class="tab" data-view="mods" role="tab">> MODS INVENTORY <span class="cnt" id="tab-mods-cnt">0/55</span></button>
   </nav>
 
   <main id="view-wizard" class="grid">
@@ -604,7 +604,7 @@ function syncStrip(){ byId('st-mods').textContent=`${S.modsOk}/${S.modsTotal}`;
   byId('st-disk').textContent=`needs ≈ ${NEED_GB} GB`;
   const ai=activeIdx();
   byId('st-stage').textContent=S.stage4?({mo2:'MO2 INSTANCE',inis:'INI FILES',loot:'LOOT ORDER',mods:'DOWNLOADING',verificar:'VERIFYING'})[S.stage4]
-    : S.done.jugar?'COMPLETE ✓': ai===-1?'COMPLETE ✓':['SURVEY','STEAM LOGIN','NEXUS UPLINK','SUPPLY DROP','DEPLOY'][ai];
+    : S.done.jugar?'COMPLETE [OK]': ai===-1?'COMPLETE [OK]':['SURVEY','STEAM LOGIN','NEXUS UPLINK','SUPPLY DROP','DEPLOY'][ai];
   if(S.stage4==='mods'){ const rem=sumSize(S.mods.filter(m=>m.status==='pending'||m.status==='dl'));
     byId('st-eta').textContent=`≈ ${Math.max(1,Math.ceil(rem/46))}s left · 4 streams`; }
   else byId('st-eta').textContent=S.done.jugar?'war never changes…':'—'; }
@@ -616,13 +616,13 @@ function bodyFor(k,dis){
       <div class="row"><span class="pill ok">${ico('i-check','sm')}PASSED</span><button class="btn ghost" data-act="setup" ${dis}>${ico('i-retry')}RE-RUN</button></div>`; }
   if(k==='login'){ if(S.done.login) return `<div class="sess"><span class="pill ok">${ico('i-check','sm')}STEAM · courier7</span><span class="pill dim">APP 22380 LINKED</span></div>`;
     return `<p class="hint">Opens Steam inside the sandboxed session so Mod Organizer 2 can resolve the game library.</p>
-      <button class="btn primary" data-act="login" ${dis}>▸ ${ico('i-login')}LOGIN WITH STEAM</button>`; }
+      <button class="btn primary" data-act="login" ${dis}>> ${ico('i-login')}LOGIN WITH STEAM</button>`; }
   if(k==='credenciales'){ if(S.done.credenciales) return `<div class="sess"><span class="pill ok">${ico('i-shield','sm')}NEXUS · ${esc(S.sesion.user||'online')}</span><span class="pill dim">SESSION CACHED · 24H</span></div>`;
     return `<div class="frm">
       <label>Nexus username<span class="inwrap"><input id="nx-user" autocomplete="off" placeholder="courier7" value="${esc(S.draftU)}"></span></label>
       <label>Nexus password<span class="inwrap"><input id="nx-pass" type="password" autocomplete="off" placeholder="••••••••" value="${esc(S.draftP)}"><button class="ibtn sm2 peek" type="button" data-act="peek" data-tip="Show / hide" aria-label="Show password">${ico('i-eye','sm')}</button></span></label></div>
       <p class="hint tiny">Credentials are sent only to the local backend (127.0.0.1:8397) and never stored in plain text.</p>
-      <button class="btn primary" data-act="credenciales" ${dis}>▸ ${ico('i-key')}CONNECT NEXUS</button>`; }
+      <button class="btn primary" data-act="credenciales" ${dis}>> ${ico('i-key')}CONNECT NEXUS</button>`; }
   if(k==='descargar'){ const fails=S.mods.filter(m=>m.status==='fail').length;
     const stages=[['mo2','MO2'],['inis','INIs'],['loot','LOOT'],['mods','MODS'],['verificar','VERIFY']];
     const idx=stages.findIndex(s=>s[0]===S.stage4);
@@ -635,14 +635,14 @@ function bodyFor(k,dis){
       <div class="dl-active" id="dl-active"></div>
       <div class="row wrap">
         ${S.done.descargar?`<span class="pill ok">${ico('i-shield','sm')}VERIFIED</span><button class="btn ghost" data-act="verificar" ${dis}>${ico('i-retry')}RE-VERIFY</button>`
-          :`<button class="btn primary" data-act="descargar" ${dis}>▸ ${ico('i-download')}START SUPPLY DROP</button>`}
+          :`<button class="btn primary" data-act="descargar" ${dis}>> ${ico('i-download')}START SUPPLY DROP</button>`}
         ${fails?`<button class="btn danger" data-act="retry-failed" ${dis}>${ico('i-alert')}STIMPAK FAILED (${fails})</button>`:''}
       </div>`; }
   if(!S.done.descargar) return `<p class="hint">Complete the previous perk first.</p>`;
   let h='';
-  if(!S.done.instalar) h+=`<div class="row wrap"><button class="btn primary" data-act="instalar" ${dis}>▸ ${ico('i-spark')}INSTALL &amp; CONFIGURE</button></div>`;
+  if(!S.done.instalar) h+=`<div class="row wrap"><button class="btn primary" data-act="instalar" ${dis}>> ${ico('i-spark')}INSTALL &amp; CONFIGURE</button></div>`;
   else { h+=`<div class="sess"><span class="pill ok">${ico('i-check','sm')}MO2 DEPLOY COMPLETE</span><span class="pill dim">LOAD ORDER LOCKED</span></div>`;
-    h+=`<div class="row wrap">${S.done.jugar?`<span class="pill ok">${ico('i-play','sm')}GAME RUNNING</span>`:`<button class="btn primary" data-act="jugar" ${dis}>▸ ${ico('i-play')}LAUNCH GAME</button>`}<button class="btn ghost" data-act="steam">${ico('i-ext')}OPEN STEAM</button></div>`; }
+    h+=`<div class="row wrap">${S.done.jugar?`<span class="pill ok">${ico('i-play','sm')}GAME RUNNING</span>`:`<button class="btn primary" data-act="jugar" ${dis}>> ${ico('i-play')}LAUNCH GAME</button>`}<button class="btn ghost" data-act="steam">${ico('i-ext')}OPEN STEAM</button></div>`; }
   return h; }
 function syncSteps(){ const ai=activeIdx(), dis=S.busy?'disabled':'';
   ORDER.forEach((k,i)=>{ const el=byId('step-'+k); if(!el) return;
@@ -682,10 +682,10 @@ function modCard(m){ const st=m.status;
 function renderMods(){ const g=byId('mods-grid'), {q,sec}=S.filtro, ql=q.toLowerCase();
   const list=S.mods.filter(m=>(sec==='All'||m.sec===sec)&&(!ql||(m.name+' '+m.ver).toLowerCase().includes(ql)));
   byId('mods-meta').textContent=`${list.length} OF ${S.modsTotal} ITEMS SHOWN · ${S.modsOk} INSTALLED · ${fmtMB(TOTAL_MB)} TOTAL PAYLOAD`;
-  byId('mods-total-pill').textContent=`${S.modsOk}/${S.modsTotal} ✔`;
+  byId('mods-total-pill').textContent=`${S.modsOk}/${S.modsTotal} [OK]`;
   if(!list.length){ g.innerHTML=`<div class="empty"><img src="${SPR.sleep}" alt=""><div class="e-t">NO ITEMS FOUND</div><div class="e-s">Nothing matches “${esc(q)}” in ${esc(sec)}. Adjust your filters, dweller.</div><button class="btn ghost" data-act="clear-filters">CLEAR FILTERS</button></div>`; return; }
   let html='',last='';
-  for(const m of list){ if(sec==='All'&&m.sec!==last){ last=m.sec; html+=`<div class="sec-head">▸ ${esc(m.sec).toUpperCase()}</div>`; } html+=modCard(m); }
+  for(const m of list){ if(sec==='All'&&m.sec!==last){ last=m.sec; html+=`<div class="sec-head">> ${esc(m.sec).toUpperCase()}</div>`; } html+=modCard(m); }
   g.innerHTML=html; }
 function renderMod(m){ const c=document.querySelector(`.mod[data-mod="${m.id}"]`); if(c) c.outerHTML=modCard(m); }
 function renderModProgress(m){ const c=document.querySelector(`.mod[data-mod="${m.id}"]`); if(!c) return;
@@ -700,16 +700,16 @@ async function job(fn){ if(S.busy){ toast('warn','A job is already running'); re
   S.busy=true; syncSteps(); try{ await fn(); } finally{ S.busy=false; syncSteps(); } }
 function downloadOne(m){ return new Promise(res=>{
   m.status='dl'; m.pct=0; renderMod(m); syncActiveDl();
-  log('info','descargar',`↓ ${m.name} · ${fmtMB(m.size)}`);
+  log('info','descargar',`v ${m.name} · ${fmtMB(m.size)}`);
   const dur=Math.min(3600,420+m.size*7), step=90; let t=0;
   const failAt=(m.scriptFail&&!m.retried)?0.55+Math.random()*0.2:null;
   const iv=setInterval(()=>{ t+=step; const p=t/dur;
     if(failAt&&p>=failAt){ clearInterval(iv); m.status='fail'; m.pct=Math.round(failAt*100);
       renderMod(m); syncActiveDl(); syncSteps(); updateOverall();
-      log('fail','descargar',`✘ ${m.name} — HTTP 503 (mirror timeout)`); toast('fail',`Download failed: ${m.name}`); res(true); return; }
+      log('fail','descargar',`[FAIL] ${m.name} — HTTP 503 (mirror timeout)`); toast('fail',`Download failed: ${m.name}`); res(true); return; }
     if(p>=1){ clearInterval(iv); m.status='done'; m.pct=100; S.modsOk++;
       renderMod(m); syncActiveDl(); updateOverall();
-      log('ok','descargar',`✔ ${m.name} · ${fmtMB(m.size)}`); res(false); return; }
+      log('ok','descargar',`[OK] ${m.name} · ${fmtMB(m.size)}`); res(false); return; }
     m.pct=Math.min(99,Math.round(p*100)); renderModProgress(m); syncStrip();
   },step); }); }
 function startDownloads(list){ return new Promise(res=>{
@@ -772,7 +772,7 @@ async function demoAction(a,el){
 function demoRetryMod(id){ const m=S.mods.find(x=>x.id===id); if(!m||m.status!=='fail') return;
   job(async()=>{ m.retried=true; log('info','descargar',`Retrying ${m.name}…`);
     const f=await startDownloads([m]); if(f===0&&S.mods.every(x=>x.status==='done')&&!S.done.descargar) await verifySeq();
-    else if(f>0){ m.status='fail'; renderMod(m); syncSteps(); log('fail','descargar',`✘ ${m.name} still failing`); } }); }
+    else if(f>0){ m.status='fail'; renderMod(m); syncSteps(); log('fail','descargar',`[FAIL] ${m.name} still failing`); } }); }
 function confirmReset(){ openModal({ title:'RESET INSTALL PROGRESS?',
   body:'WARNING: this purges the whole wizard state (sessions, supply drops, logs) back to a fresh vault. The action cannot be undone.',
   ok:'RESET VAULT', onOk(){ S.done={setup:true,login:false,credenciales:false,descargar:false,instalar:false,jugar:false};
@@ -782,7 +782,7 @@ function confirmReset(){ openModal({ title:'RESET INSTALL PROGRESS?',
 /* ============ live backend bridge (unchanged endpoints) ============ */
 async function tryLive(){ try{ const c=new AbortController(); const t=setTimeout(()=>c.abort(),1600);
   const r=await fetch('/api/estado',{signal:c.signal}); clearTimeout(t); if(!r.ok) throw 0; return await r.json(); }catch(e){ return null; } }
-function guessSev(l){ if(/(ERROR|FAIL|✘|TRACEBACK)/i.test(l)) return 'fail'; if(/(WARN|⚠)/i.test(l)) return 'warn'; if(/(OK|DONE|✔|SUCCESS)/i.test(l)) return 'ok'; return 'info'; }
+function guessSev(l){ if(/(ERROR|FAIL|[FAIL]|TRACEBACK)/i.test(l)) return 'fail'; if(/(WARN|[WARN])/i.test(l)) return 'warn'; if(/(OK|DONE|[OK]|SUCCESS)/i.test(l)) return 'ok'; return 'info'; }
 function applyEstado(d){ if(!d) return;
   S.done.setup=d.setup==='ok'||d.setup===true;
   S.done.login=!!(d.sesion&&d.sesion.steam&&d.sesion.steam!=='offline');

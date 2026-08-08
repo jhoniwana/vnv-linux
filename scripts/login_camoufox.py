@@ -29,19 +29,19 @@ def main():
     user = os.environ.get("NEXUS_USER", "")
     pw = os.environ.get("NEXUS_PASS", "")
     if not user or not pw:
-        sys.exit("❌ Missing NEXUS_USER / NEXUS_PASS")
+        sys.exit("[ERROR] Missing NEXUS_USER / NEXUS_PASS")
 
     from camoufox.sync_api import Camoufox
 
     with Camoufox(headless=True) as browser:
         ctx = browser.new_context()
         page = ctx.new_page()
-        print("→ Opening login with Camoufox (headless anti-detection)...")
+        print("-> Opening login with Camoufox (headless anti-detection)...")
         page.goto("https://users.nexusmods.com/register", timeout=60000, wait_until="domcontentloaded")
         page.wait_for_timeout(4000)
         try:
             page.locator("a:has-text('Sign in')").first.click(timeout=5000)
-            print("✔ Sign in clicked")
+            print("[OK] Sign in clicked")
         except Exception as e:
             print(f"  click err: {str(e)[:70]}")
         try:
@@ -51,14 +51,14 @@ def main():
             page.wait_for_selector("#user_login", timeout=20000)
         page.fill("#user_login", user)
         page.fill("#password", pw)
-        print("✔ Credentials filled in. Waiting for Turnstile...")
+        print("[OK] Credentials filled in. Waiting for Turnstile...")
         page.wait_for_timeout(8000)
 
         exito = False
         for intento in range(3):
             try:
                 page.click("input[name='commit']", timeout=15000)
-                print(f"→ Submit {intento+1}")
+                print(f"-> Submit {intento+1}")
             except Exception as e:
                 print(f"  submit err: {str(e)[:60]}")
             for _ in range(10):
@@ -67,7 +67,7 @@ def main():
                 try:
                     body = page.locator("body").inner_text(timeout=1500)
                     if "sign out" in body.lower() or "welcome back" in body.lower():
-                        print("✔ Detected: logged-in account page")
+                        print("[OK] Detected: logged-in account page")
                         # extract cookies: nexusmods_session (session) + cf_clearance (Cloudflare)
                         cookies = ctx.cookies()
                         for c in cookies:
@@ -75,13 +75,13 @@ def main():
                                 CONFIG_DIR.mkdir(parents=True, exist_ok=True)
                                 SID_FILE.write_text(c["value"])
                                 SID_FILE.chmod(0o600)
-                                print(f"✔ nexusmods_session saved → {SID_FILE}")
+                                print(f"[OK] nexusmods_session saved -> {SID_FILE}")
                                 exito = True
                             elif c["name"] == "cf_clearance":
                                 CONFIG_DIR.mkdir(parents=True, exist_ok=True)
                                 CF_FILE.write_text(c["value"])
                                 CF_FILE.chmod(0o600)
-                                print(f"✔ cf_clearance saved → {CF_FILE}")
+                                print(f"[OK] cf_clearance saved -> {CF_FILE}")
                         if exito:
                             break
                 except Exception:
@@ -95,21 +95,21 @@ def main():
                             cb = fr.locator("input[type='checkbox'], .ctp-checkbox-label").first
                             if cb.is_visible(timeout=1500):
                                 cb.click(timeout=2000)
-                                print("   → Turnstile checkbox clicked")
+                                print("   -> Turnstile checkbox clicked")
                         except Exception:
                             pass
             if exito:
                 break
 
         if exito:
-            print(f"✔ LOGIN OK WITH CAMOUFOX! sid saved in {SID_FILE}")
+            print(f"[OK] LOGIN OK WITH CAMOUFOX! sid saved in {SID_FILE}")
             print("  Next: python3 scripts/descargar_nexus_cookies.py --resume")
         else:
             try:
                 body = page.locator("body").inner_text(timeout=3000)[:250]
-                print("✘ Cookie not detected. Status:", body.replace("\n", " | ")[:200])
+                print("[FAIL] Cookie not detected. Status:", body.replace("\n", " | ")[:200])
             except Exception:
-                print("✘ Cookie not detected.")
+                print("[FAIL] Cookie not detected.")
         ctx.close()
 
 if __name__ == "__main__":

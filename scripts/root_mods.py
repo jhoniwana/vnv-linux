@@ -5,15 +5,15 @@ Root mods = the ones that go DIRECTLY into the game directory (not into MO2's VF
 In MO2 they are disabled on purpose (importar_mo2.py marks them with '-').
 
 Each step delegates to its native Linux port (repos/):
-  xnvse   → repos/xnvse-linux/port.py
-  4gb     → repos/fnv-4gb-patch-linux/port.py
-  epic    → repos/epic-games-patcher-linux/port.py (no-op on Steam: detects LAA already applied)
-  uefix   → repos/ue-esm-fixes-linux/port.py (mod "Fixed ESMs")
-  all     → xnvse + 4gb + uefix (epic is a no-op on Steam)
+  xnvse   -> repos/xnvse-linux/port.py
+  4gb     -> repos/fnv-4gb-patch-linux/port.py
+  epic    -> repos/epic-games-patcher-linux/port.py (no-op on Steam: detects LAA already applied)
+  uefix   -> repos/ue-esm-fixes-linux/port.py (mod "Fixed ESMs")
+  all     -> xnvse + 4gb + uefix (epic is a no-op on Steam)
 
 NOTE: 'bsa' (the FNV BSA Decompressor) was REMOVED from the automatic order on
 2026-08-07: it is a no-op on the current depot (the 11 target BSAs ship raw) and
-HARMFUL on the zlib ones (Meshes.bsa/Misc.bsa decompressed → 32-bit game crashes
+HARMFUL on the zlib ones (Meshes.bsa/Misc.bsa decompressed -> 32-bit game crashes
 at startup with "File not found"). Historical root cause of the broken walls /
 startup crashes: every `install`/`root` run re-decompressed Meshes+Misc.
 Keep it available only via `--solo bsa` for research.
@@ -55,7 +55,7 @@ PASOS = {
 ORDEN = ["xnvse", "4gb", "epic", "uefix"]
 
 # Los ports viven en repos/ (gitignored). Un clon nuevo del proyecto NO los trae
-# → auto-clonar desde GitHub (repos públicos) la primera vez.
+# -> auto-clonar desde GitHub (repos públicos) la primera vez.
 REPO_URLS = {
     "xnvse": "https://github.com/jhoniwana/xnvse-linux",
     "4gb": "https://github.com/jhoniwana/fnv-4gb-patch-linux",
@@ -89,11 +89,11 @@ def info(msg):
 
 
 def ok(msg):
-    print(f"  ✔ {msg}", flush=True)
+    print(f"  [OK] {msg}", flush=True)
 
 
 def fail(msg, code=1):
-    print(f"  ✘ {msg}", flush=True)
+    print(f"  [FAIL] {msg}", flush=True)
     return code
 
 

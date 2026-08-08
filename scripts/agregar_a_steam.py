@@ -148,7 +148,7 @@ def main():
     path = Path(args.salida) if args.salida else shortcuts_path()
     if not args.salida and steam_corriendo() and not args.force:
         raise SystemExit(
-            "Steam is running — close Steam (Steam → Exit) and run the command again. "
+            "Steam is running — close Steam (Steam -> Exit) and run the command again. "
             "Steam rewrites shortcuts.vdf on shutdown and would overwrite the change.\n"
             "If you know what you are doing: --force (it will be written anyway)."
         )

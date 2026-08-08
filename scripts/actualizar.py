@@ -34,7 +34,7 @@ def main():
 
     api_key = os.environ.get("NEXUS_API_KEY")
     if not api_key:
-        sys.exit("❌ Missing NEXUS_API_KEY")
+        sys.exit("[ERROR] Missing NEXUS_API_KEY")
 
     mods = json.load(open(MANIFEST))
     todos = mods  # keep a reference to the FULL list (fix bug --solo)
@@ -63,7 +63,7 @@ def main():
                     cambios.append(f"  {mid}: file_id -> {fid} ({ultimo.get('version', '?')})")
                     m["file_id"] = fid
         except Exception as e:
-            print(f"    ✘ {type(e).__name__}: {str(e)[:90]}")
+            print(f"    [FAIL] {type(e).__name__}: {str(e)[:90]}")
         time.sleep(5)
 
     json.dump(todos, open(MANIFEST, "w"), indent=2)
@@ -73,9 +73,9 @@ def main():
         with open(reporte, "a") as f:
             f.write(f"## {fecha}\n")
             f.write("\n".join(cambios) + "\n\n")
-        print(f"\n📝 {len(cambios)} changes -> {reporte}")
+        print(f"\n[NOTE] {len(cambios)} changes -> {reporte}")
     else:
-        print("\n✅ All up to date.")
+        print("\n[OK] All up to date.")
 
 if __name__ == "__main__":
     main()

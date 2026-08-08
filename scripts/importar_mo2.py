@@ -2,8 +2,8 @@
 """Automatic importer of mods into MO2 (Mod Organizer 2) for FNV.
 
 Converts the downloaded files (downloads/) into the format MO2 understands:
-  mods/<ModName>/        ← extracted mod (fixed roots + meta.ini)
-  profiles/Default/      ← modlist.txt, loadorder.txt, plugins.txt
+  mods/<ModName>/        <- extracted mod (fixed roots + meta.ini)
+  profiles/Default/      <- modlist.txt, loadorder.txt, plugins.txt
 
 Fixes vs the previous version (the "flatten" bug):
   * A root folder that is already a data folder (meshes/, sound/, NVSE/, ...) is
@@ -12,7 +12,7 @@ Fixes vs the previous version (the "flatten" bug):
     mod root).
   * A root folder that is not data (nvse_6_4_8/, the archive wrapper) is flattened.
   * The case is normalized to the valid names of the FNV checker (e.g.
-    "NVSE"→"nvse", "Shaders"→"shaders"), because the MO2 checker
+    "NVSE"->"nvse", "Shaders"->"shaders"), because the MO2 checker
     (falloutnvmoddatachecker.h) is case-sensitive and usvfs matches
     case-insensitively at runtime.
   * meta.ini is written with installationFile= and validated=true for the mods
@@ -23,7 +23,7 @@ Generic FOMOD engine (MO2 GamebryoScriptExtender semantics):
   * requiredInstallFiles + installSteps (visibility via <visible>, groups by
     type SelectExactlyOne/SelectAtMostOne/SelectAny, <conditionFlags>,
     <dependencies>) + conditionalFileInstalls (flagDependency/fileDependency).
-  * Explicit choice map FOMOD_CHOICES by (mod_id) → {(step, group): [options]}.
+  * Explicit choice map FOMOD_CHOICES by (mod_id) -> {(step, group): [options]}.
     Unmarked choices use the MO2 default (first option in SelectExactlyOne, none
     in SelectAny/SelectAtMostOne).
 
@@ -360,7 +360,7 @@ def aplicar_fomod(mod_dir, mod_id):
                 for pname in chosen:
                     pl = next((p for p in plugins if p.get("name") == pname), None)
                     if pl is None:
-                        print(f"      ⚠ option '{pname}' does not exist in '{sn}'/'{gname}'")
+                        print(f"      [WARN] option '{pname}' does not exist in '{sn}'/'{gname}'")
                         continue
                     dep = pl.find("dependencies")
                     if dep is not None and not evaluar_deps(dep, flags, mod_dir):
@@ -473,13 +473,13 @@ def fusionar_extras(mod_dir, m, est):
     for x in (m.get("extra") or []):
         arch = resolver_extra(est, m, x)
         if not arch:
-            print(f"      ⚠ extra no downloaded file: {x['nombre']}")
+            print(f"      [WARN] extra no downloaded file: {x['nombre']}")
             continue
         tmp = mod_dir / ".extra_tmp"
         if tmp.exists():
             shutil.rmtree(tmp, ignore_errors=True)
         if not descomprimir(arch, tmp):
-            print(f"      ⚠ could not extract extra: {x['nombre']}")
+            print(f"      [WARN] could not extract extra: {x['nombre']}")
             continue
         arrumar_raizes(tmp)
         for p in tmp.iterdir():
@@ -532,7 +532,7 @@ def importar(mo2_dir, args):
         if es_fomod:
             n_map, errs = aplicar_fomod(mod_dir, m["mod_id"])
             if errs:
-                print(f"  ⚠ {nombre[:50]} FOMOD: missing {errs[:3]}")
+                print(f"  [WARN] {nombre[:50]} FOMOD: missing {errs[:3]}")
         else:
             arrumar_raizes(mod_dir)
 
@@ -556,8 +556,8 @@ def importar(mo2_dir, args):
             if p not in plugins_orden:
                 plugins_orden.append(p)
         ok += 1
-        estado = "✔" if valido else "✘(validated)"
-        print(f"  {estado} {nombre[:52]}" + ("" if valido else "  [no content → validated]"), flush=True)
+        estado = "[OK]" if valido else "[FAIL](validated)"
+        print(f"  {estado} {nombre[:52]}" + ("" if valido else "  [no content -> validated]"), flush=True)
 
     # separators + modlist (top = highest priority)
     # NOTE: preserve the +/- state of the CURRENT modlist (MO2 and manual
@@ -653,13 +653,13 @@ def importar(mo2_dir, args):
     (mo2_dir / "profiles" / "profiles.ini").write_text(
         "[General]\ncurrent_profile=Default\n")
 
-    print(f"\n✅ {ok}/{len(mods_ord)} mods imported to {mods_dir}")
+    print(f"\n[OK] {ok}/{len(mods_ord)} mods imported to {mods_dir}")
     print(f"   modlist: {len(modlist)} lines (separators included)")
     print(f"   loadorder: {len(loadorder)} plugins")
     if fail:
         print("   Failures:")
         for mid, err in fail:
-            print(f"     ✘ {mid}: {err}")
+            print(f"     [FAIL] {mid}: {err}")
     return 0 if not fail else 1
 
 
@@ -678,11 +678,11 @@ def verificar(mo2_dir):
         mi = p / "meta.ini"
         validated = mi.exists() and "validated=true" in mi.read_text(errors="ignore")
         if valido:
-            print(f"  ✔ {p.name[:52]}")
+            print(f"  [OK] {p.name[:52]}")
         elif validated:
             print(f"  ~ {p.name[:52]}  (validated)")
         else:
-            print(f"  ✘ {p.name[:52]}  likely flag!")
+            print(f"  [FAIL] {p.name[:52]}  likely flag!")
             malos.append(p.name)
     if malos:
         print(f"\n{len(malos)} mods with no valid content nor validated:")
@@ -708,7 +708,7 @@ def main():
 
     if args.verificar:
         sys.exit(verificar(mo2_dir))
-    print(f"📦 Importing to MO2: {mo2_dir}")
+    print(f"[PKG] Importing to MO2: {mo2_dir}")
     sys.exit(importar(mo2_dir, args))
 
 

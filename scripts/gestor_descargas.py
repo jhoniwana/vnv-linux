@@ -2,16 +2,16 @@
 """VNV download manager — states, retries, integrity verification.
 
 States per mod (persisted in estado.json):
-  pending → downloading → ok | fail
+  pending -> downloading -> ok | fail
 
 Commands:
-  gestor.py                      → downloads pending/failed (all)
-  gestor.py --solo-fallidos      → retries only the failed ones
-  gestor.py --verificar          → verifies files vs manifest (no download)
-  gestor.py --solo MOD_ID        → one mod
-  gestor.py --seccion utilities  → one section
-  gestor.py --forzar             → re-downloads even if ok (if file_id changed)
-  gestor.py --max-intentos N     → attempts per mod (default 3)
+  gestor.py                      -> downloads pending/failed (all)
+  gestor.py --solo-fallidos      -> retries only the failed ones
+  gestor.py --verificar          -> verifies files vs manifest (no download)
+  gestor.py --solo MOD_ID        -> one mod
+  gestor.py --seccion utilities  -> one section
+  gestor.py --forzar             -> re-downloads even if ok (if file_id changed)
+  gestor.py --max-intentos N     -> attempts per mod (default 3)
 
 Any run: if the manifest file_id changed vs the state, re-download.
 """
@@ -50,7 +50,7 @@ def verificar_archivo(path):
     if not path.exists() or path.stat().st_size == 0:
         return False
     # python puro: rechazar HTML/páginas de error sin depender del binario
-    # 'file' (ausente en distros minimales/containers → FileNotFoundError)
+    # 'file' (ausente en distros minimales/containers -> FileNotFoundError)
     try:
         with open(path, "rb") as f:
             head = f.read(512)
@@ -199,7 +199,7 @@ def relogin():
             env["NEXUS_USER"] = lines[0].strip()
             env["NEXUS_PASS"] = lines[1].strip()
     if not env.get("NEXUS_USER"):
-        print("    ✘ no credentials: export NEXUS_USER/NEXUS_PASS or run ./vnv.sh login")
+        print("    [FAIL] no credentials: export NEXUS_USER/NEXUS_PASS or run ./vnv.sh login")
         return False
     wrapper = BASE / "venv" / "camoufox-python"
     py = str(wrapper) if wrapper.exists() else sys.executable
@@ -238,25 +238,25 @@ def main():
 
     # ===== VERIFY MODE (no download) =====
     if args.verificar:
-        print("🔍 VERIFICATION vs manifest:")
+        print("[CHECK] VERIFICATION vs manifest:")
         ok_v, mal_v = 0, []
         for m in mods:
             mid, fid = m["mod_id"], m["file_id"]
             p = archivo_existente(mid)
             if not p:
-                print(f"  ✘ {mid} ({m.get('nombre') or '?'[:30]}): NO FILE")
+                print(f"  [FAIL] {mid} ({m.get('nombre') or '?'[:30]}): NO FILE")
                 mal_v.append(mid)
                 est[str(mid)] = {"file_id": fid, "estado": "pendiente"}
                 continue
             if not verificar_archivo(p):
-                print(f"  ✘ {mid}: invalid file {p.name[:45]}")
+                print(f"  [FAIL] {mid}: invalid file {p.name[:45]}")
                 mal_v.append(mid)
                 est[str(mid)] = {"file_id": fid, "estado": "fallo", "error": "invalid file"}
                 continue
             ok_v += 1
             est[str(mid)] = {"file_id": fid, "estado": "ok", "archivo": p.name}
         guardar_estado(est)
-        print(f"\n✅ {ok_v}/{len(mods)} OK | problems: {len(mal_v)}")
+        print(f"\n[OK] {ok_v}/{len(mods)} OK | problems: {len(mal_v)}")
         return
 
     # ===== DOWNLOAD MODE =====
@@ -273,7 +273,7 @@ def main():
             archivo = e.get("archivo")
             existente = (DEST / archivo) if archivo else None
             if existente is None or not existente.exists() or existente.stat().st_size == 0:
-                print(f"    ⚠ {mid}: estado dice ok pero el archivo falta en disco — re-downloading", flush=True)
+                print(f"    [WARN] {mid}: estado dice ok pero el archivo falta en disco — re-downloading", flush=True)
                 pendientes.append((mid, fid, m.get("nombre") or f"mod-{mid}", False, None))
                 continue
             # validate that the main file is not one of an extra (historical crossings)
@@ -281,7 +281,7 @@ def main():
                               if x.get("file_id") else None
                               for x in (m.get("extra") or [])]
             if e.get("archivo") in extra_archivos:
-                print(f"    ⚠ {mid}: main state crossed with an extra — re-downloading", flush=True)
+                print(f"    [WARN] {mid}: main state crossed with an extra — re-downloading", flush=True)
                 pendientes.append((mid, fid, m.get("nombre") or f"mod-{mid}", False, None))
         elif args.solo_fallidos and e.get("estado") != "fallo":
             pass
@@ -298,10 +298,10 @@ def main():
             pendientes.append((mid, x.get("file_id"), f"{m.get('nombre')} + {x['nombre']}", True, x))
 
     if not pendientes:
-        print("✅ nothing pending — everything downloaded and up to date")
+        print("[OK] nothing pending — everything downloaded and up to date")
         return
 
-    print(f"🎯 {len(pendientes)} mods pending")
+    print(f"[GOAL] {len(pendientes)} mods pending")
 
     cookies_extra = []
     for name, f in [("nexusmods_session", "nexus_session"), ("cf_clearance", "cf_clearance")]:
@@ -331,13 +331,13 @@ def main():
                     old_est = est.get(str(mid), {})
                     if old_est.get("file_id") != fid or args.forzar:
                         viejo.unlink(missing_ok=True)
-                        print(f"    🗑 old file removed: {viejo.name[:50]}", flush=True)
+                        print(f"    [DEL] old file removed: {viejo.name[:50]}", flush=True)
             else:
                 # delete the old extra file if it exists (same fid, force)
                 for p in DEST.glob(f"*{fid}*"):
                     if args.forzar:
                         p.unlink(missing_ok=True)
-                        print(f"    🗑 old extra removed: {p.name[:50]}", flush=True)
+                        print(f"    [DEL] old extra removed: {p.name[:50]}", flush=True)
             print(f"[{i}/{len(pendientes)}] mod {mid} fid {fid} — {nombre}", flush=True)
             est[key] = {"file_id": fid, "estado": "descargando", "intentos": 0}
             guardar_estado(est)
@@ -348,12 +348,12 @@ def main():
                 if exito:
                     est[key] = {"file_id": None, "estado": "ok", "archivo": arch,
                                 "intentos": 1, "ts": time.time()}
-                    print(f"    ✔ {arch[:60]}", flush=True)
+                    print(f"    [OK] {arch[:60]}", flush=True)
                     ok += 1
                 else:
                     est[key] = {"file_id": None, "estado": "fallo",
                                 "error": "URL download failed", "intentos": 1, "ts": time.time()}
-                    print(f"    ✘ URL download failed", flush=True)
+                    print(f"    [FAIL] URL download failed", flush=True)
                     fail.append((key, "URL download failed"))
                 guardar_estado(est)
                 time.sleep(random.uniform(3, 6))
@@ -364,12 +364,12 @@ def main():
                     if okd:
                         est[key] = {"file_id": fid, "estado": "ok", "archivo": arch,
                                     "intentos": intento, "ts": time.time()}
-                        print(f"    ✔ {arch[:60]}", flush=True)
+                        print(f"    [OK] {arch[:60]}", flush=True)
                         ok += 1
                         exito = True
                         break
                     if sin_sesion:
-                        print(f"    ⚠ session expired — re-logging in...", flush=True)
+                        print(f"    [WARN] session expired — re-logging in...", flush=True)
                         guardar_estado(est)
                         # re-login: login_camoufox.py uses NEXUS_USER/NEXUS_PASS
                         # from the env or the credentials file from setup
@@ -385,7 +385,7 @@ def main():
                         continue
                     raise RuntimeError(err or "failure")
                 except Exception as e:
-                    print(f"    ✘ attempt {intento}/{args.max_intentos}: {type(e).__name__}: {str(e)[:80]}", flush=True)
+                    print(f"    [FAIL] attempt {intento}/{args.max_intentos}: {type(e).__name__}: {str(e)[:80]}", flush=True)
                     est[key] = {"file_id": fid, "estado": "fallo", "error": str(e)[:100],
                                 "intentos": intento, "ts": time.time()}
                     guardar_estado(est)
@@ -396,9 +396,9 @@ def main():
             time.sleep(random.uniform(8, 15))
 
     guardar_estado(est)
-    print(f"\n📊 RESULT: {ok}/{len(pendientes)} OK | failures: {len(fail)}")
+    print(f"\nRESULT: {ok}/{len(pendientes)} OK | failures: {len(fail)}")
     for mid, err in fail:
-        print(f"   ✘ {mid}: {err}")
+        print(f"   [FAIL] {mid}: {err}")
     print(f"\nState saved in {ESTADO.name}")
     if fail:
         sys.exit(1)

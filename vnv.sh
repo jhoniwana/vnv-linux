@@ -2,33 +2,33 @@
 # ============================================================================
 # vnv.sh — Fully automated Viva New Vegas (Core) installer on Linux/Steam
 #
-#   ./vnv.sh setup          → prepare the environment (venv, Camoufox, libs, login)
-#   ./vnv.sh login          → automatic Nexus login (Camoufox passes Turnstile)
-#   ./vnv.sh config-cookies → save the session cookie manually (fallback)
-#   ./vnv.sh download       → download/update the mods (manager with states)
-#   ./vnv.sh estado         → verify files vs manifest (55/55, integrity)
-#   ./vnv.sh install        → MO2-LINT + Proton prefix + import mods + INIs + LOOT
-#   ./vnv.sh run            → launch the game via MO2 (Steam → "Launch Mod Organizer")
-#   ./vnv.sh mo2            → open the MO2 manager (GUI); start the game from there
+#   ./vnv.sh setup          -> prepare the environment (venv, Camoufox, libs, login)
+#   ./vnv.sh login          -> automatic Nexus login (Camoufox passes Turnstile)
+#   ./vnv.sh config-cookies -> save the session cookie manually (fallback)
+#   ./vnv.sh download       -> download/update the mods (manager with states)
+#   ./vnv.sh estado         -> verify files vs manifest (55/55, integrity)
+#   ./vnv.sh install        -> MO2-LINT + Proton prefix + import mods + INIs + LOOT
+#   ./vnv.sh run            -> launch the game via MO2 (Steam -> "Launch Mod Organizer")
+#   ./vnv.sh mo2            -> open the MO2 manager (GUI); start the game from there
 #                             (lanzar-mo2.sh is the shortcut to add to Steam)
-#   ./vnv.sh steam-add      → add "Fallout New Vegas (VNV)" to Steam as a non-Steam game
+#   ./vnv.sh steam-add      -> add "Fallout New Vegas (VNV)" to Steam as a non-Steam game
 #                             (opens MO2 on click; requires Steam closed)
-#   ./vnv.sh update         → alias of download (updates manifest + mods)
+#   ./vnv.sh update         -> alias of download (updates manifest + mods)
 #
 # Works on: Debian, Ubuntu, Arch, Fedora, openSUSE and derivatives.
 # ============================================================================
 # vnv.sh — Fully automated Viva New Vegas (Core) installer on Linux/Steam
 #
-#   ./vnv.sh setup          → prepare the environment (venv, Camoufox, libs, login)
-#   ./vnv.sh login          → automatic Nexus login (Camoufox passes Turnstile)
-#   ./vnv.sh config-cookies → save the session cookie manually (fallback)
-#   ./vnv.sh download       → download/update the mods (manager with states)
-#   ./vnv.sh estado         → verify files vs manifest (55/55, integrity)
-#   ./vnv.sh install        → MO2-LINT + Proton prefix + import mods + INIs + LOOT
-#   ./vnv.sh run            → launch the game via MO2 (Steam → "Launch Mod Organizer")
-#   ./vnv.sh mo2            → open the MO2 manager (GUI); start the game from there
+#   ./vnv.sh setup          -> prepare the environment (venv, Camoufox, libs, login)
+#   ./vnv.sh login          -> automatic Nexus login (Camoufox passes Turnstile)
+#   ./vnv.sh config-cookies -> save the session cookie manually (fallback)
+#   ./vnv.sh download       -> download/update the mods (manager with states)
+#   ./vnv.sh estado         -> verify files vs manifest (55/55, integrity)
+#   ./vnv.sh install        -> MO2-LINT + Proton prefix + import mods + INIs + LOOT
+#   ./vnv.sh run            -> launch the game via MO2 (Steam -> "Launch Mod Organizer")
+#   ./vnv.sh mo2            -> open the MO2 manager (GUI); start the game from there
 #                             (lanzar-mo2.sh is the shortcut to add to Steam)
-#   ./vnv.sh steam-add      → add "Fallout New Vegas (VNV)" to Steam as a non-Steam game========
+#   ./vnv.sh steam-add      -> add "Fallout New Vegas (VNV)" to Steam as a non-Steam game========
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
@@ -52,7 +52,7 @@ PT_LAUNCH="$(command -v protontricks-launch 2>/dev/null || printf '%s\n' "$HOME/
 # Busca en ~/.local/lib/python3.*/site-packages el que tenga el paquete.
 PT_PYTHONPATH="$(python3 -c 'import site; print(site.USER_SITE)' 2>/dev/null || true)"
 if [[ -z "$PT_PYTHONPATH" || ! -d "$PT_PYTHONPATH/protontricks" ]]; then
-  # find | head genera SIGPIPE en find → con pipefail mata el script SILENCIOSO.
+  # find | head genera SIGPIPE en find -> con pipefail mata el script SILENCIOSO.
   # Usar -quit (sin pipe) para que nunca explote en sistemas sin protontricks.
   PT_PYTHONPATH="$(find "$HOME/.local/lib" -maxdepth 2 -type d -name site-packages \
     -exec test -f '{}/protontricks/cli/__init__.py' ';' -print -quit 2>/dev/null || true)"
@@ -61,8 +61,8 @@ PT_PYTHONPATH="${PT_PYTHONPATH:-$HOME/.local/lib/python3/site-packages}"
 PY="$ROOT/venv/camoufox-python"   # python del venv con libs correctas
 
 info()  { echo -e "\e[1;34m[VNV]\e[0m $*"; }
-ok()    { echo -e "\e[1;32m  ✔\e[0m $*"; }
-fail()  { echo -e "\e[1;31m  ✘\e[0m $*"; }
+ok()    { echo -e "\e[1;32m  [OK]\e[0m $*"; }
+fail()  { echo -e "\e[1;31m  [FAIL]\e[0m $*"; }
 
 necesita_setup() {
   if [[ ! -x "$PY" ]]; then
@@ -136,7 +136,7 @@ dependencias_wine() {
   local prefix="$HOME/.steam/steam/steamapps/compatdata/22380"
   if [[ ! -d "$prefix" ]]; then
     info "Proton prefix for FNV does not exist yet."
-    info "  En Steam: FNV → Propiedades → Compatibilidad → forzar Proton → Jugar UNA vez."
+    info "  En Steam: FNV -> Propiedades -> Compatibilidad -> forzar Proton -> Jugar UNA vez."
     info "  (or run: protontricks-launch 22380 cmd /c echo ready)"
   else
     ok "Prefix de Proton del juego encontrado: $prefix"
@@ -199,7 +199,7 @@ EOF
 
   # SArchiveList completo (21 BSAs, orden vanilla, Update.bsa al final = mayor
   # prioridad) en los 3 inis. Steam validate restaura Fallout_default.ini a la
-  # lista base de 6 → sin esto las BSAs de DLC quedan sin registrar.
+  # lista base de 6 -> sin esto las BSAs de DLC quedan sin registrar.
   local sar_list="Fallout - Textures.bsa, Fallout - Textures2.bsa, Fallout - Meshes.bsa, Fallout - Voices1.bsa, Fallout - Sound.bsa, Fallout - Misc.bsa, DeadMoney - Main.bsa, DeadMoney - Sounds.bsa, HonestHearts - Main.bsa, HonestHearts - Sounds.bsa, OldWorldBlues - Main.bsa, OldWorldBlues - Sounds.bsa, LonesomeRoad - Main.bsa, LonesomeRoad - Sounds.bsa, GunRunnersArsenal - Main.bsa, GunRunnersArsenal - Sounds.bsa, ClassicPack - Main.bsa, CaravanPack - Main.bsa, MercenaryPack - Main.bsa, TribalPack - Main.bsa, Update.bsa"
   local inis_bsa=(
     "$GAME_DIR/Fallout_default.ini"
@@ -327,7 +327,7 @@ case "${1:-}" in
     mkdir -p "$CONFIG_DIR"
     echo "To grab your session cookie:"
     echo "  1. Logueate en https://www.nexusmods.com"
-    echo "  2. F12 → Application → Cookies → https://www.nexusmods.com"
+    echo "  2. F12 -> Application -> Cookies -> https://www.nexusmods.com"
     echo "  3. Copy the value of 'nexusmods_session'"
     read -rsp "Paste the value of the nexusmods_session cookie: " SID_INPUT
     echo
@@ -354,7 +354,7 @@ case "${1:-}" in
     umask 077
     printf '%s\n%s\n' "$USER_INPUT" "$PASS_INPUT" > "$CONFIG_DIR/credenciales"
     ok "Credentials saved to $CONFIG_DIR/credenciales (permisos 600)"
-    echo "⚠ Recommended: regenerate your Nexus password from time to time."
+    echo "[WARN] Recommended: regenerate your Nexus password from time to time."
     echo "  The manager uses them ONLY to re-login automatically if the session expires."
     ;;
   download|update)
@@ -417,8 +417,8 @@ case "${1:-}" in
     done
     if [[ -z "$prefix" ]]; then
       info "The game Proton prefix does not exist yet."
-      info "  Para crearlo: en Steam, FNV → Propiedades → Compatibilidad →"
-      info "  'Force the use of a specific Steam Play compatibility tool' → Proton."
+      info "  Para crearlo: en Steam, FNV -> Propiedades -> Compatibilidad ->"
+      info "  'Force the use of a specific Steam Play compatibility tool' -> Proton."
       echo
       if [[ "${2:-}" == "--si" ]]; then
         R="s"
@@ -453,7 +453,7 @@ case "${1:-}" in
     root_mods
     tweaks_ini
     info "Installation ready. The load order is already in the guide order (== LOOT)."
-    info "  To re-sort in MO2: GUI → Sort button. To validate with lootcli: ./vnv.sh loot"
+    info "  To re-sort in MO2: GUI -> Sort button. To validate with lootcli: ./vnv.sh loot"
     ;;
   loot)
     necesita_setup
@@ -473,7 +473,7 @@ case "${1:-}" in
     "$PY" scripts/agregar_a_steam.py "${@:2}"
     ;;
   bsa)
-    # ⚠️ NOT NEEDED on the current depot (all 11 target BSAs ship raw; audio is
+    # [WARN] NOT NEEDED on the current depot (all 11 target BSAs ship raw; audio is
     # already valid RIFF WAVE — see README "Tools you do NOT need"). Kept only
     # for research: do NOT run Meshes.bsa/Misc.bsa (32-bit game crashes).
     necesita_setup

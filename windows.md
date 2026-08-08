@@ -1,4 +1,4 @@
-# 🪟 VNV Core para Windows (amigo) — Instalación con Mod Organizer 2
+# [WIN] VNV Core para Windows (amigo) — Instalación con Mod Organizer 2
 
 > Guía completa para que MO2 en Windows detecte y active TODO automáticamente.
 > Generada desde la instalación Linux verificada (Viva New Vegas Core, 55 mods).
@@ -9,7 +9,7 @@
 2. **Mod Organizer 2** instalado desde [MO2 Nexus](https://www.nexusmods.com/site/mods/62805) o GitHub.
 3. **Nexus Premium o sesión activa** para descargas automáticas (o descargar a mano).
 
-> ⚠️ **IMPORTANTE**: NO uses el "FNV BSA Decompressor" en esta instalación.
+> [WARN] **IMPORTANTE**: NO uses el "FNV BSA Decompressor" en esta instalación.
 > En el depot actual (2026) es un **no-op** (las BSAs ya vienen sin comprimir) y
 > descomprimir `Meshes.bsa`/`Misc.bsa` hace **crash el juego** (32-bit).
 > Usa solo los pasos de abajo.
@@ -76,19 +76,19 @@
 | 96007 | [1000177683](https://www.nexusmods.com/newvegas/mods/96007?tab=files&file_id=1000177683) | bugfix | Third Person Aim Fix NVSE |
 | 98514 | [1000179156](https://www.nexusmods.com/newvegas/mods/98514?tab=files&file_id=1000179156) | bugfix | Supplementary Fixes And Tweaks (YUPDate) |
 
-**Cómo descargar**: entra a cada `Mod ID` → pestaña *Files* → descarga el *File ID* indicado.
-Si usas **MO2 → botón "Download with Mod Manager"**, los archivos caen solos a `Downloads/`.
+**Cómo descargar**: entra a cada `Mod ID` -> pestaña *Files* -> descarga el *File ID* indicado.
+Si usas **MO2 -> botón "Download with Mod Manager"**, los archivos caen solos a `Downloads/`.
 Puedes usar **Nexus auto-downloader** o **"Mods downloader"** (extensión) para bajar los 55 de corrido con tu sesión.
 
 ---
 
 ## 2 · Estructura de mods en MO2 (para que "detecte todo")
 
-### A) Mods "normales" → carpeta `mods/` del perfil
-MO2 → *left pane → Install from file* (o `Downloads/` → doble clic). El **nombre del mod en MO2**
+### A) Mods "normales" -> carpeta `mods/` del perfil
+MO2 -> *left pane -> Install from file* (o `Downloads/` -> doble clic). El **nombre del mod en MO2**
 debe quedar como en `modlist.txt` de abajo para que el orden de prioridad se respete.
 
-### B) Mods "root" → VAN AL JUEGO DIRECTAMENTE (NO a MO2)
+### B) Mods "root" -> VAN AL JUEGO DIRECTAMENTE (NO a MO2)
 
 **¿Qué es un mod root?** Los root mods modifican archivos que viven en la **carpeta del juego**
 (no en la VFS de MO2): DLLs del engine, el exe, etc. Por eso **NO se instalan como mods de MO2**
@@ -111,48 +111,48 @@ GOG:    C:\GOG Games\Fallout New Vegas\    (o donde lo instales)
 | FNV BSA Decompressor | — | **NO INSTALAR** |
 
 **Cómo instalar xNVSE en Windows (paso a paso):**
-1. Descarga **xNVSE** en Nexus: [New Vegas Script Extender (xNVSE)](https://www.nexusmods.com/newvegas/mods/67883) → archivo **Main file** (`xNVSE 6.x.x.7z`).
-2. Extrae el `.7z` (7-Zip o WinRAR) → dentro hay una carpeta `nvse_6_x_x/`.
+1. Descarga **xNVSE** en Nexus: [New Vegas Script Extender (xNVSE)](https://www.nexusmods.com/newvegas/mods/67883) -> archivo **Main file** (`xNVSE 6.x.x.7z`).
+2. Extrae el `.7z` (7-Zip o WinRAR) -> dentro hay una carpeta `nvse_6_x_x/`.
 3. Copia estos archivos a la **carpeta del juego** (junto a `FalloutNV.exe`):
    ```
-   nvse_1_4.dll          ← el plugin del engine (¡el que el juego carga!)
-   nvse_steam_loader.dll ← cargador automático (Steam) / nvse_loader.exe (GOG)
-   nvse_editor_1_4.dll   ← soporte del GECK (editor)
+   nvse_1_4.dll          <- el plugin del engine (¡el que el juego carga!)
+   nvse_steam_loader.dll <- cargador automático (Steam) / nvse_loader.exe (GOG)
+   nvse_editor_1_4.dll   <- soporte del GECK (editor)
    nvse_1_4.pdb / nvse_steam_loader.pdb / nvse_editor_1_4.pdb / nvse_loader.pdb
    ```
 4. Verifica que queden **en la misma carpeta que `FalloutNV.exe`**, así:
    ```
    Fallout New Vegas/
    ├── FalloutNV.exe
-   ├── nvse_1_4.dll        ← aquí
-   ├── nvse_steam_loader.dll ← aquí
+   ├── nvse_1_4.dll        <- aquí
+   ├── nvse_steam_loader.dll <- aquí
    ├── Data/
    └── ...
    ```
 5. (Opcional pero recomendado) extrae también `Data/NVSE/` (los INIs de configuración de NVSE).
-6. Prueba: arranca el juego → en el menú principal verás **"NVSE version 6.x"** abajo a la izquierda.
+6. Prueba: arranca el juego -> en el menú principal verás **"NVSE version 6.x"** abajo a la izquierda.
    También se crea `nvse.log` en la carpeta del juego (muestra los plugins NVSE cargados).
 
-> 💡 **Para MO2**: el mod `-New Vegas Script Extender (NVSE xNVSE)` queda desactivado — es solo
+> [TIP] **Para MO2**: el mod `-New Vegas Script Extender (NVSE xNVSE)` queda desactivado — es solo
 > el recordatorio de que esto va root. Si instalaste xNVSE con el instalador/extracción manual,
 > MO2 no tiene que tocar nada de esto.
 
 **Cómo instalar el FNV 4GB Patcher en Windows:**
-1. Descarga **FNV 4GB Patcher**: [New Vegas 4GB Patcher (mods 62552)](https://www.nexusmods.com/newvegas/mods/62552) → Main file.
+1. Descarga **FNV 4GB Patcher**: [New Vegas 4GB Patcher (mods 62552)](https://www.nexusmods.com/newvegas/mods/62552) -> Main file.
 2. Extrae `FalloutNVPatcher.exe` a la carpeta del juego (junto a `FalloutNV.exe`).
-3. **Clic derecho → Ejecutar como administrador** (o simplemente doble clic si Steam no está en Program Files).
+3. **Clic derecho -> Ejecutar como administrador** (o simplemente doble clic si Steam no está en Program Files).
 4. El patcher crea una copia de seguridad automática: `FalloutNV_backup.exe` y parchea `FalloutNV.exe`
    (habilita el flag LAA 4GB). **Cierra el juego antes** — no se puede parchear un exe en uso.
-5. Verificación: el `FalloutNV_backup.exe` existe junto al exe parcheado ✓.
+5. Verificación: el `FalloutNV_backup.exe` existe junto al exe parcheado [OK].
 6. (Recomendado por VNV) el `nvse_steam_loader.dll` de xNVSE ya inyecta NVSE solo; el 4GB patch
    es independiente.
 
-> ⚠️ Si alguna vez revalidad el juego en Steam (Verify integrity), **se revierten** los root mods
-> (exe y DLLs vuelven a vanilla) → re-ejecuta el 4GB patcher y vuelve a copiar las DLLs de xNVSE.
+> [WARN] Si alguna vez revalidad el juego en Steam (Verify integrity), **se revierten** los root mods
+> (exe y DLLs vuelven a vanilla) -> re-ejecuta el 4GB patcher y vuelve a copiar las DLLs de xNVSE.
 
 **Epic Games Patcher** (solo si tu juego es de Epic Games Store):
-- Descarga [Epic Games Patcher](https://www.nexusmods.com/newvegas/mods/81281) → extrae `patch.xdelta`
-  + `FalloutNVPatcher.exe` a la carpeta del juego → ejecuta. En Steam **no hace falta** (el exe ya es compatible).
+- Descarga [Epic Games Patcher](https://www.nexusmods.com/newvegas/mods/81281) -> extrae `patch.xdelta`
+  + `FalloutNVPatcher.exe` a la carpeta del juego -> ejecuta. En Steam **no hace falta** (el exe ya es compatible).
 
 ### C) Fixed ESMs (esencial — el juego crashea sin esto)
 Extraer en `mods/Fixed ESMs/` (se activa como `+Fixed ESMs`):
@@ -164,10 +164,10 @@ HonestHearts.esm   LonesomeRoad.esm    OldWorldBlues.esm
 
 > Son los ESMs parcheados (Ultimate Edition ESM Fixes Remastered). Se activan vía VFS de MO2.
 
-> ⚠️ **IMPORTANTE (2026)**: el `.mpi` v1.03 del mod NO matchea los ESMs del
+> [WARN] **IMPORTANTE (2026)**: el `.mpi` v1.03 del mod NO matchea los ESMs del
 > depot actual de Steam (diferencias de ±bytes) — el instalador de Nexus falla
 > con "checksum mismatch" / "source file too short". **NO fuerces la aplicación**
-> (produce ESMs con TES4 válido pero records faltantes → crash `0x00AA991C`
+> (produce ESMs con TES4 válido pero records faltantes -> crash `0x00AA991C`
 > al iniciar). La forma correcta: **heredar los 6 ESMs de una instalación que
 > ya funciona** (cópialos desde ahí a `mods/Fixed ESMs/`). En Windows, si ya
 > tenías los Fixed ESMs de antes, cópialos tal cual (son idénticos — mismo juego).
@@ -377,16 +377,16 @@ iActorShadowCountInt=0
 SArchiveList=Fallout - Textures.bsa, Fallout - Textures2.bsa, Fallout - Meshes.bsa, Fallout - Voices1.bsa, Fallout - Sound.bsa, Fallout - Misc.bsa, DeadMoney - Main.bsa, DeadMoney - Sounds.bsa, HonestHearts - Main.bsa, HonestHearts - Sounds.bsa, OldWorldBlues - Main.bsa, OldWorldBlues - Sounds.bsa, LonesomeRoad - Main.bsa, LonesomeRoad - Sounds.bsa, GunRunnersArsenal - Main.bsa, GunRunnersArsenal - Sounds.bsa, ClassicPack - Main.bsa, CaravanPack - Main.bsa, MercenaryPack - Main.bsa, TribalPack - Main.bsa, Update.bsa
 ```
 
-> Sin esto, las BSAs de los DLC no se registran → mallas/texturas faltantes (triángulos rojos).
+> Sin esto, las BSAs de los DLC no se registran -> mallas/texturas faltantes (triángulos rojos).
 > `Update.bsa` al FINAL = máxima prioridad (requisito VNV).
 
 ---
 
 ## 5 · Arrancar
 
-1. MO2 → perfil **Default** → todo en verde.
-2. Botón ▶ **Run** → **FalloutNV** (con `nvse_steam_loader.dll` arranca el NVSE solo).
-3. Nuevo juego → Settings: **Stewie Tweaks presente** = mods cargados ✓.
+1. MO2 -> perfil **Default** -> todo en verde.
+2. Botón > **Run** -> **FalloutNV** (con `nvse_steam_loader.dll` arranca el NVSE solo).
+3. Nuevo juego -> Settings: **Stewie Tweaks presente** = mods cargados [OK].
 
 ### Diagnóstico rápido
 | Síntoma | Causa | Fix |

@@ -295,8 +295,8 @@ HTML = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-  <h1>⚡ Viva New Vegas — Linux Installer</h1>
-  <div class="sub">All automatic: environment → account → downloads → install → play</div>
+  <h1>[VNV] Viva New Vegas — Linux Installer</h1>
+  <div class="sub">All automatic: environment -> account -> downloads -> install -> play</div>
   <div class="pasos" id="pasos"></div>
   <div class="cards">
     <div class="card" id="card-setup">
@@ -324,7 +324,7 @@ HTML = """<!DOCTYPE html>
     <div class="card" id="card-steam">
       <h2>3½ · Connect with Steam</h2>
       <p>Detects Steam and Fallout New Vegas, creates the Proton prefix (appid 22380) and verifies protontricks so MO2 works.</p>
-      <button class="btn sec" onclick="correr('steam','card-steam')">🔗 Diagnose / connect Steam</button>
+      <button class="btn sec" onclick="correr('steam','card-steam')">[LINK] Diagnose / connect Steam</button>
     </div>
     <div class="card" id="card-instalar">
       <h2>4 · Install with MO2</h2>
@@ -334,11 +334,11 @@ HTML = """<!DOCTYPE html>
     <div class="card" id="card-jugar">
       <h2>5 · Play</h2>
       <p>Launches Fallout New Vegas with all the mods loaded.</p>
-      <button class="btn" onclick="correr('jugar','card-jugar')">🎮 Launch the game</button>
+      <button class="btn" onclick="correr('jugar','card-jugar')">[GAME] Launch the game</button>
     </div>
   </div>
   <div class="barra">
-    <div style="font-weight:600;margin-bottom:8px">📋 Live progress</div>
+    <div style="font-weight:600;margin-bottom:8px">[LOG] Live progress</div>
     <div class="log" id="log"></div>
   </div>
   <div class="mini" id="mini"></div>
@@ -359,7 +359,7 @@ function actualizar() {
     const html = PASOS.map((k,i) => {
       const d = defs[k];
       const cls = d.ok ? 'hecho' : (i+1 === e.paso_actual ? 'activo' : '');
-      const mark = d.ok ? '✔' : '';
+      const mark = d.ok ? '[OK]' : '';
       return `<div class="paso ${cls}"><span class="dot"></span>${i+1}. ${d.t} ${mark}</div>`;
     }).join('');
     document.getElementById('pasos').innerHTML = html;
@@ -423,5 +423,5 @@ actualizar();
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else PORT
     threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()
-    print(f"🌐 VNV UI at http://127.0.0.1:{port} — browser opening...")
+    print(f"[WEB] VNV UI at http://127.0.0.1:{port} — browser opening...")
     app.run(host="127.0.0.1", port=port, threaded=True)

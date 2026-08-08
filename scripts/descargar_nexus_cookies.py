@@ -7,7 +7,7 @@ the user's session (the `sid` cookie). It is legal: your account, your downloads
 
 How to get the `sid` cookie:
   1. Log in to https://www.nexusmods.com with your browser
-  2. F12 → Application → Cookies → https://www.nexusmods.com
+  2. F12 -> Application -> Cookies -> https://www.nexusmods.com
   3. Copy the value of the cookie called `sid`
   4. ./vnv.sh config-cookies   (or export NEXUS_SID=...)
 
@@ -86,7 +86,7 @@ def main():
     if (cfg / "cf_clearance").exists():
         cf = (cfg / "cf_clearance").read_text().strip()
     if not sesion:
-        sys.exit("❌ No session. Run first: NEXUS_USER=... NEXUS_PASS=... ./venv/bin/python scripts/login_camoufox.py")
+        sys.exit("[ERROR] No session. Run first: NEXUS_USER=... NEXUS_PASS=... ./venv/bin/python scripts/login_camoufox.py")
 
     mods = json.load(open(MANIFEST))
     if args.mod:
@@ -112,18 +112,18 @@ def main():
             continue
         try:
             link = download_popup(m["file_id"], sesion, cf)
-            print(f"    → link: {link[:110]}")
+            print(f"    -> link: {link[:110]}")
             descargar(link, destino, sesion, cf)
             ok += 1
         except urllib.error.HTTPError as e:
-            print(f"    ✘ HTTP {e.code}")
+            print(f"    [FAIL] HTTP {e.code}")
             fail.append((mid, f"HTTP {e.code}"))
         except Exception as e:
-            print(f"    ✘ {type(e).__name__}: {str(e)[:110]}")
+            print(f"    [FAIL] {type(e).__name__}: {str(e)[:110]}")
             fail.append((mid, str(e)[:80]))
         time.sleep(8)  # wait between slow downloads
 
-    print(f"\n✅ {ok}/{len(mods)} downloaded. Failures: {len(fail)}")
+    print(f"\n[OK] {ok}/{len(mods)} downloaded. Failures: {len(fail)}")
     for mid, e in fail[:10]:
         print(f"   mod {mid}: {e}")
     sys.exit(1 if fail else 0)

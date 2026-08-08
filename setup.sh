@@ -2,17 +2,17 @@
 # ============================================================================
 # setup.sh — Prepara el entorno VNV en CUALQUIER distro Linux
 #
-#   ./setup.sh             → prepara todo (venv, Camoufox, libs, login)
-#   ./setup.sh --chequear  → diagnostics only (no install)
+#   ./setup.sh             -> prepara todo (venv, Camoufox, libs, login)
+#   ./setup.sh --chequear  -> diagnostics only (no install)
 #
 # What it does:
 #   1. Detecta la distro y muestra/instala dependencias del sistema
 #   2. Crea el venv e instala Camoufox (+ Playwright)
 #   3. Smoke test: ¿Camoufox arranca con las libs del sistema?
-#   4. Si falla → descarga micromamba (user-space, SIN sudo) con pixman
+#   4. Si falla -> descarga micromamba (user-space, SIN sudo) con pixman
 #      and creates a wrapper that resolves the libs (useful on semi-broken Arch,
 #      Debian sin GTK3, etc.)
-#   5. Checks the Nexus session (cookies); if missing → guides to login
+#   5. Checks the Nexus session (cookies); if missing -> guides to login
 # ============================================================================
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -25,8 +25,8 @@ LIBFIX="$VENV/libfix"                # micromamba env de respaldo (si hace falta
 MICROMAMBA_BIN="$VENV/micromamba"
 
 info()  { echo -e "\e[1;34m[SETUP]\e[0m $*"; }
-ok()    { echo -e "\e[1;32m  ✔\e[0m $*"; }
-fail()  { echo -e "\e[1;31m  ✘\e[0m $*"; }
+ok()    { echo -e "\e[1;32m  [OK]\e[0m $*"; }
+fail()  { echo -e "\e[1;31m  [FAIL]\e[0m $*"; }
 
 detectar_distro() {
   if [[ -f /etc/os-release ]]; then
@@ -41,7 +41,7 @@ detectar_distro() {
 
 deps_sistema() {
   info "Dependencias del sistema para Camoufox (Firefox):"
-  # per-distro deps (includes protontricks for the MO2 ↔ Steam/Proton bridge)
+  # per-distro deps (includes protontricks for the MO2 <-> Steam/Proton bridge)
   case "$DISTRO" in
     debian|ubuntu|linuxmint|pop)
       echo "  Debian/Ubuntu:"
@@ -69,13 +69,13 @@ deps_sistema() {
     case "$DISTRO" in
       debian|ubuntu|linuxmint|pop)
         # libasound2 es un paquete VIRTUAL en Ubuntu 24.04 (solo libasound2t64):
-        # instalarlo falla TODO el apt → separar en dos installs tolerantes
+        # instalarlo falla TODO el apt -> separar en dos installs tolerantes
         sudo apt update -qq 2>/dev/null || true
         sudo apt install -y -qq libgtk-3-0 libasound2t64 libdbus-glib-1-2 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxdamage1 libxrandr2 libxtst6 libpango-1.0-0 libcairo2 libpixman-1-0 libnss3 libxss1 libegl1 libxkbcommon0 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 libglib2.0-0 curl bzip2 python3-venv 2>/dev/null && ok "deps installed" || fail "apt failed"
         ;;
       arch|manjaro|endeavouros)
-        # Arch: libgbm→mesa, libegl→libglvnd, atk→ya en at-spi2-core (los
-        # nombres del README genérico no son paquetes de Arch → mataban todo)
+        # Arch: libgbm->mesa, libegl->libglvnd, atk->ya en at-spi2-core (los
+        # nombres del README genérico no son paquetes de Arch -> mataban todo)
         sudo pacman -S --needed --noconfirm gtk3 alsa-lib libxcomposite libxdamage libxrandr libxtst pango cairo pixman nss libxss libglvnd libxkbcommon at-spi2-core libcups libdrm mesa glib2 curl bzip2 python protontricks 2>/dev/null && ok "deps installed" || fail "pacman failed"
         ;;
       fedora|rhel|centos|rocky|almalinux)
@@ -129,7 +129,7 @@ crear_venv() {
   if [[ ! -x "$VENV/bin/python" ]]; then
     info "Creando venv..."
     if ! python3 -m venv "$VENV" 2>/dev/null; then
-      # python3-venv suele faltar en Ubuntu minimal → instalarlo y reintentar
+      # python3-venv suele faltar en Ubuntu minimal -> instalarlo y reintentar
       info "python3 -m venv failed (python3-venv missing?) — installing and retrying..."
       local cmd_prefix=""
       if [[ "$(id -u)" -ne 0 ]] && command -v sudo >/dev/null 2>&1; then
@@ -201,7 +201,7 @@ instalar_libfix() {
 
 crear_wrapper() {
   # wrapper: python del venv + LD_LIBRARY_PATH correcto (si hace falta libfix)
-  # Rutas RELATIVAS al propio wrapper → el proyecto es movible/portable.
+  # Rutas RELATIVAS al propio wrapper -> el proyecto es movible/portable.
   local EXTRA_LD=""
   if [[ -f "$LIBFIX/lib/libpixman-1.so" ]]; then
     EXTRA_LD='$DIR/libfix/lib'
@@ -257,9 +257,9 @@ verificar_sesion() {
   fi
   info "No Nexus session — you need to log in once (2 minutes)."
   echo "  Option A (recommended):  ./vnv.sh login"
-  echo "    → opens real Chrome, you log in, it captures the cookies by itself"
+  echo "    -> opens real Chrome, you log in, it captures the cookies by itself"
   echo "  Option B (manual):       ./vnv.sh config-cookies"
-  echo "    → paste the 'nexusmods_session' cookie from the browser (F12 → Application → Cookies)"
+  echo "    -> paste the 'nexusmods_session' cookie from the browser (F12 -> Application -> Cookies)"
   return 1
 }
 
