@@ -164,6 +164,44 @@ cd vnv-linux
   <div class="card"><b>▸ Cross-distro</b>Verified on Ubuntu 24.04, Arch Linux and EndeavourOS (docker + real): fresh setup, clean fallbacks, 12/12 health.</div>
 </div>
 
+
+<h2>Screenshots</h2>
+<p>Captures of the Pip-Boy wizard running in LIVE mode (connected to the real backend):</p>
+<div class="grid">
+  <figure style="margin:0">
+    <a href="screenshots/ui-wizard.png"><img src="screenshots/ui-wizard.png" alt="VNV wizard main view" style="width:100%;border:1px solid var(--line2);border-radius:8px;box-shadow:var(--shadow)"></a>
+    <figcaption style="color:var(--tx3);font-size:11.5px;margin-top:6px">The 5-step wizard (SURVEY → STEAM → NEXUS → SUPPLY → DEPLOY)</figcaption>
+  </figure>
+  <figure style="margin:0">
+    <a href="screenshots/ui-mods.png"><img src="screenshots/ui-mods.png" alt="VNV supply view with the 55 real mods" style="width:100%;border:1px solid var(--line2);border-radius:8px;box-shadow:var(--shadow)"></a>
+    <figcaption style="color:var(--tx3);font-size:11.5px;margin-top:6px">The SUPPLY view — the 55 real mods with live status</figcaption>
+  </figure>
+</div>
+
+<h2>Mini tutorial — first run</h2>
+<div class="steps">
+  <div class="step"><span class="n">1</span><b>Start the wizard</b>
+    <pre>git clone https://github.com/jhoniwana/vnv-linux
+cd vnv-linux
+./vnv.sh ui</pre>
+    <p>A Pip-Boy style browser opens at <code>http://127.0.0.1:8397</code> — green terminal, CRT scanlines, live progress.</p>
+  </div>
+  <div class="step"><span class="n">2</span><b>STEP 1 · SURVEY</b>
+    <p>Click <b style="color:var(--tx)">SET UP ENVIRONMENT</b>. It detects your distro and installs Python, Camoufox and the system libraries. Wait for the green PASSED pill.</p>
+  </div>
+  <div class="step"><span class="n">3</span><b>STEP 3 · NEXUS</b>
+    <p>Enter your Nexus email + password, then <b style="color:var(--tx)">CONNECT NEXUS</b>. The Turnstile captcha is solved automatically (anti-detection browser). The session cookie is saved locally with 600 permissions — never uploaded.</p>
+  </div>
+  <div class="step"><span class="n">4</span><b>STEP 4 · SUPPLY</b>
+    <p>Click <b style="color:var(--tx)">START SUPPLY DROP</b> — downloads the 55 mods (~1.1 GB) with retries and integrity checks. You can switch to the SUPPLY tab to watch each mod's status. Power outage? Re-run and it continues where it stopped.</p>
+  </div>
+  <div class="step"><span class="n">5</span><b>STEP 5 · DEPLOY</b>
+    <p><b style="color:var(--tx)">INSTALL &amp; CONFIGURE</b> creates the MO2 instance, imports the 55 mods in canonical order, applies the native root mods (xNVSE, 4GB, UE ESM Fixes) — every step verified after running, with automatic fallbacks.</p>
+  </div>
+  <div class="step"><span class="n">6</span><b>LAUNCH</b>
+    <p>Hit <b style="color:var(--tx)">LAUNCH GAME</b>. In-game: check <b style="color:var(--tx)">Settings → Stewie Tweaks</b> to confirm the mods are loaded. Sprint and QOL: MCM → Just Assorted Mods. Welcome to the Mojave.</p>
+  </div>
+</div>
 <h2>FAQ</h2>
 <div class="step"><b>Are the mods in the repo?</b>
   <p>No. The repo only downloads the 55 mods with YOUR Nexus session (free). It redistributes nothing copyrighted.</p></div>
