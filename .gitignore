@@ -7,3 +7,5 @@ downloads/*.7z
 downloaded_files/
 downloads/*.rar
 repos/
+estado.json
+downloads/

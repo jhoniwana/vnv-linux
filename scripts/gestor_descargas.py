@@ -240,6 +240,14 @@ def main():
         e = est.get(str(mid), {})
         # re-download if the file_id changed
         if e.get("estado") == "ok" and e.get("file_id") == fid and not args.forzar:
+            # el estado dice ok — PERO el archivo debe EXISTIR en disco (el
+            # estado.json del repo clonado puede mentir en una máquina fresca)
+            archivo = e.get("archivo")
+            existente = (DEST / archivo) if archivo else None
+            if existente is None or not existente.exists() or existente.stat().st_size == 0:
+                print(f"    ⚠ {mid}: estado dice ok pero el archivo falta en disco — re-downloading", flush=True)
+                pendientes.append((mid, fid, m.get("nombre") or f"mod-{mid}", False, None))
+                continue
             # validate that the main file is not one of an extra (historical crossings)
             extra_archivos = [est.get(f"{mid}:{x.get('file_id')}", {}).get("archivo")
                               if x.get("file_id") else None
