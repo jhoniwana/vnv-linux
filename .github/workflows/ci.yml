@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  syntax-and-health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bash syntax check
+        run: |
+          bash -n vnv.sh
+          bash -n setup.sh
+          bash -n lanzar-mo2.sh
+          echo "bash syntax OK"
+
+      - name: Python compile check (repo scripts)
+        run: |
+          for f in scripts/*.py ui.py; do python3 -m py_compile "$f"; done
+          echo "python compile OK"
+
+      - name: Python compile check (port repos, when present)
+        run: |
+          for f in repos/*/port.py repos/*/decompress.py; do
+            [ -f "$f" ] && python3 -m py_compile "$f"
+          done
+          echo "ports compile OK"
+
+      - name: Manifest sanity (55 mods, all with file_id)
+        run: |
+          python3 - <<'EOF'
+          import json
+          man = json.load(open("manifest.json"))
+          with_id = [m for m in man if m.get("file_id")]
+          assert len(with_id) == 55, f"expected 55 mods with file_id, got {len(with_id)}"
+          assert all(m.get("nombre") and m.get("mod_id") for m in with_id)
+          assert len({m["mod_id"] for m in with_id}) == 55, "duplicate mod_ids"
+          print(f"manifest OK: {len(with_id)} mods")
+          EOF
+
+      - name: No emojis / no Spanish in repo text files
+        run: |
+          python3 - <<'EOF'
+          import pathlib, re, sys
+          acc = re.compile(r"[¿áéíóúñÁÉÍÓÚÑ¡]")
+          emoji = re.compile(r"[\U0001F000-\U0001FAFF\U00002600-\U000027BF\U0000FE00-\U0000FE0F\U00002190-\U000021FF]")
+          bad = []
+          for ext in ("*.md", "*.py", "*.sh", "*.html"):
+              for p in pathlib.Path(".").rglob(ext):
+                  if any(x in str(p) for x in (".git", ".github", "venv", "downloads", "repos")):
+                      continue
+                  t = p.read_text(errors="replace")
+                  if acc.findall(t) or emoji.findall(t):
+                      bad.append(str(p))
+          if bad:
+              print("FOUND:", bad)
+              sys.exit(1)
+          print("no emojis, no Spanish: OK")
+          EOF
+
+      - name: Docs page sanity (GitHub Pages)
+        run: |
+          test -f docs/index.html
+          grep -q "Viva New Vegas for Linux" docs/index.html
+          test -f docs/gecko.png
+          test -f docs/screenshots/ui-wizard.png
+          test -f docs/screenshots/ui-mods.png
+          echo "docs OK"
