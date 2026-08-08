@@ -10,7 +10,7 @@ Message for the agent that continues this project. Read it completely before act
 - 55 mods (Core VNV + JAM as requested extra), native root mods (no Wine), launch via MO2 CLI.
 - Public repo: `https://github.com/jhoniwana/vnv-linux` (branch `main`)
 - Local code: the folder where the repo was cloned (portable — no absolute paths)
-- Docs: `BRAIN.md` (technical log) + `obsidian/` + this HANDOFF.
+- Docs: `BRAIN.md` (technical log — single source of truth) + this HANDOFF.
 
 ---
 
@@ -21,7 +21,7 @@ Message for the agent that continues this project. Read it completely before act
 | **55 mods downloaded** + 5 extras, 0 HTML | ✅ (includes JAM 66666 + YUPDate/supplement 98514) |
 | **55 mods imported** into MO2 | ✅ 50 active + 5 root (disabled, correct) + Fixed ESMs active |
 | **Canonical VNV Core load order** | ✅ 23 plugins: base esms → YUP → d20Fixes → UPNVSE+ → NVMIM(-YUP) → FaceGen → Strip Lights → LDF → LTI(-YUP) → fixy → Placements → JAM |
-| **Root mods** | ✅ xNVSE (nvse_1_4 + steam_loader), 4GB (LAA=0x20 + import), decompressed BSAs (21, bit30 on all), UE ESM Fixes CORRECT rebuild |
+| **Root mods** | ✅ xNVSE (nvse_1_4 + steam_loader), 4GB (LAA=0x20 + import), BSAs vanilla (21 — decompressor NOT used, see BRAIN.md), UE ESM Fixes validated (465,054 records) |
 | **Fixed ESMs (rebuild 7 aug)** | ✅ **465,054 records, DIALOG 18,215, INFO 23,247** (the old build had 233K records and 0 dialogues → crash) |
 | **INIs** | ✅ nvtf.ini (heap 400 + 4GB + VRAM, in-game and in mod), FalloutCustom.ini (Default profile) |
 | **Guide extras** | ✅ JIP Settings INI, Stewie INI, JohnnyGuitar INI Presets, LOD Fixes INI, **JAM - VNV Configuration** (JustMods.ini) |
@@ -84,23 +84,23 @@ Message for the agent that continues this project. Read it completely before act
 
 ## 5. WHAT'S LEFT (polish, nothing in the pipeline)
 
-- Test `./vnv.sh setup` on a real Debian/Ubuntu (only tested on Arch).
 - Social preview of the repo (`assets/gecko.png` in GitHub settings).
 - Security: regenerate Nexus password + API key (`./vnv.sh config`) + `./vnv.sh credenciales`.
-- Verify a full `./vnv.sh install` on a clean machine (recreate the state from scratch).
+- (Done 8 aug) setup verified on Ubuntu 24.04 + Arch (docker) and EndeavourOS; full
+  from-scratch install verified in `~/vnv-cero-test` (fresh clone + fresh MO2 + inherit).
 
 ## 6. IMPORTANT RULES
 
 - **NEVER upload credentials**; keep `downloads/`, `venv/`, `~/.config/` out of the repo.
 - **Always** use `./venv/camoufox-python` (never `python3`) for the Nexus scripts.
 - **Nexus rate limits**: 5s between API calls, 8-15s between downloads.
-- Root repos **private** (copyrighted binaries) — do not make them public.
+- Root repos are **public** since 8 aug 2026 (no secrets inside — verified with git log sweep).
 - The UE fixes `.mpi` (220 MB) stays out of the repo; `port.py` extracts it from the `.7z` to `~/.cache/vnv-uefix/` with 7z.
 - The repo does NOT redistribute mods (they are downloaded with the user's session).
 
 ## 7. REFERENCES
 
 - `BRAIN.md` — full technical detail.
-- `obsidian/` — documentation vault (`Inicio.md` is the hub).
+
 - `README.md` — user guide.
-- Commands: `./vnv.sh {setup|login|config|credenciales|download|estado|install|loot|run|mo2|steam-add|ui}`
+- Commands: `./vnv.sh {setup|login|config|config-cookies|credenciales|download|estado|install|loot|run|mo2|steam|steam-add|bsa|bsa-verify|esmfix|salud|ui}`

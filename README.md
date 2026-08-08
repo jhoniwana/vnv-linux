@@ -66,7 +66,8 @@ Requirements: Steam with **Fallout New Vegas** installed and run once with Proto
 ## 🔧 Tools ported to Linux (root repos)
 
 The installer delegates to 5 native repos (no Wine for the heavy lifting), all
-**private** by the user's decision (they contain copyrighted binaries):
+**public** — and **cloned automatically** on first use (`repos/` is gitignored;
+`root_mods.py` clones any missing port from GitHub):
 
 | Tool | Repo | What it does |
 |---|---|---|
@@ -80,7 +81,7 @@ Notes:
 - **`ue-esm-fixes-linux`**: the ESMs must be from the current depot — if they come
   from another machine, run `steam steam://validate/22380` first (see its README:
   patches with a different source → corrupted ESMs that crash the game during dialogue init).
-- Steam verify reverts 4GB/BSAs/ESMs → run `./vnv.sh root` afterwards.
+- Steam verify reverts 4GB/NVSE/Fixed ESMs → run `./vnv.sh install` afterwards (idempotent).
 
 ## 🛑 Tools you do NOT need (verified 2026-08-07)
 

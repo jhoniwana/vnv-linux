@@ -54,6 +54,35 @@ PASOS = {
 # bsa intentionally NOT in the automatic order — see module docstring.
 ORDEN = ["xnvse", "4gb", "epic", "uefix"]
 
+# Los ports viven en repos/ (gitignored). Un clon nuevo del proyecto NO los trae
+# → auto-clonar desde GitHub (repos públicos) la primera vez.
+REPO_URLS = {
+    "xnvse": "https://github.com/jhoniwana/xnvse-linux",
+    "4gb": "https://github.com/jhoniwana/fnv-4gb-patch-linux",
+    "epic": "https://github.com/jhoniwana/epic-games-patcher-linux",
+    "bsa": "https://github.com/jhoniwana/fnv-bsa-decompressor-linux",
+    "uefix": "https://github.com/jhoniwana/ue-esm-fixes-linux",
+}
+
+
+def garantizar_port(p: str) -> Path | None:
+    """Returns the port script path, cloning it from GitHub if missing."""
+    script = PASOS[p]
+    if script.exists():
+        return script
+    url = REPO_URLS.get(p)
+    if url is None:
+        return None
+    info(f"port '{p}' missing — cloning {url} ...")
+    r = subprocess.run(["git", "clone", "-q", url, str(script.parent)],
+                       capture_output=True, text=True)
+    if r.returncode != 0 or not script.exists():
+        fail(f"could not clone {url} ({r.stderr.strip()[:120]}) — "
+             f"clone it manually into repos/")
+        return None
+    ok(f"cloned {p} -> {script.parent.name}")
+    return script
+
 
 def info(msg):
     print(f"  ℹ {msg}", flush=True)
@@ -138,9 +167,9 @@ def main():
 
     pasos = [args.solo] if args.solo else ORDEN
     for p in pasos:
-        script = PASOS[p]
-        if not script.exists():
-            return fail(f"missing port {script}")
+        script = garantizar_port(p)
+        if script is None:
+            return fail(f"missing port {p}")
         cmd = [str(PY), str(script), "--game-dir", str(game_dir)]
         if p == "uefix":
             cmd += ["--dest", str(fixed)]
