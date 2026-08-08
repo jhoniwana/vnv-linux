@@ -46,8 +46,8 @@ def estado_actual():
     manifest = leer_json(BASE / "manifest.json", [])
     estado = leer_json(BASE / "estado.json", {})
     n_mods = sum(1 for m in manifest if m.get("file_id"))
-    # estado.json también guarda los tools/root (4GB, BSA, xNVSE...) — contar
-    # solo los mods del manifest para que el progreso sea 55/55 y no 60/55
+    # estado.json also stores the tools/root (4GB, BSA, xNVSE...) — count only
+    # the manifest mods so the progress is 55/55 and not 60/55
     man_ids = {str(m.get("mod_id")) for m in manifest}
     n_ok = sum(1 for k, v in estado.items() if k in man_ids and v.get("estado") == "ok")
     n_arch = len([p for p in DEST.iterdir() if p.is_file()]) if DEST.exists() else 0
@@ -109,8 +109,8 @@ def index():
 
 @app.route("/assets/sprites/<path:fname>")
 def pipboy_sprite_root(fname):
-    """El diseño usa rutas relativas 'assets/sprites/...' (resuelven a la raíz
-    del server) — alias de /assets/pipboy/assets/sprites/."""
+    """The design uses relative 'assets/sprites/...' paths (resolve to the server
+    root) — alias of /assets/pipboy/assets/sprites/."""
     ruta = (BASE / "assets" / "pipboy" / "assets" / "sprites" / fname).resolve()
     if ruta.is_relative_to((BASE / "assets" / "pipboy").resolve()) and ruta.exists():
         return Response(ruta.read_bytes(), mimetype="image/png")
@@ -119,7 +119,7 @@ def pipboy_sprite_root(fname):
 
 @app.route("/assets/pipboy/<path:fname>")
 def pipboy_asset(fname):
-    """Sprites/imágenes del diseño Pip-Boy (assets/pipboy/assets/...)."""
+    """Sprites/images of the Pip-Boy design (assets/pipboy/assets/...)."""
     # el HTML referencia rutas relativas a su propia carpeta (assets/pipboy/)
     ruta = (BASE / "assets" / "pipboy" / fname).resolve()
     if ruta.is_relative_to((BASE / "assets" / "pipboy").resolve()) and ruta.exists():
@@ -213,7 +213,7 @@ def api_log(jid):
         if job is None:
             yield "data: {\"fin\": true, \"linea\": \"job not found\"}\n\n"
             return
-        # job ya terminado: reproducir las líneas acumuladas + fin (un SSE
+        # job already finished: replay the buffered lines + fin (a reconnected
         # reconectado a un job viejo no debe quedarse en pings infinitos)
         if job["fin"]:
             for l in job["lineas"]:
@@ -241,7 +241,7 @@ PIPBOY_HTML = BASE / "assets" / "pipboy" / "index.html"
 def _cargar_html() -> str:
     if PIPBOY_HTML.exists():
         return PIPBOY_HTML.read_text()
-    return HTML  # fallback: HTML embebido clásico
+    return HTML  # fallback: classic embedded HTML
 
 
 def HTML_page() -> str:

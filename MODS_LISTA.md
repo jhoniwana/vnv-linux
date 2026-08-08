@@ -66,5 +66,5 @@ or use MO2's 'Download with Mod Manager'.
 
 ## NOTAS
 
-- **FNV BSA Decompressor (65854)**: se descarga por compatibilidad con el guía,
-  pero **NO se usa** — el pipeline ya no lo ejecuta (BSAs vanilla = óptimo).
+- **FNV BSA Decompressor (65854)**: downloaded for guide compatibility, but **NOT used** —
+  the pipeline no longer runs it (vanilla BSAs = optimal).

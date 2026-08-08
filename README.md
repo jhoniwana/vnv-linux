@@ -46,7 +46,7 @@ Requirements: Steam with **Fallout New Vegas** installed and run once with Proto
 ./vnv.sh estado         # verifies the 55 files
 ./vnv.sh bsa            # ⚠️ NOT needed on the current depot (see "Tools you do NOT need")
 ./vnv.sh bsa-verify     # verify CRC64 name hashes without writing
-./vnv.sh esmfix         # apply UE ESM Fixes (port nuevo: matching por nombre + validación + inherit)
+./vnv.sh esmfix         # apply UE ESM Fixes (new port: name matching + validation + inherit)
 ./vnv.sh install        # MO2 + INIs + LOOT (step 4)
 ./vnv.sh run            # launches the game (step 5)
 ```

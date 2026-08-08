@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="es" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark light">
 <title>VNV-LINUX · VAULT-TEC INSTALLER — Viva New Vegas para Linux</title>
-<meta name="description" content="Instalador 100% automático de Viva New Vegas (Core) para Fallout New Vegas en Linux/Steam. Tema Pip-Boy.">
+<meta name="description" content="100% automatic Viva New Vegas (Core) installer for Fallout New Vegas on Linux/Steam. Pip-Boy theme.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23050a06'/%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='%2345ff7d' stroke-width='4'/%3E%3Cpath d='M32 16 L36.7 26.6 L48 27.6 L39.4 35 L42.2 46.4 L32 40.2 L21.8 46.4 L24.6 35 L16 27.6 L27.3 26.6 Z' fill='%2345ff7d'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/vt323@latest/400.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@latest/400.css">
@@ -73,7 +73,7 @@ footer{margin-top:50px;padding-top:14px;border-top:1px dashed var(--line);color:
 <div class="wrap">
 
 <header>
-  <div class="logo-frame"><img src="../assets/gecko.png" alt="Gecko VNV"></div>
+  <div class="logo-frame"><img src="gecko.png" alt="Gecko VNV"></div>
   <div class="brand">
     <h1>VNV-LINUX</h1>
     <span>VAULT-TEC INSTALLER · VIVA NEW VEGAS FOR LINUX</span>
@@ -85,100 +85,152 @@ footer{margin-top:50px;padding-top:14px;border-top:1px dashed var(--line);color:
 <p class="pill warn">LINUX + STEAM</p>
 <p class="pill blu">100% AUTOMATIC</p>
 
-<p style="margin-top:14px">Bienvenido, morador del yermo. <b style="color:var(--grn)">VNV-Linux</b> instala automáticamente el modpack
-<b>Viva New Vegas (Core)</b> — 55 mods, mod organizer, NVSE, parches y ajustes de INI — en tu Fallout New Vegas
-de Steam con Linux. Un solo comando y el Pip-Boy hace el resto.</p>
+<p style="margin-top:14px">Welcome, dweller. <b style="color:var(--grn)">VNV-Linux</b> automatically installs the
+<b>Viva New Vegas (Core)</b> modpack — 55 mods, mod organizer, NVSE, patches and INI tweaks — onto your
+Steam Fallout New Vegas on Linux. One command and the Pip-Boy does the rest.</p>
 
 <div class="cta">
   <a class="btn" href="https://github.com/jhoniwana/vnv-linux">▸ VISITAR EL REPOSITORIO EN GITHUB</a>
 </div>
 
-<h2>Qué hace por ti</h2>
+<h2>What it does for you</h2>
 <div class="grid">
-  <div class="card"><b>▸ Paso 1 · SURVEY</b>Detecta tu distro (Debian, Ubuntu, Arch, Fedora, openSUSE…) e instala Python, Camoufox y las librerías del sistema. Todo con retries y diagnóstico.</div>
-  <div class="card"><b>▸ Paso 2 · STEAM</b>Diagnostica Steam, Fallout New Vegas y el prefix de Proton. Crea el entorno para que Mod Organizer 2 funcione dentro del prefix del juego.</div>
-  <div class="card"><b>▸ Paso 3 · NEXUS</b>Login automático en Nexus Mods (pasa el captcha Turnstile sin intervención) y guarda la sesión para descargar gratis.</div>
-  <div class="card"><b>▸ Paso 4 · SUPPLY</b>Descarga los 55 mods del Core con verificación de integridad, reintentos y continuidad si se corta la luz (estado persistente).</div>
-  <div class="card"><b>▸ Paso 5 · DEPLOY</b>Crea la instancia de MO2, importa los 55 mods en el orden canónico, aplica los root mods nativos (xNVSE, 4GB, ESM Fixes) con verificación post-paso.</div>
-  <div class="card"><b>▸ LAUNCH</b>Lanza el juego desde MO2 con todos los mods montados vía VFS. Sin Wine para los root mods: todo corre nativo en Linux.</div>
+  <div class="card"><b>▸ Step 1 · SURVEY</b>Detects your distro (Debian, Ubuntu, Arch, Fedora, openSUSE…) and installs Python, Camoufox and the system libraries. With retries and diagnostics.</div>
+  <div class="card"><b>▸ Step 2 · STEAM</b>Diagnoses Steam, Fallout New Vegas and the Proton prefix. Sets up the environment so Mod Organizer 2 runs inside the game's prefix.</div>
+  <div class="card"><b>▸ Step 3 · NEXUS</b>Automatic Nexus Mods login (passes the Turnstile captcha on its own) and saves the session for free downloads.</div>
+  <div class="card"><b>▸ Step 4 · SUPPLY</b>Downloads the 55 Core mods with integrity verification, retries and power-outage continuity (persistent state).</div>
+  <div class="card"><b>▸ Step 5 · DEPLOY</b>Creates the MO2 instance, imports the 55 mods in canonical order, applies the native root mods (xNVSE, 4GB, ESM Fixes) with post-step verification.</div>
+  <div class="card"><b>▸ LAUNCH</b>Launches the game from MO2 with all mods mounted via VFS. No Wine for the root mods: everything runs natively on Linux.</div>
 </div>
 
-<h2>Cómo empezar</h2>
-<p>Requisitos: <b style="color:var(--tx)">Steam con Fallout New Vegas</b> (ejecutado una vez con Proton), una cuenta
-<b style="color:var(--tx)">gratis de Nexus Mods</b> y ~4 GB de espacio.</p>
+<h2>Getting started</h2>
+<p>Requirements: <b style="color:var(--tx)">Steam with Fallout New Vegas</b> (run once with Proton), a
+<b style="color:var(--tx)">free Nexus Mods account</b> and ~4 GB of space.</p>
 <div class="steps">
-  <div class="step"><span class="n">1</span><b>Clona e inicia</b>
+  <div class="step"><span class="n">1</span><b>Clone and start</b>
     <pre>git clone https://github.com/jhoniwana/vnv-linux
 cd vnv-linux
 ./vnv.sh ui</pre>
-    <p>Se abre un navegador con el asistente Pip-Boy — cada paso con su botón y progreso en vivo.</p>
+    <p>A browser opens with the Pip-Boy wizard — each step with its own button and live progress.</p>
   </div>
-  <div class="step"><span class="n">2</span><b>Modo terminal (opcional)</b>
-    <pre>./vnv.sh setup        <span class="c"># entorno (multi-distro, auto-instala deps)</span>
-./vnv.sh login        <span class="c"># cookies de Nexus (pasa Turnstile)</span>
-./vnv.sh download     <span class="c"># descarga los 55 mods (1.1 GB, con retries)</span>
+  <div class="step"><span class="n">2</span><b>Terminal mode (optional)</b>
+    <pre>./vnv.sh setup        <span class="c"># environment (multi-distro, auto-installs deps)</span>
+./vnv.sh login        <span class="c"># Nexus cookies (passes Turnstile)</span>
+./vnv.sh download     <span class="c"># downloads the 55 mods (1.1 GB, with retries)</span>
 ./vnv.sh install      <span class="c"># MO2 + mods + root mods + INIs + LOOT</span>
-./vnv.sh salud        <span class="c"># 12 chequeos de salud (exit 0 = sano)</span>
-./vnv.sh run          <span class="c"># lanza el juego</span></pre>
+./vnv.sh salud        <span class="c"># 12 health checks (exit 0 = healthy)</span>
+./vnv.sh run          <span class="c"># launches the game</span></pre>
   </div>
-  <div class="step"><span class="n">3</span><b>Juega</b>
-    <p>Nuevo juego → verifica <b style="color:var(--tx)">Stewie Tweaks en Settings</b> = mods cargados. Sprint y QOL desde MCM (JAM).</p>
+  <div class="step"><span class="n">3</span><b>Play</b>
+    <p>New game → check <b style="color:var(--tx)">Stewie Tweaks in Settings</b> = mods loaded. Sprint and QOL from MCM (JAM).</p>
   </div>
 </div>
 
-<h2>Comandos</h2>
+<h2>Commands</h2>
 <table>
-  <tr><th>Comando</th><th>Qué hace</th></tr>
-  <tr><td><code>./vnv.sh ui</code></td><td>Asistente web Pip-Boy (sin terminal)</td></tr>
-  <tr><td><code>./vnv.sh setup</code></td><td>Entorno: deps del sistema + venv + Camoufox + smoke test</td></tr>
-  <tr><td><code>./vnv.sh login</code></td><td>Login Nexus automático (Turnstile incluido)</td></tr>
-  <tr><td><code>./vnv.sh credenciales</code></td><td>Guarda email+contraseña (600) para re-login automático</td></tr>
-  <tr><td><code>./vnv.sh download</code></td><td>Descarga los 55 mods con retries y verificación</td></tr>
-  <tr><td><code>./vnv.sh estado</code></td><td>Verifica descargas vs manifest</td></tr>
-  <tr><td><code>./vnv.sh install</code></td><td>MO2 + importación + root mods + INIs (idempotente)</td></tr>
-  <tr><td><code>./vnv.sh loot</code></td><td>Valida el load order contra LOOT (sin tocar el perfil)</td></tr>
-  <tr><td><code>./vnv.sh salud</code></td><td>12 chequeos: exe/LAA, NVSE, BSAs, INIs, ESMs, descargas, MO2</td></tr>
-  <tr><td><code>./vnv.sh esmfix</code></td><td>UE ESM Fixes (xdelta3 nativo + validación estructural)</td></tr>
-  <tr><td><code>./vnv.sh run</code></td><td>Lanza el juego vía MO2 (NVSE)</td></tr>
-  <tr><td><code>./vnv.sh mo2</code></td><td>Abre el Mod Organizer 2</td></tr>
+  <tr><th>Command</th><th>What it does</th></tr>
+  <tr><td><code>./vnv.sh ui</code></td><td>Pip-Boy web wizard (no terminal)</td></tr>
+  <tr><td><code>./vnv.sh setup</code></td><td>Environment: system deps + venv + Camoufox + smoke test</td></tr>
+  <tr><td><code>./vnv.sh login</code></td><td>Automatic Nexus login (Turnstile included)</td></tr>
+  <tr><td><code>./vnv.sh credenciales</code></td><td>Saves email+password (600) for automatic re-login</td></tr>
+  <tr><td><code>./vnv.sh download</code></td><td>Downloads the 55 mods with retries and verification</td></tr>
+  <tr><td><code>./vnv.sh estado</code></td><td>Verifies downloads vs manifest</td></tr>
+  <tr><td><code>./vnv.sh install</code></td><td>MO2 + import + root mods + INIs (idempotent)</td></tr>
+  <tr><td><code>./vnv.sh loot</code></td><td>Validates the load order against LOOT (without touching the profile)</td></tr>
+  <tr><td><code>./vnv.sh salud</code></td><td>12 checks: exe/LAA, NVSE, BSAs, INIs, ESMs, downloads, MO2</td></tr>
+  <tr><td><code>./vnv.sh esmfix</code></td><td>UE ESM Fixes (native xdelta3 + structural validation)</td></tr>
+  <tr><td><code>./vnv.sh run</code></td><td>Launches the game via MO2 (NVSE)</td></tr>
+  <tr><td><code>./vnv.sh mo2</code></td><td>Opens Mod Organizer 2</td></tr>
 </table>
 
-<h2>Root mods nativos (sin Wine)</h2>
-<p>Cada root mod de la guía VNV fue portado a un ejecutable/script nativo de Linux — sin Wine para el trabajo pesado:</p>
+<h2>Native root mods (no Wine)</h2>
+<p>Every root mod from the VNV guide was ported to a native Linux executable/script — no Wine for the heavy lifting:</p>
 <table>
-  <tr><th>Port</th><th>Repo</th><th>Qué hace</th></tr>
-  <tr><td><b style="color:var(--grn)">xNVSE</b></td><td><a href="https://github.com/jhoniwana/xnvse-linux">xnvse-linux</a></td><td>Instala las DLLs del Script Extender en la raíz del juego</td></tr>
-  <tr><td><b style="color:var(--grn)">4GB</b></td><td><a href="https://github.com/jhoniwana/fnv-4gb-patch-linux">fnv-4gb-patch-linux</a></td><td>Parchea LAA 4GB en FalloutNV.exe (verificado en el header PE)</td></tr>
-  <tr><td><b style="color:var(--grn)">UE ESM Fixes</b></td><td><a href="https://github.com/jhoniwana/ue-esm-fixes-linux">ue-esm-fixes-linux</a></td><td>Extrae los patches LZ4/xdelta3 del .mpi y repara los 6 ESMs</td></tr>
-  <tr><td><span class="pill warn">no-op en Steam</span></td><td><a href="https://github.com/jhoniwana/epic-games-patcher-linux">epic-games-patcher-linux</a></td><td>Solo para la versión de Epic Games</td></tr>
-  <tr><td><span class="pill red">NO USAR</span></td><td><a href="https://github.com/jhoniwana/fnv-bsa-decompressor-linux">fnv-bsa-decompressor-linux</a></td><td>Investigación: en el depot actual es un no-op (BSAs ya raw) — mantener vanilla</td></tr>
+  <tr><th>Port</th><th>Repo</th><th>What it does</th></tr>
+  <tr><td><b style="color:var(--grn)">xNVSE</b></td><td><a href="https://github.com/jhoniwana/xnvse-linux">xnvse-linux</a></td><td>Installs the Script Extender DLLs into the game root</td></tr>
+  <tr><td><b style="color:var(--grn)">4GB</b></td><td><a href="https://github.com/jhoniwana/fnv-4gb-patch-linux">fnv-4gb-patch-linux</a></td><td>Patches LAA 4GB into FalloutNV.exe (verified in the PE header)</td></tr>
+  <tr><td><b style="color:var(--grn)">UE ESM Fixes</b></td><td><a href="https://github.com/jhoniwana/ue-esm-fixes-linux">ue-esm-fixes-linux</a></td><td>Extracts the LZ4/xdelta3 patches from the .mpi and repairs the 6 ESMs</td></tr>
+  <tr><td><span class="pill warn">no-op on Steam</span></td><td><a href="https://github.com/jhoniwana/epic-games-patcher-linux">epic-games-patcher-linux</a></td><td>Only for the Epic Games version</td></tr>
+  <tr><td><span class="pill red">DO NOT USE</span></td><td><a href="https://github.com/jhoniwana/fnv-bsa-decompressor-linux">fnv-bsa-decompressor-linux</a></td><td>Research: a no-op on the current depot (BSAs already raw) — keep vanilla</td></tr>
 </table>
 
-<h2>Ingeniería detrás</h2>
+<h2>The engineering behind it</h2>
 <div class="grid">
-  <div class="card"><b>▸ Login Nexus</b>Camoufox (Firefox anti-detección) pasa Turnstile headless. La cookie real es <code>nexusmods_session</code> (+ <code>cf_clearance</code>), guardada con permisos 600.</div>
-  <div class="card"><b>▸ Descargas gratis</b>Endpoint <code>/Download/?id=…&amp;game_id=130</code> funciona sin Premium; el botón vive en el shadow DOM de un web component — resuelto inspeccionando el bundle JS de Nexus.</div>
-  <div class="card"><b>▸ BSA analizado</b>El formato real del header (xEdit wbBSA.pas): compresión = <code>bit30 XOR (flags &amp; 0x04)</code>. Verdict: el decompressor es no-op en el depot actual.</div>
-  <div class="card"><b>▸ ESM Fixes</b>El .mpi envuelve los parches VCDIFF en frames LZ4; validación bit-exacta contra el instalador oficial vía Proton (SHA1 idéntico).</div>
-  <div class="card"><b>▸ Continuidad</b>Las descargas sobreviven apagones (estado persistente) — probado con 2 interrupciones reales.</div>
-  <div class="card"><b>▸ Cross-distro</b>Verificado en Ubuntu 24.04, Arch Linux y EndeavourOS (docker + real): setup de cero, fallbacks limpios, salud 12/12.</div>
+  <div class="card"><b>▸ Nexus login</b>Camoufox (anti-detection Firefox) passes Turnstile headless. The real cookie is <code>nexusmods_session</code> (+ <code>cf_clearance</code>), saved with 600 permissions.</div>
+  <div class="card"><b>▸ Free downloads</b>Endpoint <code>/Download/?id=…&amp;game_id=130</code> works without Premium; the button lives in a web component's shadow DOM — solved by inspecting Nexus's JS bundle.</div>
+  <div class="card"><b>▸ BSA analyzed</b>The real header format (xEdit wbBSA.pas): compression = <code>bit30 XOR (flags &amp; 0x04)</code>. Verdict: the decompressor is a no-op on the current depot.</div>
+  <div class="card"><b>▸ ESM Fixes</b>The .mpi wraps the VCDIFF patches in LZ4 frames; bit-exact validation against the official installer via Proton (identical SHA1).</div>
+  <div class="card"><b>▸ Continuity</b>Downloads survive power outages (persistent state) — proven with 2 real interruptions.</div>
+  <div class="card"><b>▸ Cross-distro</b>Verified on Ubuntu 24.04, Arch Linux and EndeavourOS (docker + real): fresh setup, clean fallbacks, 12/12 health.</div>
 </div>
 
 <h2>FAQ</h2>
-<div class="step"><b>¿Los mods están en el repo?</b>
-  <p>No. El repo solo descarga los 55 mods con TU sesión de Nexus (gratis). No redistribuye nada con copyright.</p></div>
-<div class="step"><b>¿Necesito Wine?</b>
-  <p>Solo para MO2 (corre dentro del prefix de Proton). Los root mods (NVSE, 4GB, ESM Fixes) son nativos — sin Wine.</p></div>
-<div class="step"><b>Steam verificó el juego y algo se rompió</b>
-  <p>Es normal: el verify revierte los root mods y los INIs. Vuelve a correr <code>./vnv.sh install</code> (idempotente) y listo.</p></div>
-<div class="step"><b>¿El BSA Decompressor de la guía?</b>
-  <p>No lo necesitas. Los 11 BSAs que toca ya vienen sin comprimir en el depot actual (2026). Usar el mod no aporta nada.</p></div>
-<div class="step"><b>¿Saves viejas?</b>
-  <p>Las partidas de otra instalación no son compatibles (formids re-renumerados por los ESM Fixes). Empezá un juego nuevo.</p></div>
+<div class="step"><b>Are the mods in the repo?</b>
+  <p>No. The repo only downloads the 55 mods with YOUR Nexus session (free). It redistributes nothing copyrighted.</p></div>
+<div class="step"><b>Do I need Wine?</b>
+  <p>Only for MO2 (it runs inside the Proton prefix). The root mods (NVSE, 4GB, ESM Fixes) are native — no Wine.</p></div>
+<div class="step"><b>Steam verified the game and something broke</b>
+  <p>That's expected: verify reverts the root mods and INIs. Just re-run <code>./vnv.sh install</code> (idempotent) and you're done.</p></div>
+<div class="step"><b>What about the guide's BSA Decompressor?</b>
+  <p>You don't need it. The 11 BSAs it touches already ship uncompressed on the current depot (2026). Installing the mod changes nothing.</p></div>
+<div class="step"><b>Old saves?</b>
+  <p>Saves from another installation are not compatible (formids renumbered by the ESM Fixes). Start a new game.</p></div>
+
+
+<h2>Credits</h2>
+<p>This project stands on the shoulders of the wasteland. Everything used is credited here:</p>
+<div class="grid">
+  <div class="card"><b>▸ Viva New Vegas (the guide)</b>
+    <ul>
+      <li>Author: <b>Qolore7</b> (the modding guide this installer automates)</li>
+      <li>Site: <a href="https://vivanewvegas.moddinglinked.com">vivanewvegas.moddinglinked.com</a></li>
+      <li>Its Core list = the 55 mods this installer downloads and configures</li>
+    </ul>
+  </div>
+  <div class="card"><b>▸ The 55 mod authors</b>
+    <p>Every mod (YUP, xNVSE, JIP LN, Stewie Tweaks, NVTF, kNVSE, JAM and the rest) belongs to its
+    Nexus Mods author. This project only downloads and installs them with your session — it
+    redistributes nothing.</p>
+  </div>
+  <div class="card"><b>▸ Original tools ported to Linux</b>
+    <ul>
+      <li><a href="https://www.nexusmods.com/newvegas/mods/67883">xNVSE</a> (xSE team)</li>
+      <li><a href="https://www.nexusmods.com/newvegas/mods/62552">FNV 4GB Patcher</a> (RoyBatty)</li>
+      <li><a href="https://www.nexusmods.com/newvegas/mods/92289">UE ESM Fixes Remastered</a> (Kazopert / RoyBatty)</li>
+      <li><a href="https://www.nexusmods.com/newvegas/mods/81281">Epic Games Patcher</a></li>
+      <li><a href="https://www.nexusmods.com/newvegas/mods/65854">FNV BSA Decompressor</a> (Qolore7 — research only)</li>
+    </ul>
+  </div>
+  <div class="card"><b>▸ Reverse-engineering references</b>
+    <ul>
+      <li><b>xEdit / xSE</b> — <code>wbBSArchive.pas</code> (the real FNV BSA format and its XOR compression semantics)</li>
+      <li><b>UESP wiki</b> — BSA v104/v105 format reference</li>
+      <li><b>ModdingLinked</b> — VNV documentation and structure</li>
+    </ul>
+  </div>
+  <div class="card"><b>▸ Software used</b>
+    <ul>
+      <li><b>Camoufox</b> (anti-detection Firefox) — <a href="https://github.com/daijro/camoufox">daijro/camoufox</a></li>
+      <li><b>Mod Organizer 2</b> — <a href="https://github.com/ModOrganizer2/modorganizer">ModOrganizer2/modorganizer</a></li>
+      <li><b>MO2-LINT</b> — <a href="https://github.com/Furglitch/modorganizer2-linux-installer">Furglitch/modorganizer2-linux-installer</a></li>
+      <li><b>xdelta3</b> (J. MacDonald) · <b>python-lz4</b> · <b>Flask</b> · <b>protontricks</b></li>
+      <li><b>Fonts</b>: VT323 + JetBrains Mono (SIL OFL) via Fontsource CDN</li>
+    </ul>
+  </div>
+  <div class="card"><b>▸ The gecko mascot</b>
+    <p>Original fan-made <b>GREEN GECKO</b> sprite art generated for this project (poses: thumbs-up,
+    walk, sleep, hurt, salute). No Nexus/LoversLab or mod art was used.</p>
+  </div>
+</div>
+<p style="margin-top:16px;color:var(--tx2);font-size:12.5px">
+<b style="color:var(--tx)">Fallout: New Vegas</b> is © Bethesda Softworks / Obsidian Entertainment.
+This is a fan-made tool; it is not affiliated with or endorsed by Bethesda, Nexus Mods or any mod author.
+The Viva New Vegas guide is © Qolore7. The mods remain the property of their respective authors.
+</p>
 
 <footer>
   ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM · COPYRIGHT 2075-2077 · VNV-LINUX PROJECT ·<br>
-  Fallout New Vegas © Bethesda — los mods pertenecen a sus autores · Hecho con geckos y amor al yermo
+  Fallout New Vegas © Bethesda — the mods belong to their authors · Built with geckos and wasteland love
 </footer>
 
 </div>
