@@ -299,6 +299,70 @@ abrir_mo2() {
     --profile=Default
 }
 
+conectar_steam() {
+    # Steam + Proton connection diagnostics (step 1 of the install flow)
+    info "=== Steam connection ==="
+    local steam_bin=""
+    for c in steam steam-native flatpak; do
+      command -v "$c" >/dev/null 2>&1 && steam_bin="$c" && break
+    done
+    if [[ -z "$steam_bin" ]]; then
+      fail "Steam not found. Install it and log in, then run this again."
+      exit 1
+    fi
+    ok "Steam detectado: $steam_bin"
+
+    # is FNV installed?
+    local fnv_dir=""
+    for lib in "${STEAM_LIBRARIES[@]}"; do
+      local cand="$lib/common/Fallout New Vegas"
+      if [[ -f "$cand/FalloutNV.exe" ]]; then
+        fnv_dir="$cand"
+        break
+      fi
+    done
+    if [[ -z "$fnv_dir" ]]; then
+      fail "Fallout New Vegas not found. Install it on Steam first."
+      exit 1
+    fi
+    ok "Fallout New Vegas en: $fnv_dir"
+
+    # Proton prefix created? (compatdata/22380)
+    local prefix=""
+    for lib in "${STEAM_LIBRARIES[@]}"; do
+      local p="$lib/compatdata/22380"
+      if [[ -d "$p/pfx" ]]; then
+        prefix="$p"
+        break
+      fi
+    done
+    if [[ -z "$prefix" ]]; then
+      info "The game Proton prefix does not exist yet."
+      info "  Para crearlo: en Steam, FNV -> Propiedades -> Compatibilidad ->"
+      info "  'Force the use of a specific Steam Play compatibility tool' -> Proton."
+      echo
+      if [[ "${2:-}" == "--si" ]]; then
+        R="s"
+      else
+        read -rp "Try launching FNV with Proton now (creates the prefix)? [y/N]: " R
+      fi
+      if [[ "$R" =~ ^[sSyY]$ ]]; then
+        info "Launching FNV via Steam... (wait for the window and close it)"
+        nohup "$steam_bin" steam://rungameid/22380 >/dev/null 2>&1 &
+        sleep 5
+        info "Check in 1-2 minutes whether $HOME/.steam/steam/steamapps/compatdata/22380 appeared"
+      fi
+    else
+      ok "Prefix de Proton listo: $prefix"
+    fi
+    if command -v protontricks >/dev/null 2>&1; then
+      ok "protontricks available (MO2 will run in the game prefix)"
+    else
+      fail "protontricks missing — check the system deps in ./vnv.sh setup"
+    fi
+
+}
+
 case "${1:-}" in
   setup)
     bash "$ROOT/setup.sh"
@@ -379,66 +443,7 @@ case "${1:-}" in
     exec "$PY" "$ROOT/ui.py"
     ;;
   steam)
-    # Steam + Proton connection diagnostics (step 1 of the install flow)
-    info "=== Steam connection ==="
-    local steam_bin=""
-    for c in steam steam-native flatpak; do
-      command -v "$c" >/dev/null 2>&1 && steam_bin="$c" && break
-    done
-    if [[ -z "$steam_bin" ]]; then
-      fail "Steam not found. Install it and log in, then run this again."
-      exit 1
-    fi
-    ok "Steam detectado: $steam_bin"
-
-    # is FNV installed?
-    local fnv_dir=""
-    for lib in "${STEAM_LIBRARIES[@]}"; do
-      local cand="$lib/common/Fallout New Vegas"
-      if [[ -f "$cand/FalloutNV.exe" ]]; then
-        fnv_dir="$cand"
-        break
-      fi
-    done
-    if [[ -z "$fnv_dir" ]]; then
-      fail "Fallout New Vegas not found. Install it on Steam first."
-      exit 1
-    fi
-    ok "Fallout New Vegas en: $fnv_dir"
-
-    # Proton prefix created? (compatdata/22380)
-    local prefix=""
-    for lib in "${STEAM_LIBRARIES[@]}"; do
-      local p="$lib/compatdata/22380"
-      if [[ -d "$p/pfx" ]]; then
-        prefix="$p"
-        break
-      fi
-    done
-    if [[ -z "$prefix" ]]; then
-      info "The game Proton prefix does not exist yet."
-      info "  Para crearlo: en Steam, FNV -> Propiedades -> Compatibilidad ->"
-      info "  'Force the use of a specific Steam Play compatibility tool' -> Proton."
-      echo
-      if [[ "${2:-}" == "--si" ]]; then
-        R="s"
-      else
-        read -rp "Try launching FNV with Proton now (creates the prefix)? [y/N]: " R
-      fi
-      if [[ "$R" =~ ^[sSyY]$ ]]; then
-        info "Launching FNV via Steam... (wait for the window and close it)"
-        nohup "$steam_bin" steam://rungameid/22380 >/dev/null 2>&1 &
-        sleep 5
-        info "Check in 1-2 minutes whether $HOME/.steam/steam/steamapps/compatdata/22380 appeared"
-      fi
-    else
-      ok "Prefix de Proton listo: $prefix"
-    fi
-    if command -v protontricks >/dev/null 2>&1; then
-      ok "protontricks available (MO2 will run in the game prefix)"
-    else
-      fail "protontricks missing — check the system deps in ./vnv.sh setup"
-    fi
+    conectar_steam
     ;;
   install)
     necesita_setup
@@ -500,6 +505,6 @@ case "${1:-}" in
     "$PY" scripts/salud.py "${@:2}"
     ;;
   *)
-    echo "Usage: $0 {setup|login|config-cookies|config|download|estado|install|loot|run|mo2|steam-add|bsa|bsa-verify|esmfix}"
+    echo "Usage: $0 {setup|login|config|config-cookies|credenciales|download|estado|install|loot|run|mo2|steam|steam-add|bsa|bsa-verify|esmfix|salud|ui}"
     ;;
 esac

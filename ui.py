@@ -316,7 +316,7 @@ HTML = """<!DOCTYPE html>
     </div>
     <div class="card" id="card-descargas">
       <h2>3 · Download mods</h2>
-      <p>Downloads the 53 mods of the Viva New Vegas Core (with automatic retries if something fails).</p>
+      <p>Downloads the 55 mods of the Viva New Vegas Core (with automatic retries if something fails).</p>
       <div class="prog" id="prog"><div id="progfill"></div></div>
       <button class="btn" onclick="correr('descargar','card-descargas')">Download mods</button>
       <button class="btn sec" style="margin-top:8px" onclick="correr('verificar','card-descargas')">Verify files</button>

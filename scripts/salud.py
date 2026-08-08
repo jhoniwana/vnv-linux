@@ -171,7 +171,7 @@ def main():
             problemas += 1
     print()
     if problemas:
-        print(f"[ERROR] {problemas} problema(s) — fix: ./vnv.sh install  (si BSAs: steam://validate/22380 primero)")
+        print(f"[ERROR] {problemas} problem(s) - fix: ./vnv.sh install (if BSAs: steam://validate/22380 first)")
         return 1
     print("[OK] TODO EL SISTEMA SANO")
     return 0
