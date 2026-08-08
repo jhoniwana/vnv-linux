@@ -52,8 +52,10 @@ PT_LAUNCH="$(command -v protontricks-launch 2>/dev/null || printf '%s\n' "$HOME/
 # Busca en ~/.local/lib/python3.*/site-packages el que tenga el paquete.
 PT_PYTHONPATH="$(python3 -c 'import site; print(site.USER_SITE)' 2>/dev/null || true)"
 if [[ -z "$PT_PYTHONPATH" || ! -d "$PT_PYTHONPATH/protontricks" ]]; then
+  # find | head genera SIGPIPE en find → con pipefail mata el script SILENCIOSO.
+  # Usar -quit (sin pipe) para que nunca explote en sistemas sin protontricks.
   PT_PYTHONPATH="$(find "$HOME/.local/lib" -maxdepth 2 -type d -name site-packages \
-    -exec test -f '{}/protontricks/cli/__init__.py' ';' -print 2>/dev/null | head -1)"
+    -exec test -f '{}/protontricks/cli/__init__.py' ';' -print -quit 2>/dev/null || true)"
 fi
 PT_PYTHONPATH="${PT_PYTHONPATH:-$HOME/.local/lib/python3/site-packages}"
 PY="$ROOT/venv/camoufox-python"   # python del venv con libs correctas
