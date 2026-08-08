@@ -164,6 +164,14 @@ HonestHearts.esm   LonesomeRoad.esm    OldWorldBlues.esm
 
 > Son los ESMs parcheados (Ultimate Edition ESM Fixes Remastered). Se activan vía VFS de MO2.
 
+> ⚠️ **IMPORTANTE (2026)**: el `.mpi` v1.03 del mod NO matchea los ESMs del
+> depot actual de Steam (diferencias de ±bytes) — el instalador de Nexus falla
+> con "checksum mismatch" / "source file too short". **NO fuerces la aplicación**
+> (produce ESMs con TES4 válido pero records faltantes → crash `0x00AA991C`
+> al iniciar). La forma correcta: **heredar los 6 ESMs de una instalación que
+> ya funciona** (cópialos desde ahí a `mods/Fixed ESMs/`). En Windows, si ya
+> tenías los Fixed ESMs de antes, cópialos tal cual (son idénticos — mismo juego).
+
 ---
 
 ## 3 · Perfil de MO2: `Default` (copiar estos 3 archivos)
