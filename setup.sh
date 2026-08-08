@@ -49,7 +49,7 @@ deps_sistema() {
       ;;
     arch|manjaro|endeavouros)
       echo "  Arch:"
-      echo "    sudo pacman -S --needed gtk3 alsa-lib libxcomposite libxdamage libxrandr libxtst pango cairo pixman nss libxss libegl libxkbcommon atk at-spi2-core libcups libdrm libgbm glib2 curl bzip2 python protontricks"
+      echo "    sudo pacman -S --needed gtk3 alsa-lib libxcomposite libxdamage libxrandr libxtst pango cairo pixman nss libxss libglvnd libxkbcommon at-spi2-core libcups libdrm mesa glib2 curl bzip2 python protontricks"
       ;;
     fedora|rhel|centos|rocky|almalinux)
       echo "  Fedora/RHEL:"
@@ -74,7 +74,9 @@ deps_sistema() {
         sudo apt install -y -qq libgtk-3-0 libasound2t64 libdbus-glib-1-2 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxdamage1 libxrandr2 libxtst6 libpango-1.0-0 libcairo2 libpixman-1-0 libnss3 libxss1 libegl1 libxkbcommon0 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 libglib2.0-0 curl bzip2 python3-venv 2>/dev/null && ok "deps installed" || fail "apt failed"
         ;;
       arch|manjaro|endeavouros)
-        sudo pacman -S --needed --noconfirm gtk3 alsa-lib libxcomposite libxdamage libxrandr libxtst pango cairo pixman nss libxss libegl libxkbcommon atk at-spi2-core libcups libdrm libgbm glib2 curl bzip2 python 2>/dev/null && ok "deps installed" || fail "pacman failed"
+        # Arch: libgbm→mesa, libegl→libglvnd, atk→ya en at-spi2-core (los
+        # nombres del README genérico no son paquetes de Arch → mataban todo)
+        sudo pacman -S --needed --noconfirm gtk3 alsa-lib libxcomposite libxdamage libxrandr libxtst pango cairo pixman nss libxss libglvnd libxkbcommon at-spi2-core libcups libdrm mesa glib2 curl bzip2 python protontricks 2>/dev/null && ok "deps installed" || fail "pacman failed"
         ;;
       fedora|rhel|centos|rocky|almalinux)
         sudo dnf install -y -q gtk3 alsa-lib libXcomposite libXdamage libXrandr libXtst pango cairo pixman nss libXScrnSaver libEGL libxkbcommon atk at-spi2-atk libcups libdrm libgbm glib2 curl bzip2 python3-virtualenv 2>/dev/null && ok "deps installed" || fail "dnf failed"
