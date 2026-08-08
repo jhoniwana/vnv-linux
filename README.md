@@ -25,6 +25,12 @@
 | 4 · Installation | Detects the game on Steam, creates the MO2 instance (MO2-LINT), imports the 55 mods, applies the INI tweaks, prepares LOOT |
 | 5 · Play | Opens Steam -> "Launch Mod Organizer" -> Run, and FNV starts with everything loaded |
 
+## Important notes - read before you start
+
+- **Game language: English** - this installer and the VNV Core modpack are built for the **English** version of Fallout New Vegas. Localized builds (Spanish, German, French...) are not supported.
+- **Steam version only** - everything is tested **only on the Steam version** (appid 22380). GOG and Epic versions are not supported by this installer.
+- **Reference platform: Arch Linux / EndeavourOS** - developed and **100% verified there**; the setup, downloads, health checks and fallbacks were additionally verified on Ubuntu 24.04 and Arch (docker).
+
 ## [START] Getting started
 
 ```bash
