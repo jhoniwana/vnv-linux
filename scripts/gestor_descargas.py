@@ -19,6 +19,7 @@ import argparse
 import json
 import pathlib
 import random
+import shutil
 import subprocess
 import sys
 import time
@@ -48,10 +49,29 @@ def verificar_archivo(path):
     """Returns True if the file looks real (not HTML)."""
     if not path.exists() or path.stat().st_size == 0:
         return False
-    r = subprocess.run(["file", "-b", str(path)], capture_output=True, text=True)
-    tipo = r.stdout.strip()
-    if "HTML" in tipo or "Unicode text" in tipo or "ASCII text" in tipo:
-        return False
+    # python puro: rechazar HTML/páginas de error sin depender del binario
+    # 'file' (ausente en distros minimales/containers → FileNotFoundError)
+    try:
+        with open(path, "rb") as f:
+            head = f.read(512)
+        stripped = head.lstrip()
+        if head[:3] in (b"\xef\xbb\xbf", b"\xff\xfe", b"\xfe\xff"):
+            stripped = stripped[3:]
+        if stripped.startswith((b"<!DOCTYPE", b"<html", b"<script", b"<head")) \
+                or (b"<html" in head[:64] and b"{" not in head):
+            return False
+        # binario (7z/zip/rar/dds/nif...) o texto no-HTML (JSON etc.)
+        if b"<" not in head[:64]:
+            return True
+    except Exception:
+        pass
+    # fallback: el binario 'file' si existe
+    if shutil.which("file"):
+        r = subprocess.run(["file", "-b", str(path)], capture_output=True, text=True)
+        tipo = r.stdout.strip()
+        if "HTML" in tipo or "Unicode text" in tipo or "ASCII text" in tipo:
+            return False
+        return True
     return True
 
 
@@ -88,6 +108,10 @@ def descargar_url(url, destino):
 def descargar_uno(page, mid, fid, destino, consent_ya):
     """Downloads a mod via /Download/. Returns (ok, filename, error, no_session)."""
     url = f"{SITE}/Download/?id={fid}&game_id={GAME_ID}&source=ModPage"
+    # handler ANTES del goto: si la descarga arranca durante la navegación
+    # (download directo), el evento se pierde si nos registramos después
+    dl_event = []
+    page.on("download", lambda d: dl_event.append(d))
     page.goto(url, timeout=90000, wait_until="domcontentloaded")
     page.wait_for_timeout(4000)
     # wait for the Cloudflare challenge
@@ -109,19 +133,23 @@ def descargar_uno(page, mid, fid, destino, consent_ya):
             return False, None, "session expired (Log in)", True
     except Exception:
         pass
-    # cookie consent (once)
+    # cookie consent (once) — Cookiebot cambió a TCFv2.3 (nov 2025): el id
+    # exacto ya no existe; probar varios selectores (shadow DOM incluido)
     if not consent_ya[0]:
-        try:
-            b = page.locator("#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll").first
-            if b.is_visible(timeout=2000):
-                b.click(timeout=3000)
-                consent_ya[0] = True
-                page.wait_for_timeout(3000)
-        except Exception:
-            pass
+        for sel in ["#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll",
+                    "[id*='OptinAllowAll']",
+                    "button:has-text('Accept all')",
+                    "button:has-text('Accept')"]:
+            try:
+                b = page.locator(sel).first
+                if b.count() and b.is_visible(timeout=1500):
+                    b.click(timeout=3000)
+                    consent_ya[0] = True
+                    page.wait_for_timeout(3000)
+                    break
+            except Exception:
+                continue
     # wait for the auto-download, otherwise click Download
-    dl_event = []
-    page.on("download", lambda d: dl_event.append(d))
     for _ in range(12):
         if dl_event:
             break
