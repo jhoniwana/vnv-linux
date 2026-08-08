@@ -61,6 +61,20 @@ components; every one of them is a no-op on the current depot:
 - **FINAL: the mod is NOT part of the pipeline. Not needed. Vanilla = optimal.**
   Documented in `fnv-bsa-decompressor-linux/README.md` (deep investigation section).
 
+
+## ✅ CROSS-DISTRO TEST (7-8 aug 2026) — Ubuntu 24.04 + Arch Linux (docker)
+
+**Ubuntu 24.04 minimal (docker ubuntu:24.04):**
+- BUG: python3 ausente en distros minimales → auto-install (0e50b8e)
+- BUG: libasound2 = paquete VIRTUAL en 24.04 (solo libasound2t64) → apt fallaba TODO → installs separados (5b05b8b)
+- BUG CRÍTICO: `find | head -1` + pipefail → SIGPIPE mataba el script SIN NINGUNA salida (rc=1) en sistemas sin protontricks → find -quit (e9a7732) — invisible en la máquina del usuario (protontricks instalado)
+- BUG: port 4gb con --game-dir inválido → traceback → error limpio
+- RESULTADO: setup ✓, Camoufox ✓, salud RC=1 limpio, UI ✓, ports fallan limpio
+
+**Arch Linux (docker archlinux:latest):**
+- BUG: nombres de paquetes incorrectos: libgbm→mesa, libegl→libglvnd, atk→at-spi2-core → "target not found" mataba TODO el pacman
+- RESULTADO: setup ✓ deps ✓ Camoufox ✓ setup --chequear RC=0 ✓ salud RC=1 limpio ✓ UI ✓
+
 ## 🚨 CRITICAL BUG FOUND BY THE FULL TEST (7 aug 2026, 17:40) — THE REAL ROOT CAUSE
 
 - `scripts/root_mods.py` had `"bsa"` in `ORDEN = ["xnvse","4gb","epic","bsa","uefix"]`
