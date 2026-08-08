@@ -540,8 +540,8 @@ def importar(mo2_dir, args):
         normalizar_case(mod_dir)
 
         # JAM (66666): el preset oficial de VNV apaga el sprint (JVSEnabled=0);
-        # el usuario pidió sprint ON — forzarlo tras cada import (los re-imports
-        # re-extraen el preset y lo revertirían).
+        # the user asked for sprint ON - force it after each import (re-imports
+        # re-extract the preset and would revert it).
         if m["mod_id"] == 66666:
             jam_ini = mod_dir / "config" / "JustMods.ini"
             if jam_ini.exists():

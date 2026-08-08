@@ -216,7 +216,7 @@ EOF
 }
 
 correr_loot() {
-  # VALIDACIÓN NO-DESTRUCTIVA: lootcli standalone NO ve el VFS de MO2 y usa el
+  # NON-DESTRUCTIVE VALIDATION: standalone lootcli can't see MO2's VFS and uses the
   # formato propio de LOOT (plugins.txt con '*'), no el de MO2 2.5.2. Por eso se
   # valida sobre una COPIA construida desde loadorder.txt (21 activos en orden de
   # guide) and the real profile stays untouched.
@@ -406,7 +406,7 @@ case "${1:-}" in
     fi
     ok "Fallout New Vegas en: $fnv_dir"
 
-    # ¿prefix de Proton creado? (compatdata/22380)
+    # Proton prefix created? (compatdata/22380)
     local prefix=""
     for lib in "${STEAM_LIBRARIES[@]}"; do
       local p="$lib/compatdata/22380"
@@ -488,7 +488,7 @@ case "${1:-}" in
     ;;
   esmfix)
     # Apply Ultimate Edition ESM Fixes (xdelta patches) — PORT nuevo
-    # (matching por nombre + validación + auto-inherit de ESMs previos).
+    # (name matching + validation + auto-inherit of previous ESMs).
     necesita_setup
     buscar_juego
     "$PY" repos/ue-esm-fixes-linux/port.py --game-dir "$GAME_DIR" --dest "${ESMFIX_DEST:-$HOME/.local/share/modorganizer2/mods/Fixed ESMs}" "${@:2}"

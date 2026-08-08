@@ -8,7 +8,7 @@
 # What it does:
 #   1. Detecta la distro y muestra/instala dependencias del sistema
 #   2. Crea el venv e instala Camoufox (+ Playwright)
-#   3. Smoke test: ¿Camoufox arranca con las libs del sistema?
+#   3. Smoke test: does Camoufox start with the system libs?
 #   4. Si falla -> descarga micromamba (user-space, SIN sudo) con pixman
 #      and creates a wrapper that resolves the libs (useful on semi-broken Arch,
 #      Debian sin GTK3, etc.)
@@ -75,7 +75,7 @@ deps_sistema() {
         ;;
       arch|manjaro|endeavouros)
         # Arch: libgbm->mesa, libegl->libglvnd, atk->ya en at-spi2-core (los
-        # nombres del README genérico no son paquetes de Arch -> mataban todo)
+        # generic README names are not Arch packages -> killed everything)
         sudo pacman -S --needed --noconfirm gtk3 alsa-lib libxcomposite libxdamage libxrandr libxtst pango cairo pixman nss libxss libglvnd libxkbcommon at-spi2-core libcups libdrm mesa glib2 curl bzip2 python protontricks 2>/dev/null && ok "deps installed" || fail "pacman failed"
         ;;
       fedora|rhel|centos|rocky|almalinux)
@@ -88,7 +88,7 @@ deps_sistema() {
 }
 
 garantizar_python() {
-  # Ubuntu/Debian minimal no trae python3 — intentar instalarlo automáticamente.
+  # Ubuntu/Debian minimal has no python3 - try to install it automatically.
   if command -v python3 >/dev/null 2>&1; then
     return 0
   fi
@@ -218,7 +218,7 @@ EOF
 }
 
 smoke_test() {
-  info "Smoke test: ¿Camoufox arranca?"
+  info "Smoke test: does Camoufox start?"
   local salida
   salida="$("$WRAPPER" -c "
 from camoufox.sync_api import Camoufox

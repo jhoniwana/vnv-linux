@@ -49,7 +49,7 @@ def verificar_archivo(path):
     """Returns True if the file looks real (not HTML)."""
     if not path.exists() or path.stat().st_size == 0:
         return False
-    # python puro: rechazar HTML/páginas de error sin depender del binario
+    # pure python: reject HTML/error pages without depending on the binary
     # 'file' (ausente en distros minimales/containers -> FileNotFoundError)
     try:
         with open(path, "rb") as f:
@@ -108,8 +108,8 @@ def descargar_url(url, destino):
 def descargar_uno(page, mid, fid, destino, consent_ya):
     """Downloads a mod via /Download/. Returns (ok, filename, error, no_session)."""
     url = f"{SITE}/Download/?id={fid}&game_id={GAME_ID}&source=ModPage"
-    # handler ANTES del goto: si la descarga arranca durante la navegación
-    # (download directo), el evento se pierde si nos registramos después
+    # handler BEFORE the goto: if the download starts during navigation
+    # (direct download), the event is lost if we register afterwards
     dl_event = []
     page.on("download", lambda d: dl_event.append(d))
     page.goto(url, timeout=90000, wait_until="domcontentloaded")
@@ -133,7 +133,7 @@ def descargar_uno(page, mid, fid, destino, consent_ya):
             return False, None, "session expired (Log in)", True
     except Exception:
         pass
-    # cookie consent (once) — Cookiebot cambió a TCFv2.3 (nov 2025): el id
+    # cookie consent (once) - Cookiebot switched to TCFv2.3 (nov 2025): the id
     # exacto ya no existe; probar varios selectores (shadow DOM incluido)
     if not consent_ya[0]:
         for sel in ["#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll",
@@ -269,7 +269,7 @@ def main():
         # re-download if the file_id changed
         if e.get("estado") == "ok" and e.get("file_id") == fid and not args.forzar:
             # el estado dice ok — PERO el archivo debe EXISTIR en disco (el
-            # estado.json del repo clonado puede mentir en una máquina fresca)
+            # the cloned repo's estado.json can lie on a fresh machine)
             archivo = e.get("archivo")
             existente = (DEST / archivo) if archivo else None
             if existente is None or not existente.exists() or existente.stat().st_size == 0:

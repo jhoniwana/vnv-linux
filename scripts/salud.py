@@ -85,7 +85,7 @@ def main():
     # 1) exe + LAA
     exe = (g / "FalloutNV.exe").read_bytes()
     pe_ok = exe[:2] == b"MZ"
-    check("exe PE válido", pe_ok, "MZ" if pe_ok else "no es un PE")
+    check("exe valid PE", pe_ok, "MZ" if pe_ok else "not a PE")
     if pe_ok:
         pe_off = struct.unpack("<I", exe[0x3C:0x40])[0]
         chars = struct.unpack("<H", exe[pe_off + 22: pe_off + 24])[0]
@@ -146,9 +146,9 @@ def main():
     n_ok = sum(1 for k, v in estado.items() if k in man_ids and v.get("estado") == "ok")
     check("descargas", n_ok == len(man_ids) and len(man_ids) > 0, f"{n_ok}/{len(man_ids)} mods OK")
 
-    # 7) Sesión Nexus
+    # 7) Nexus session
     ses = (CONFIG / "nexus_session")
-    check("sesión Nexus", ses.exists() and ses.stat().st_size > 0,
+    check("Nexus session", ses.exists() and ses.stat().st_size > 0,
           "cookie presente" if ses.exists() and ses.stat().st_size > 0 else "ausente — re-login")
 
     # 8) MO2

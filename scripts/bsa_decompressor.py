@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 """FNV BSA Decompressor - Linux port (CORREGIDO).
 
-Layout real del BSA v105 FO3/FNV (según xEdit wbBSArchive.pas):
+Real BSA v105 FO3/FNV layout (per xEdit wbBSArchive.pas):
   Header(36) | Folder Records (fc x 16) |
   por folder: [u8 nameLen][folder name][file records: count x 16] |
   File Names ([u8 len][name] x filc, NUL... ) | Data
 
-Semántica de compresión (xEdit):
-  ARCHIVE_COMPRESS   = 0x0004  (flag del header: compresión por defecto)
+Compression semantics (xEdit):
+  ARCHIVE_COMPRESS   = 0x0004  (header flag: compressed by default)
   FILE_SIZE_COMPRESS = 0x40000000 (bit 30 del file size: archivo comprimido)
-  Un archivo está comprimido si:  bit30 XOR (header & 0x04)
-  (si el header declara compresión por defecto, bit30 = INVERTIDO)
+  A file is compressed if:  bit30 XOR (header & 0x04)
+  (if the header declares compression by default, bit30 = INVERTED)
 
-Bug corregido: el port anterior usaba 0x100 como flag de compresión y
-escribía los datos crudos SIEMPRE con bit 30. En los BSA de FNV (flags 0x100
+Fixed bug: the previous port used 0x100 as the compression flag and
+always wrote raw data with bit 30. On the FNV BSAs (flags 0x100
 sin 0x04) el juego interpreta bit30 = comprimido -> intenta zlib sobre datos
-crudos -> texturas rosas y meshes con "!". Ahora la lógica es la de xEdit.
+raw -> pink textures and "!" meshes. Now the logic is xEdit's.
 """
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ if EXTRA_LIBRARY:
 ARCHIVE_COMPRESS = 0x0004          # flag del header (xEdit)
 FILE_SIZE_COMPRESS = 0x40000000    # bit 30 del file size (xEdit)
 SIZE_MASK = 0x3FFFFFFF
-# máscara para decidir si un BSA "tiene compresión" (procesable)
+# mask to decide if a BSA "has compression" (processable)
 HAS_COMPRESSION = 0x04 | 0x100
 POLY = 0x42F0E1EBA9EA3693
 
@@ -99,7 +99,7 @@ def parse_bsa(data: bytes):
 
 
 def file_compressed(sz: int, flags: int) -> bool:
-    """Lógica xEdit: comprimido = bit30 XOR (header & 0x04)."""
+    """xEdit logic: compressed = bit30 XOR (header & 0x04)."""
     bit30 = bool(sz & FILE_SIZE_COMPRESS)
     default_compressed = bool(flags & ARCHIVE_COMPRESS)
     return bit30 != default_compressed
@@ -160,7 +160,7 @@ def rewrite(data: bytes, bsa: dict) -> bytes:
 
 
 def verify_names(bsa: dict) -> tuple:
-    """Verifica CRC64 de los nombres vs los hashes del índice (prueba de oro)."""
+    """Verify CRC64 of the names vs the index hashes (golden check)."""
     okc = 0
     total = 0
     fi = 0
@@ -215,7 +215,7 @@ def main():
             print(f"  {p.name}: hashes {okc}/{tot} {estado}")
             continue
         if not (bsa["flags"] & HAS_COMPRESSION):
-            ok(f"{p.name}: sin compresión (flags={bsa['flags']:#x}) - skipping")
+            ok(f"{p.name}: no compression (flags={bsa['flags']:#x}) - skipping")
             continue
         before = p.stat().st_size
         new_data = rewrite(data, bsa)

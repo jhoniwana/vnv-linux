@@ -55,7 +55,7 @@ PASOS = {
 ORDEN = ["xnvse", "4gb", "epic", "uefix"]
 
 # Los ports viven en repos/ (gitignored). Un clon nuevo del proyecto NO los trae
-# -> auto-clonar desde GitHub (repos públicos) la primera vez.
+# -> auto-clone from GitHub (public repos) on first use.
 REPO_URLS = {
     "xnvse": "https://github.com/jhoniwana/xnvse-linux",
     "4gb": "https://github.com/jhoniwana/fnv-4gb-patch-linux",
@@ -106,9 +106,9 @@ def buscar_juego():
 
 
 def verificar_paso(paso, game_dir, mo2_dir):
-    """Verificación POST-paso: comprueba el resultado REAL (no solo el rc).
+    """Post-step verification: checks the REAL result (not only the rc).
 
-    Returns (ok: bool, detalle: str). Cada port define aquí su prueba de oro.
+    Returns (ok: bool, detail: str). Each port defines its golden check here.
     """
     try:
         if paso == "xnvse":
@@ -118,7 +118,7 @@ def verificar_paso(paso, game_dir, mo2_dir):
         if paso == "4gb":
             exe = (game_dir / "FalloutNV.exe").read_bytes()
             if exe[:2] != b"MZ":
-                return False, "FalloutNV.exe no es un PE válido"
+                return False, "FalloutNV.exe is not a valid PE"
             pe_off = struct.unpack("<I", exe[0x3C:0x40])[0]
             chars = struct.unpack("<H", exe[pe_off + 22: pe_off + 24])[0]
             laa = bool(chars & 0x20)
@@ -133,19 +133,19 @@ def verificar_paso(paso, game_dir, mo2_dir):
             notes4 = [e for e in esms if (fixed / e).exists() and (fixed / e).read_bytes()[:4] != b"TES4"]
             if faltan or notes4:
                 return False, f"esms: faltan {faltan or '—'}, no-TES4 {notes4 or '—'}"
-            return True, "6/6 esms TES4 válidos"
+            return True, "6/6 esms TES4 valid"
         if paso == "bsa":
-            return True, "research-only (no parte del orden automático)"
+            return True, "research-only (not in the automatic order)"
     except Exception as e:
-        return False, f"verificación falló: {e}"
-    return True, "sin verificación definida"
+        return False, f"verification failed: {e}"
+    return True, "no verification defined"
 
 
 FALLBACKS = {
-    # paso: comandos de re-ejecución si la verificación falla (una sola vez)
+    # step: re-run commands if the verification fails (once)
     "xnvse": ["--solo", "xnvse"],
     "4gb": ["--solo", "4gb"],
-    "uefix": ["--solo", "uefix"],  # el propio port re-aplica con --force vía root_mods
+    "uefix": ["--solo", "uefix"],  # the port re-applies with --force via root_mods
 }
 
 
@@ -178,8 +178,8 @@ def main():
         if r.returncode != 0:
             # fallback del uefix: el .mpi NO matchea los ESMs del depot actual
             # (diferencias ±bytes — error conocido, ver BRAIN.md). Si existe una
-            # instalación anterior con Fixed ESMs válidos, heredarlos en vez de
-            # fallar: es el mismo juego, los ESMs parcheados son idénticos.
+            # previous install with valid Fixed ESMs, inherit them instead of
+            # failing: same game, the patched ESMs are identical.
             if p == "uefix":
                 info(f"step uefix failed (rc={r.returncode}) — trying to inherit Fixed ESMs from a previous install...")
                 heredado = False
@@ -205,7 +205,7 @@ def main():
                             f"(known issue, see BRAIN.md); you need Fixed ESMs from a working install.")
             return fail(f"step {p} failed (rc={r.returncode})")
         ok(f"step {p} completed")
-        # --- verificación post-paso + fallback ---
+        # --- post-step verification + fallback ---
         vok, det = verificar_paso(p, game_dir, mo2_dir)
         if vok:
             ok(f"verify {p}: {det}")
