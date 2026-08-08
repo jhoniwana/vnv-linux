@@ -540,7 +540,7 @@ const logBody=byId('log-body');
 
 /* ============ theme ============ */
 function setTheme(t,save){ document.documentElement.dataset.theme=t; if(save) localStorage.setItem('vnv-theme',t); }
-function initTheme(){ const s=localStorage.getItem('vnv-theme'); if(s) setTheme(s,false); else if(matchMedia('(prefers-color-scheme: light)').matches) setTheme('light',false); }
+function initTheme(){ const s=localStorage.getItem('vnv-theme'); if(s) setTheme(s,false); else setTheme('dark',false); }
 
 /* ============ toasts & modal ============ */
 function toast(sev,msg){ const t=document.createElement('div'); t.className='toast t-'+sev;

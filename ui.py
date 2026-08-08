@@ -107,6 +107,16 @@ def index():
     return HTML_page()
 
 
+@app.route("/assets/sprites/<path:fname>")
+def pipboy_sprite_root(fname):
+    """El diseño usa rutas relativas 'assets/sprites/...' (resuelven a la raíz
+    del server) — alias de /assets/pipboy/assets/sprites/."""
+    ruta = (BASE / "assets" / "pipboy" / "assets" / "sprites" / fname).resolve()
+    if ruta.is_relative_to((BASE / "assets" / "pipboy").resolve()) and ruta.exists():
+        return Response(ruta.read_bytes(), mimetype="image/png")
+    return ("", 404)
+
+
 @app.route("/assets/pipboy/<path:fname>")
 def pipboy_asset(fname):
     """Sprites/imágenes del diseño Pip-Boy (assets/pipboy/assets/...)."""
