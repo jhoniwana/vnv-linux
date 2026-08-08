@@ -89,12 +89,70 @@ MO2 → *left pane → Install from file* (o `Downloads/` → doble clic). El **
 debe quedar como en `modlist.txt` de abajo para que el orden de prioridad se respete.
 
 ### B) Mods "root" → VAN AL JUEGO DIRECTAMENTE (NO a MO2)
-- **New Vegas Script Extender (xNVSE)**: extraer `nvse_1_4.dll`, `nvse_loader.exe`,
-  `nvse_steam_loader.dll`, `nvse_editor_1_4.dll` (+ `.pdb`) en la carpeta del juego
-  (`Steam/steamapps/common/Fallout New Vegas/`). En MO2 queda como mod `-New Vegas Script Extender (NVSE xNVSE)` (desactivado).
-- **FNV 4GB Patcher**: ejecutar el patcher sobre `FalloutNV.exe` (habilita LAA 4GB). Mod `-FNV 4GB Patcher` (desactivado).
-- **Epic Games Patcher**: solo si el juego es de Epic (no-op en Steam). Mod `-Epic Games Patcher`.
-- **FNV BSA Decompressor**: **NO INSTALAR** (ver aviso arriba). Mod `-FNV BSA Decompressor` (desactivado, referencia).
+
+**¿Qué es un mod root?** Los root mods modifican archivos que viven en la **carpeta del juego**
+(no en la VFS de MO2): DLLs del engine, el exe, etc. Por eso **NO se instalan como mods de MO2**
+(si los metes en MO2, el juego no los ve — el engine los busca en su propia carpeta).
+En `modlist.txt` aparecen con `-` (desactivados) solo como recordatorio.
+
+**Carpeta del juego en Windows:**
+```
+Steam:  C:\Program Files (x86)\Steam\steamapps\common\Fallout New Vegas\
+GOG:    C:\GOG Games\Fallout New Vegas\    (o donde lo instales)
+```
+
+**Lista completa de root mods de VNV Core:**
+
+| Root mod | Archivos que van al juego | Estado |
+|---|---|---|
+| **xNVSE** (NVSE) | `nvse_1_4.dll`, `nvse_loader.exe`, `nvse_steam_loader.dll`, `nvse_editor_1_4.dll` + los 4 `.pdb` | **OBLIGATORIO** |
+| **FNV 4GB Patcher** | Parchea `FalloutNV.exe` (habilita LAA 4GB) | **OBLIGATORIO** |
+| Epic Games Patcher | Parchea `FalloutNV.exe` | Solo versión Epic (no-op en Steam) |
+| FNV BSA Decompressor | — | **NO INSTALAR** |
+
+**Cómo instalar xNVSE en Windows (paso a paso):**
+1. Descarga **xNVSE** en Nexus: [New Vegas Script Extender (xNVSE)](https://www.nexusmods.com/newvegas/mods/67883) → archivo **Main file** (`xNVSE 6.x.x.7z`).
+2. Extrae el `.7z` (7-Zip o WinRAR) → dentro hay una carpeta `nvse_6_x_x/`.
+3. Copia estos archivos a la **carpeta del juego** (junto a `FalloutNV.exe`):
+   ```
+   nvse_1_4.dll          ← el plugin del engine (¡el que el juego carga!)
+   nvse_steam_loader.dll ← cargador automático (Steam) / nvse_loader.exe (GOG)
+   nvse_editor_1_4.dll   ← soporte del GECK (editor)
+   nvse_1_4.pdb / nvse_steam_loader.pdb / nvse_editor_1_4.pdb / nvse_loader.pdb
+   ```
+4. Verifica que queden **en la misma carpeta que `FalloutNV.exe`**, así:
+   ```
+   Fallout New Vegas/
+   ├── FalloutNV.exe
+   ├── nvse_1_4.dll        ← aquí
+   ├── nvse_steam_loader.dll ← aquí
+   ├── Data/
+   └── ...
+   ```
+5. (Opcional pero recomendado) extrae también `Data/NVSE/` (los INIs de configuración de NVSE).
+6. Prueba: arranca el juego → en el menú principal verás **"NVSE version 6.x"** abajo a la izquierda.
+   También se crea `nvse.log` en la carpeta del juego (muestra los plugins NVSE cargados).
+
+> 💡 **Para MO2**: el mod `-New Vegas Script Extender (NVSE xNVSE)` queda desactivado — es solo
+> el recordatorio de que esto va root. Si instalaste xNVSE con el instalador/extracción manual,
+> MO2 no tiene que tocar nada de esto.
+
+**Cómo instalar el FNV 4GB Patcher en Windows:**
+1. Descarga **FNV 4GB Patcher**: [New Vegas 4GB Patcher (mods 62552)](https://www.nexusmods.com/newvegas/mods/62552) → Main file.
+2. Extrae `FalloutNVPatcher.exe` a la carpeta del juego (junto a `FalloutNV.exe`).
+3. **Clic derecho → Ejecutar como administrador** (o simplemente doble clic si Steam no está en Program Files).
+4. El patcher crea una copia de seguridad automática: `FalloutNV_backup.exe` y parchea `FalloutNV.exe`
+   (habilita el flag LAA 4GB). **Cierra el juego antes** — no se puede parchear un exe en uso.
+5. Verificación: el `FalloutNV_backup.exe` existe junto al exe parcheado ✓.
+6. (Recomendado por VNV) el `nvse_steam_loader.dll` de xNVSE ya inyecta NVSE solo; el 4GB patch
+   es independiente.
+
+> ⚠️ Si alguna vez revalidad el juego en Steam (Verify integrity), **se revierten** los root mods
+> (exe y DLLs vuelven a vanilla) → re-ejecuta el 4GB patcher y vuelve a copiar las DLLs de xNVSE.
+
+**Epic Games Patcher** (solo si tu juego es de Epic Games Store):
+- Descarga [Epic Games Patcher](https://www.nexusmods.com/newvegas/mods/81281) → extrae `patch.xdelta`
+  + `FalloutNVPatcher.exe` a la carpeta del juego → ejecuta. En Steam **no hace falta** (el exe ya es compatible).
 
 ### C) Fixed ESMs (esencial — el juego crashea sin esto)
 Extraer en `mods/Fixed ESMs/` (se activa como `+Fixed ESMs`):
