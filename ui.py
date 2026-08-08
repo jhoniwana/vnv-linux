@@ -64,13 +64,15 @@ def estado_actual():
         or (pathlib.Path.home() / ".local/bin/mo2-lint").exists()
     return {
         "setup": setup,
-        "sesion": sesion,
+        "sesion": {"steam": "ok" if juego else "offline",
+                   "nexus": "ok" if sesion else "offline",
+                   "user": None},
         "credenciales": cred,
         "mods_total": n_mods,
         "mods_ok": n_ok,
         "archivos": n_arch,
-        "juego": juego,
-        "mo2": mo2,
+        "juego": "ok" if juego else "offline",
+        "mo2": "ok" if mo2 else "offline",
         "paso_actual": 1 if not setup else 2 if not sesion else 3 if n_ok < n_mods else 4 if not mo2 else 5,
     }
 
@@ -102,7 +104,17 @@ def ejecutar(accion, cmd, env_extra=None):
 # ============================ routes ============================
 @app.route("/")
 def index():
-    return HTML
+    return HTML_page()
+
+
+@app.route("/assets/pipboy/<path:fname>")
+def pipboy_asset(fname):
+    """Sprites/imágenes del diseño Pip-Boy (assets/pipboy/assets/...)."""
+    # el HTML referencia rutas relativas a su propia carpeta (assets/pipboy/)
+    ruta = (BASE / "assets" / "pipboy" / fname).resolve()
+    if ruta.is_relative_to((BASE / "assets" / "pipboy").resolve()) and ruta.exists():
+        return Response(ruta.read_bytes(), mimetype="image/png")
+    return ("", 404)
 
 
 @app.route("/api/estado")
@@ -178,6 +190,18 @@ def api_log(jid):
 
 
 # ============================ UI ============================
+PIPBOY_HTML = BASE / "assets" / "pipboy" / "index.html"
+
+def _cargar_html() -> str:
+    if PIPBOY_HTML.exists():
+        return PIPBOY_HTML.read_text()
+    return HTML  # fallback: HTML embebido clásico
+
+
+def HTML_page() -> str:
+    return _cargar_html()
+
+
 HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>

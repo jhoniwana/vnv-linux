@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>VNV-LINUX · VAULT-TEC INSTALLER</title>
+<meta name="description" content="Fully automatic Viva New Vegas (Core) installer for Fallout New Vegas on Linux/Steam. Pip-Boy themed wizard.">
+<!--
+  vnv-linux · wizard UI (single-file build) · FALLOUT / PIP-BOY THEME
+  Backend contract (UNCHANGED): GET /api/estado · POST /api/accion/<a> → {job_id} · GET /api/log/<job_id> (SSE)
+  Optional NEW additive endpoint: GET /api/mods → [{name, version, size_mb, section, status}] (reads manifest.json + estado.json)
+  Art: original fan-made GREEN GECKO mascot sprites generated for this project (poses: thumbs-up / walk / sleep / hurt / salute),
+  displayed inside dark "Pip-Boy screens". No Nexus/LoversLab or mod art used. Fonts: VT323 + JetBrains Mono (OFL, Fontsource CDN).
+  Icons: inline SVG sprite, lucide-derived paths (ISC).
+-->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23050a06'/%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='%2345ff7d' stroke-width='4'/%3E%3Cpath d='M32 16 L36.7 26.6 L48 27.6 L39.4 35 L42.2 46.4 L32 40.2 L21.8 46.4 L24.6 35 L16 27.6 L27.3 26.6 Z' fill='%2345ff7d'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/vt323@latest/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@latest/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@latest/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@latest/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@latest/600.css">
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#050a06;--bg2:#071107;--panel:#0a160b;--panel2:#0d1d10;--screen:#020602;
+  --line:#1c3b23;--line2:#2c5a35;
+  --tx:#b9ffcb;--tx2:#7bd795;--tx3:#4d9164;
+  --grn:#45ff7d;--grn2:#2fd45f;--ink:#03140a;
+  --amb:#ffb648;--red:#ff6257;--blu:#7ec8ff;--vio:#c9a2ff;--pin:#ff9ec6;--org:#ffa062;
+  --lok:#8dffb0;--lfail:#ff6257;--lwarn:#ffb648;--linfo:#9fe8b4;
+  --glow:0 0 9px rgba(69,255,125,.4);
+  --hdr:rgba(5,10,6,.88);
+  --vt:'VT323',monospace;--mono:'JetBrains Mono',ui-monospace,Menlo,monospace;--sans:'Inter',system-ui,sans-serif;
+  --shadow:0 10px 30px rgba(0,0,0,.5);
+}
+[data-theme="light"]{
+  --bg:#e9dfc4;--bg2:#e2d6b6;--panel:#f7f0dd;--panel2:#efe4c6;--screen:#101b0e;
+  --line:#c8b78c;--line2:#a08a55;
+  --tx:#241d10;--tx2:#56492f;--tx3:#8a7b57;
+  --grn:#1f4f8f;--grn2:#163c73;--ink:#f7f0dd;
+  --amb:#8a5200;--red:#9c2b21;--blu:#1f4f8f;--vio:#6a4fa3;--pin:#b04a7e;--org:#a05a1f;
+  --lok:#146c2e;--lfail:#9c2b21;--lwarn:#8a5200;--linfo:#1f4f8f;
+  --glow:none;--hdr:rgba(247,240,221,.9);--shadow:0 8px 24px rgba(60,45,10,.15);
+}
+html{scrollbar-color:var(--line2) var(--bg)}
+body{margin:0;font-family:var(--mono);background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased;font-size:13.5px}
+::selection{background:var(--grn);color:var(--ink)}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--line2);border:2px solid var(--bg);border-radius:6px}::-webkit-scrollbar-track{background:transparent}
+/* ---- CRT overlays ---- */
+.crt-scan{position:fixed;inset:0;z-index:6;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.26) 0 1px,transparent 1px 3px);animation:flick 5s infinite}
+.crt-vig{position:fixed;inset:0;z-index:5;pointer-events:none;background:radial-gradient(125% 105% at 50% 42%,transparent 58%,rgba(0,0,0,.55) 100%)}
+[data-theme="light"] .crt-scan,[data-theme="light"] .crt-vig{display:none}
+@keyframes flick{0%,100%{opacity:1}92%{opacity:1}93%{opacity:.82}94%{opacity:1}97%{opacity:.9}98%{opacity:1}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(69,255,125,.4)}50%{box-shadow:0 0 0 9px rgba(69,255,125,0)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes slide{to{background-position:14px 0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.sm{width:14px;height:14px}.ic.big{width:22px;height:22px}
+.spin{animation:spin 1s linear infinite}
+.mono{font-family:var(--mono)}
+.row{display:flex;gap:10px;align-items:center}.row.wrap{flex-wrap:wrap}
+.flex1{flex:1}
+.hint{font-size:12px;color:var(--tx2);margin:0 0 12px;line-height:1.6}
+.hint.tiny{font-size:10.5px;color:var(--tx3)}
+.good{color:var(--grn)}
+/* ---- robco boot bar + header ---- */
+.robco{font:600 9.5px var(--mono);letter-spacing:.14em;color:var(--tx3);text-transform:uppercase;padding:6px 20px;border-bottom:1px dashed var(--line);background:var(--bg2)}
+header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;padding:10px 20px;background:var(--hdr);backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.logo-frame{width:46px;height:46px;flex:none;background:var(--screen);border:2px solid var(--line2);box-shadow:inset 0 0 14px rgba(0,0,0,.8),0 0 10px rgba(69,255,125,.15);display:grid;place-items:center;overflow:hidden}
+.logo-frame img{width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.brand-t b{font:400 26px/1 var(--vt);letter-spacing:2px;color:var(--tx);text-shadow:var(--glow)}
+.brand-t span{display:block;font:600 9.5px var(--mono);letter-spacing:.16em;color:var(--tx3);text-transform:uppercase;margin-top:2px}
+.plate{font:400 15px var(--vt);letter-spacing:1px;color:var(--amb);border:1px solid var(--line2);padding:3px 9px;background:var(--panel2)}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:6px;font:600 10.5px var(--mono);letter-spacing:.08em;padding:5px 10px;border:1px solid var(--line2);color:var(--tx2);background:var(--panel2);white-space:nowrap;text-transform:uppercase}
+.pill.ok{color:var(--grn);border-color:var(--grn);background:rgba(69,255,125,.07)}
+.pill.warn{color:var(--amb);border-color:var(--amb);background:rgba(255,182,72,.07)}
+.pill.dim{opacity:.9}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:blink 1.4s infinite}
+/* ---- buttons ---- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border:1.5px solid var(--grn);color:var(--grn);background:rgba(69,255,125,.05);font:600 12.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:.15s;border-radius:2px;white-space:nowrap}
+.btn:hover{background:var(--grn);color:var(--ink);box-shadow:0 0 16px rgba(69,255,125,.45)}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--grn);color:var(--ink)}
+.btn.primary:hover{filter:brightness(1.12)}
+.btn.ghost{border-color:var(--line2);color:var(--tx2);background:transparent}
+.btn.ghost:hover{border-color:var(--grn);color:var(--grn);background:rgba(69,255,125,.06);box-shadow:none}
+.btn.danger{border-color:var(--red);color:var(--red);background:rgba(255,98,87,.06)}
+.btn.danger:hover{background:var(--red);color:#180404;box-shadow:0 0 16px rgba(255,98,87,.4)}
+.btn:disabled{opacity:.4;pointer-events:none}
+.btn:focus-visible,.ibtn:focus-visible,.schip:focus-visible{outline:2px solid var(--grn);outline-offset:2px}
+.ibtn{width:44px;height:44px;display:grid;place-items:center;background:transparent;border:1.5px solid var(--line2);color:var(--tx2);cursor:pointer;transition:.15s;border-radius:2px}
+.ibtn:hover{color:var(--grn);border-color:var(--grn);box-shadow:0 0 10px rgba(69,255,125,.3)}
+.ibtn.on{color:var(--grn);border-color:var(--grn);background:rgba(69,255,125,.08)}
+.ibtn.sm2{width:40px;height:40px}
+/* ---- tooltips ---- */
+[data-tip]{position:relative}
+[data-tip]::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--screen);color:var(--tx);font:600 10.5px var(--mono);letter-spacing:.04em;padding:6px 9px;border:1px solid var(--line2);white-space:nowrap;opacity:0;pointer-events:none;transition:.15s .3s;z-index:40}
+[data-tip]:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
+/* ---- layout ---- */
+.wrap{max-width:1240px;margin:0 auto;padding:18px 20px 30px;display:grid;gap:16px}
+.card{background:var(--panel);border:2px solid var(--line);box-shadow:var(--shadow)}
+/* ---- pipeline ---- */
+.pipe-card{padding:16px 18px}
+.pipe-grid{display:grid;grid-template-columns:1fr 218px;gap:18px;align-items:stretch}
+.pipe-top{display:flex;align-items:center;gap:10px}
+.pipe-top h2{margin:0;font:400 24px/1 var(--vt);letter-spacing:2px;color:var(--tx);text-shadow:var(--glow)}
+.pipe-pct{font:400 40px/1 var(--vt);color:var(--grn);text-shadow:var(--glow)}
+.pipe-pct small{font-size:20px;color:var(--tx3)}
+.pipe{position:relative;display:flex;justify-content:space-between;padding:22px 4px 4px;overflow-x:auto}
+.pipe-track{position:absolute;left:34px;right:34px;top:49px;height:4px;background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 10px)}
+.pipe-track i{display:block;height:100%;width:5%;background:var(--grn);box-shadow:0 0 12px rgba(69,255,125,.5);transition:width .7s cubic-bezier(.22,1,.36,1)}
+.pnode{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px;width:86px;text-align:center;flex:none}
+.lt-tile{width:54px;height:54px;border:2px solid var(--line2);display:grid;place-items:center;font:400 38px var(--vt);color:var(--tx3);background:var(--panel2);box-shadow:inset 0 0 12px rgba(0,0,0,.55);transition:.3s}
+.pnode.done .lt-tile{background:var(--grn);color:var(--ink);border-color:var(--grn);box-shadow:0 0 16px rgba(69,255,125,.5)}
+.pnode.active .lt-tile{color:var(--grn);border-color:var(--grn);animation:pulse 1.8s infinite}
+.pnode.pend{opacity:.65}
+.pn-t{font:600 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase}
+.pn-s{font:600 9px var(--mono);color:var(--tx3);letter-spacing:.06em}
+/* mascot */
+.mascot{background:var(--screen);border:2px solid var(--line2);box-shadow:inset 0 0 30px rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px;text-align:center}
+.mascot img{width:100%;max-width:170px;aspect-ratio:1;object-fit:cover;border:1px solid var(--line);filter:drop-shadow(0 0 12px rgba(69,255,125,.2))}
+.m-quote{font:400 19px/1.15 var(--vt);letter-spacing:1px;color:var(--grn);text-shadow:var(--glow);min-height:44px;transition:opacity .4s}
+.m-quote.fade{opacity:0}
+.m-cap{font:600 8.5px var(--mono);letter-spacing:.14em;color:var(--tx3);text-transform:uppercase}
+/* ---- status strip ---- */
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{display:flex;gap:12px;align-items:center;padding:12px 14px}
+.stat-l{font:600 9px var(--mono);letter-spacing:.14em;color:var(--tx3);text-transform:uppercase}
+.stat b{display:block;font:400 21px/1.1 var(--vt);letter-spacing:1px;color:var(--tx);text-shadow:var(--glow)}
+.stat span{font:600 10.5px var(--mono);color:var(--tx2)}
+.mini-bar{width:110px;height:8px;border:1px solid var(--line2);margin-top:5px;position:relative;background:var(--screen)}
+.mini-bar i{position:absolute;inset:1px auto 1px 1px;width:0;background:var(--grn);box-shadow:0 0 8px rgba(69,255,125,.5);transition:width .4s}
+/* ---- pipboy tabs ---- */
+.tabs{display:flex;gap:6px}
+.tab{clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 100%,0 100%);border:none;background:var(--panel2);color:var(--tx3);font:600 12px var(--mono);text-transform:uppercase;letter-spacing:.1em;padding:0 28px;height:44px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:8px}
+.tab:hover{color:var(--tx)}
+.tab.on{background:var(--grn);color:var(--ink);text-shadow:none}
+.tab .cnt{font-size:10px;border:1px solid currentColor;padding:1px 6px;border-radius:999px}
+/* ---- wizard grid ---- */
+.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
+/* perk cards */
+.perk{margin-bottom:12px;overflow:hidden;transition:.25s}
+.perk.active{border-color:var(--grn);box-shadow:0 0 0 1px rgba(69,255,125,.2),var(--shadow)}
+.perk.locked{opacity:.6}
+.perk-head{display:flex;gap:14px;align-items:center;padding:13px 16px;border-bottom:1px dashed var(--line)}
+.perk-letter{width:44px;height:44px;flex:none;border:2px solid var(--line2);display:grid;place-items:center;font:400 30px var(--vt);color:var(--tx3);background:var(--panel2);box-shadow:inset 0 0 10px rgba(0,0,0,.5)}
+.perk.done .perk-letter{background:var(--grn);color:var(--ink);border-color:var(--grn)}
+.perk.active .perk-letter{color:var(--grn);border-color:var(--grn)}
+.perk-tt h3{margin:0;font:400 22px/1 var(--vt);letter-spacing:1.5px;color:var(--tx);text-shadow:var(--glow)}
+.perk.active .perk-tt h3::after{content:'▮';color:var(--grn);animation:blink 1s steps(1) infinite;margin-left:4px}
+.perk-sub{margin:3px 0 0;font:600 9.5px var(--mono);letter-spacing:.12em;color:var(--tx3);text-transform:uppercase}
+.perk-sprite{width:62px;height:62px;flex:none;margin-left:auto;object-fit:cover;background:var(--screen);border:1px solid var(--line2);box-shadow:inset 0 0 10px rgba(0,0,0,.8)}
+.perk.active .perk-sprite{animation:bob 1s ease-in-out infinite}
+.perk-status{padding:7px 16px;border-top:1px dashed var(--line);font:600 10px var(--mono);letter-spacing:.1em;color:var(--tx3);text-transform:uppercase;display:flex;gap:8px;align-items:center}
+.perk.done .perk-status{color:var(--grn)}
+.perk.failst .perk-status{color:var(--red)}
+.step-body{padding:14px 16px 16px;animation:fadeUp .3s}
+.checks{list-style:none;margin:0 0 12px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.checks li{display:flex;gap:8px;align-items:center;font:600 11px var(--mono);color:var(--tx2);background:var(--screen);border:1px solid var(--line);padding:9px 10px}
+.checks .ic{color:var(--grn)}
+.frm{display:grid;gap:10px;margin-bottom:12px}
+.frm label{font:600 10px var(--mono);color:var(--tx3);display:grid;gap:6px;letter-spacing:.12em;text-transform:uppercase}
+.inwrap{position:relative}
+.frm input{width:100%;height:44px;background:var(--screen);border:1px solid var(--line2);color:var(--grn);padding:0 46px 0 12px;font:600 13px var(--mono);outline:none;transition:.15s}
+.frm input:focus{border-color:var(--grn);box-shadow:0 0 0 3px rgba(69,255,125,.15),inset 0 0 12px rgba(69,255,125,.08)}
+.peek{position:absolute;right:4px;top:50%;transform:translateY(-50%)}
+.sess{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{font:600 10px var(--mono);letter-spacing:.1em;padding:6px 10px;border:1px solid var(--line2);color:var(--tx3);display:inline-flex;gap:6px;align-items:center;text-transform:uppercase}
+.chip.done{color:var(--grn);border-color:var(--grn)}
+.chip.on{color:var(--ink);background:var(--grn);border-color:var(--grn);animation:pulse 1.8s infinite}
+.dl-overall{display:flex;gap:10px;align-items:center;margin:4px 0 12px}
+.dl-txt{font:400 18px var(--vt);color:var(--tx2);min-width:64px;text-align:right;letter-spacing:1px}
+.bar{height:14px;border:1px solid var(--line2);background:var(--screen);position:relative;flex:1;overflow:hidden}
+.bar i{position:absolute;top:1px;bottom:1px;left:1px;width:0;background:repeating-linear-gradient(90deg,rgba(0,0,0,.35) 0 2px,transparent 2px 8px),linear-gradient(180deg,var(--grn),var(--grn2));box-shadow:0 0 10px rgba(69,255,125,.5);transition:width .25s}
+.bar i.stripes{animation:slide .7s linear infinite}
+.bar.sm{height:8px}
+.dl-active{display:grid;gap:8px;margin:0 0 12px}
+.adl{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:10px 12px;background:var(--screen);border:1px solid var(--line);animation:fadeUp .25s}
+.adl .bar{grid-column:1/-1}
+.adl-name{font:600 12px var(--mono);color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adl-meta{font:600 10.5px var(--mono);color:var(--tx2)}
+/* ---- terminal logs ---- */
+.logs{position:sticky;top:118px;display:flex;flex-direction:column;max-height:calc(100vh - 140px);min-height:420px;background:var(--screen);border:2px solid var(--line);box-shadow:inset 0 0 40px rgba(0,0,0,.8)}
+.logs-head{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.logs-head h3{margin:0;font:400 20px/1 var(--vt);letter-spacing:2px;color:var(--grn);text-shadow:var(--glow);display:flex;gap:8px;align-items:center}
+.logs-head h3::before{content:'◉';animation:blink 2s infinite}
+.log-body{flex:1;overflow:auto;padding:10px 12px;font:12px/1.75 var(--mono);min-height:280px}
+.logs-empty{color:var(--tx3);text-align:center;padding:48px 12px;font-size:12px}
+.logs-empty::after{content:'▮';animation:blink 1s steps(1) infinite;margin-left:4px}
+.lg{margin-bottom:6px}
+.lg-head{width:100%;display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);padding:7px 10px;color:var(--tx2);font:600 11px var(--mono);letter-spacing:.1em;cursor:pointer;text-align:left;text-transform:uppercase}
+.lg-head .chev{transition:.2s}
+.lg.closed .lg-head .chev{transform:rotate(-90deg)}
+.lg.closed .lg-body{display:none}
+.lg-n{margin-left:auto;font:600 10px var(--mono);color:var(--tx3)}
+.lg-dots{display:flex;gap:3px}
+.dt{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dt.ok{background:var(--grn)}.dt.warn{background:var(--amb)}.dt.fail{background:var(--red)}
+.ll{display:grid;grid-template-columns:62px 40px 1fr;gap:8px;padding:2px 6px;color:var(--linfo)}
+.ll .lt{color:var(--tx3)}
+.ll .ltg{font-weight:700}
+.ll.ok{color:var(--lok)}
+.ll.warn{color:var(--lwarn)}
+.ll.fail{color:var(--lfail);background:rgba(255,98,87,.07)}
+.logs-foot{display:flex;align-items:center;gap:10px;padding:9px 12px;border-top:1px solid var(--line);font:600 10px var(--mono);letter-spacing:.08em;color:var(--tx3);text-transform:uppercase}
+.lg-legend{display:flex;gap:10px;align-items:center}
+.lg-legend .dt{margin-right:4px;vertical-align:middle}
+/* ---- mods inventory ---- */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.search{position:relative;flex:1;min-width:220px}
+.search input{width:100%;height:44px;background:var(--screen);border:1px solid var(--line2);color:var(--grn);padding:0 12px 0 40px;font:600 13px var(--mono);outline:none;transition:.15s}
+.search input:focus{border-color:var(--grn);box-shadow:0 0 0 3px rgba(69,255,125,.15)}
+.search .ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tx3)}
+.sec-chips{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.schip{font:600 11px var(--mono);letter-spacing:.08em;padding:8px 12px;min-height:36px;border:1px solid var(--line2);background:var(--panel);color:var(--tx2);cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px;text-transform:uppercase}
+.schip:hover{color:var(--grn);border-color:var(--grn)}
+.schip.on{background:var(--grn);border-color:var(--grn);color:var(--ink)}
+.schip .cnt{font-size:9.5px;opacity:.75}
+.mods-meta{font:600 10.5px var(--mono);letter-spacing:.1em;color:var(--tx3);margin-bottom:12px;text-transform:uppercase}
+.mods-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:10px}
+.sec-head{grid-column:1/-1;font:400 19px var(--vt);letter-spacing:2px;color:var(--tx2);margin-top:10px;display:flex;align-items:center;gap:10px;text-shadow:var(--glow)}
+.sec-head::after{content:'';flex:1;height:1px;background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 10px)}
+.mod{display:flex;gap:10px;padding:12px;background:var(--panel);border:1px solid var(--line);position:relative;overflow:hidden;transition:.18s;animation:fadeUp .3s both}
+.mod:hover{transform:translateY(-2px);border-color:var(--line2);box-shadow:0 0 14px rgba(69,255,125,.12)}
+.mod::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--tx3);opacity:.35}
+.mod.st-done::before{background:var(--grn);opacity:1}
+.mod.st-fail::before{background:var(--red);opacity:1}
+.mod.st-dl::before{background:var(--blu);opacity:1}
+.m-ic{width:24px;height:24px;display:grid;place-items:center;flex:none;margin-top:1px}
+.st-done .m-ic{color:var(--grn)}.st-fail .m-ic{color:var(--red)}.st-dl .m-ic{color:var(--blu)}.st-pending .m-ic{color:var(--tx3)}
+.m-main{flex:1;min-width:0}
+.m-top{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.m-name{font:600 12.5px var(--mono);color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.m-sub{display:flex;gap:10px;align-items:center;font:600 10px var(--mono);color:var(--tx3);margin-top:3px}
+.m-sub .mono{color:var(--tx2)}
+.m-pct{color:var(--blu)}
+.m-err{color:var(--red)}
+.m-bar{margin-top:8px}
+.tag{font:700 9px var(--mono);letter-spacing:.08em;padding:3px 7px;border:1px solid;flex:none;text-transform:uppercase}
+.t-Utilities{color:var(--blu);border-color:var(--blu)}
+.t-BugFixes{color:var(--red);border-color:var(--red)}
+.t-Tweaks{color:var(--amb);border-color:var(--amb)}
+.t-UIHUD{color:var(--vio);border-color:var(--vio)}
+.t-Visuals{color:var(--grn);border-color:var(--grn)}
+.t-Gameplay{color:var(--org);border-color:var(--org)}
+.t-Audio{color:var(--pin);border-color:var(--pin)}
+.empty{grid-column:1/-1;text-align:center;padding:50px 20px;color:var(--tx3)}
+.empty img{width:110px;height:110px;object-fit:cover;background:var(--screen);border:1px solid var(--line2);margin-bottom:12px}
+.empty .e-t{font:400 26px var(--vt);letter-spacing:2px;color:var(--tx2);text-shadow:var(--glow)}
+.empty .e-s{font-size:11.5px;margin:6px 0 16px}
+/* ---- modal ---- */
+.overlay{position:fixed;inset:0;background:rgba(2,6,2,.72);backdrop-filter:blur(3px);display:grid;place-items:center;z-index:50;opacity:0;pointer-events:none;transition:.2s}
+.overlay.show{opacity:1;pointer-events:auto}
+.modal{width:min(450px,calc(100vw - 32px));background:var(--panel);border:2px solid var(--amb);box-shadow:0 30px 80px rgba(0,0,0,.6);transform:translateY(10px) scale(.98);transition:.2s}
+.overlay.show .modal{transform:none}
+.modal-hz{height:12px;background:repeating-linear-gradient(45deg,var(--amb) 0 12px,#141414 12px 24px)}
+.modal-in{padding:18px 20px}
+.modal h3{margin:0 0 8px;font:400 24px var(--vt);letter-spacing:2px;color:var(--amb);text-shadow:var(--glow)}
+.modal p{margin:0 0 18px;font:600 12px/1.7 var(--mono);color:var(--tx2)}
+.modal .row{justify-content:flex-end}
+/* ---- toasts ---- */
+#toasts{position:fixed;right:16px;bottom:16px;display:grid;gap:8px;z-index:60}
+.toast{display:flex;gap:10px;align-items:center;background:var(--screen);border:1px solid var(--line2);border-left:4px solid var(--grn);padding:10px 14px;font:600 12px var(--mono);color:var(--tx);box-shadow:var(--shadow);transform:translateX(24px);opacity:0;transition:.25s;max-width:350px}
+.toast.in{transform:none;opacity:1}
+.toast .t-ic{width:34px;height:34px;object-fit:cover;background:#000;border:1px solid var(--line);flex:none}
+.toast .t-ic svg{width:20px;height:20px}
+.toast.t-fail{border-left-color:var(--red)}
+.toast.t-warn{border-left-color:var(--amb)}
+.toast.t-info{border-left-color:var(--blu)}
+/* ---- footer ---- */
+footer{max-width:1240px;margin:0 auto;padding:4px 20px 34px;color:var(--tx3);font:600 10px var(--mono);letter-spacing:.08em;display:flex;gap:8px 18px;flex-wrap:wrap;justify-content:space-between;text-transform:uppercase}
+footer a{color:var(--tx2);text-decoration:none}
+footer a:hover{color:var(--grn)}
+/* ---- responsive ---- */
+@media (max-width:980px){
+  .grid{grid-template-columns:1fr}
+  .logs{position:static;max-height:460px}
+  .strip{grid-template-columns:repeat(2,1fr)}
+  .pipe-grid{grid-template-columns:1fr}
+  .mascot{max-width:280px;margin:0 auto}
+}
+@media (max-width:640px){
+  .checks{grid-template-columns:1fr}
+  .pnode{width:62px}.pn-s{display:none}
+  .wrap{padding:14px 12px 26px}
+  header{padding:8px 12px}
+  .brand-t b{font-size:21px}
+  .plate{display:none}
+  .robco{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+@media (max-width:480px){.strip{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="crt-vig"></div><div class="crt-scan"></div>
+
+<svg hidden xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></symbol>
+  <symbol id="i-login" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></symbol>
+  <symbol id="i-gamepad" viewBox="0 0 24 24"><path d="M6 11h4M8 9v4M15 12h.01M18 10h.01"/><path d="M17.32 5H6.68a4 4 0 0 0-3.98 3.59C2.6 9.42 2 14.46 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.4-1.4a2 2 0 0 1 1.42-.6h4.36a2 2 0 0 1 1.4.58L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.54-.6-6.58-.68-7.26A4 4 0 0 0 17.32 5z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="m6 4 14 8-14 8z"/></symbol>
+  <symbol id="i-retry" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8M21 3v5h-5"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></symbol>
+  <symbol id="i-hdd" viewBox="0 0 24 24"><path d="M22 12H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11zM6 16h.01M10 16h.01"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12M16.5 9.4 7.55 4.24"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+  <symbol id="i-term" viewBox="0 0 24 24"><path d="m4 17 6-5-6-5M12 19h8"/></symbol>
+  <symbol id="i-spin" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></symbol>
+</svg>
+
+<div class="robco">ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM · COPYRIGHT 2075-2077 ROBCO INDUSTRIES · TERMLINK 127.0.0.1:8397 · -SERVER 6-</div>
+
+<header>
+  <div class="logo-frame"><img src="assets/sprites/gecko-thumbs.png" alt="Green Gecko mascot thumbs up"></div>
+  <div class="brand-t"><b>VNV-LINUX</b><span>Vault-Tec approved mod installer</span></div>
+  <span class="plate" data-tip="UI build">MK.IV · v1.4.0</span>
+  <div class="hdr-right">
+    <span class="pill" id="mode-badge" data-tip="Backend connection state"><i class="dot"></i>…</span>
+    <button class="ibtn" id="btn-reset" data-tip="Reset install progress" aria-label="Reset install progress"><svg class="ic"><use href="#i-trash"/></svg></button>
+    <button class="ibtn" id="btn-theme" data-tip="Phosphor / paper mode" aria-label="Toggle theme">
+      <svg class="ic ic-sun"><use href="#i-sun"/></svg><svg class="ic ic-moon"><use href="#i-moon"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="card pipe-card">
+    <div class="pipe-grid">
+      <div>
+        <div class="pipe-top">
+          <h2>INSTALLATION PIPELINE</h2>
+          <span class="pill dim" id="pipe-phase">PHASE 1/5</span>
+          <span class="flex1"></span>
+          <span class="pipe-pct"><span id="pipe-pct">5</span><small>%</small></span>
+        </div>
+        <div class="pipe">
+          <div class="pipe-track"><i id="pipe-fill"></i></div>
+          <div class="pnode" id="pn-setup"><div class="lt-tile">V</div><div class="pn-t">Survey</div><div class="pn-s">environment</div></div>
+          <div class="pnode" id="pn-login"><div class="lt-tile">A</div><div class="pn-t">Steam</div><div class="pn-s">session</div></div>
+          <div class="pnode" id="pn-credenciales"><div class="lt-tile">U</div><div class="pn-t">Nexus</div><div class="pn-s">uplink</div></div>
+          <div class="pnode" id="pn-descargar"><div class="lt-tile">L</div><div class="pn-t">Supply</div><div class="pn-s">55 mods</div></div>
+          <div class="pnode" id="pn-instalar"><div class="lt-tile">T</div><div class="pn-t">Deploy</div><div class="pn-s">&amp; play</div></div>
+        </div>
+      </div>
+      <aside class="mascot">
+        <img src="assets/sprites/gecko-thumbs.png" alt="Green Gecko mascot">
+        <div class="m-quote" id="m-quote">"WAR. WAR NEVER CHANGES."</div>
+        <div class="m-cap">VAULT-TEC TIP #112 — KEEP SMILING, DWELLER</div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="strip">
+    <div class="card stat"><div><div class="stat-l">[ Mods Ready ]</div><b id="st-mods">0/55</b><div class="mini-bar"><i id="st-mods-bar"></i></div></div></div>
+    <div class="card stat"><div><div class="stat-l">[ Sessions ]</div><b id="st-sess-b">STEAM · OFFLINE</b><span id="st-sess-s">NEXUS · OFFLINE</span></div></div>
+    <div class="card stat"><div><div class="stat-l">[ Storage ]</div><b>21.4 GB FREE</b><span id="st-disk">needs ≈ 2.6 GB</span></div></div>
+    <div class="card stat"><div><div class="stat-l">[ Status ]</div><b id="st-stage">SURVEY COMPLETE</b><span id="st-eta">—</span></div></div>
+  </section>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab on" data-view="wizard" role="tab">PIP-OS ▸ INSTALLER</button>
+    <button class="tab" data-view="mods" role="tab">▸ MODS INVENTORY <span class="cnt" id="tab-mods-cnt">0/55</span></button>
+  </nav>
+
+  <main id="view-wizard" class="grid">
+    <div>
+      <article class="card perk" id="step-setup">
+        <div class="perk-head"><div class="perk-letter">V</div>
+          <div class="perk-tt"><h3>ENVIRONMENT SURVEY</h3><p class="perk-sub">PERK · Proton prefix · MO2 · dependencies</p></div>
+          <img class="perk-sprite" id="spr-setup" alt=""></div>
+        <div class="step-body"></div>
+        <div class="perk-status" data-stline></div>
+      </article>
+      <article class="card perk" id="step-login">
+        <div class="perk-head"><div class="perk-letter">A</div>
+          <div class="perk-tt"><h3>STEAM AUTHENTICATION</h3><p class="perk-sub">PERK · session for app id 22380</p></div>
+          <img class="perk-sprite" id="spr-login" alt=""></div>
+        <div class="step-body"></div>
+        <div class="perk-status" data-stline></div>
+      </article>
+      <article class="card perk" id="step-credenciales">
+        <div class="perk-head"><div class="perk-letter">U</div>
+          <div class="perk-tt"><h3>NEXUS UPLINK</h3><p class="perk-sub">PERK · credentials for supply drops</p></div>
+          <img class="perk-sprite" id="spr-credenciales" alt=""></div>
+        <div class="step-body"></div>
+        <div class="perk-status" data-stline></div>
+      </article>
+      <article class="card perk" id="step-descargar">
+        <div class="perk-head"><div class="perk-letter">L</div>
+          <div class="perk-tt"><h3>SUPPLY DROP</h3><p class="perk-sub">PERK · 55 mods · MO2 · INIs · LOOT</p></div>
+          <img class="perk-sprite" id="spr-descargar" alt=""></div>
+        <div class="step-body"></div>
+        <div class="perk-status" data-stline></div>
+      </article>
+      <article class="card perk" id="step-instalar">
+        <div class="perk-head"><div class="perk-letter">T</div>
+          <div class="perk-tt"><h3>DEPLOY &amp; PLAY</h3><p class="perk-sub">PERK · install · configure · launch</p></div>
+          <img class="perk-sprite" id="spr-instalar" alt=""></div>
+        <div class="step-body"></div>
+        <div class="perk-status" data-stline></div>
+      </article>
+    </div>
+
+    <section class="logs">
+      <div class="logs-head"><h3>ROBCO TERMLINK</h3><span class="flex1"></span>
+        <button class="ibtn on" id="btn-autoscroll" data-tip="Auto-scroll: on" aria-label="Toggle auto-scroll"><svg class="ic"><use href="#i-activity"/></svg></button>
+        <button class="ibtn" id="btn-clearlogs" data-tip="Purge log" aria-label="Clear logs"><svg class="ic"><use href="#i-trash"/></svg></button>
+      </div>
+      <div class="log-body" id="log-body"><div class="logs-empty">AWAITING INPUT</div></div>
+      <div class="logs-foot"><span id="log-counts">0 LINES · 0 WARN · 0 ERR</span><span class="flex1"></span>
+        <span class="lg-legend"><span><i class="dt ok"></i>OK</span><span><i class="dt warn"></i>WARN</span><span><i class="dt fail"></i>ERR</span></span></div>
+    </section>
+  </main>
+
+  <main id="view-mods" hidden>
+    <div class="toolbar">
+      <div class="search"><svg class="ic"><use href="#i-search"/></svg><input id="mod-search" type="search" placeholder="SEARCH INVENTORY…  ( / )" aria-label="Search mods"></div>
+      <span class="pill dim" id="mods-total-pill"></span>
+    </div>
+    <div class="sec-chips" id="sec-chips"></div>
+    <div class="mods-meta" id="mods-meta"></div>
+    <div class="mods-grid" id="mods-grid"></div>
+  </main>
+</div>
+
+<footer>
+  <span>VAULT-TEC INDUSTRIES — "A BETTER FUTURE, UNDERGROUND!" · unofficial fan tool · Fallout: New Vegas © Bethesda Softworks</span>
+  <span><a href="https://github.com/jhoniwana/vnv-linux" target="_blank" rel="noopener">GITHUB: VNV-LINUX <svg class="ic sm"><use href="#i-ext"/></svg></a></span>
+</footer>
+
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-hz"></div>
+    <div class="modal-in">
+      <h3 id="modal-title"></h3>
+      <p id="modal-body"></p>
+      <div class="row"><button class="btn ghost" id="modal-cancel">ABORT</button><button class="btn danger" id="modal-ok">CONFIRM</button></div>
+    </div>
+  </div>
+</div>
+<div id="toasts" aria-live="polite"></div>
+
+<script nonce="">
+'use strict';
+(function(){
+/* ============ sprites: original GREEN GECKO fan art (generated for this repo) ============ */
+const SPR={
+  thumbs:'assets/sprites/gecko-thumbs.png',
+  walk:'assets/sprites/gecko-walk.png',
+  sleep:'assets/sprites/gecko-sleep.png',
+  hurt:'assets/sprites/gecko-hurt.png',
+  salute:'assets/sprites/gecko-salute.png'
+};
+const QUOTES=['"WAR. WAR NEVER CHANGES."','"A BETTER FUTURE, UNDERGROUND!"','"PLEASE STAND BY…"','"RAD-FREE SINCE 2077."','"SMILE! YOU\'RE IN THE VAULT."','"TRUST THE OVERSEER."','"NUKA-COLA BREAK RECOMMENDED."','"55 QUESTS. 1 INSTALLER."'];
+let qi=0;
+setInterval(()=>{ const q=document.getElementById('m-quote'); if(!q) return;
+  q.classList.add('fade'); setTimeout(()=>{ qi=(qi+1)%QUOTES.length; q.textContent=QUOTES[qi]; q.classList.remove('fade'); },400); },8000);
+
+/* ============ helpers ============ */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const byId=id=>document.getElementById(id);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ico=(n,c='')=>`<svg class="ic ${c}"><use href="#${n}"/></svg>`;
+const sumSize=a=>a.reduce((t,m)=>t+m.size,0);
+function fmtMB(mb){ if(mb>=1024) return (mb/1024).toFixed(2)+' GB'; if(mb>=1) return (mb<10?mb.toFixed(1):Math.round(mb))+' MB'; return Math.round(mb*1024)+' KB'; }
+function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
+
+/* ============ manifest (VNV Core · 55 mods) ============ */
+const SECTIONS=['Utilities','Bug Fixes','Tweaks','UI & HUD','Visuals','Gameplay','Audio'];
+const RAW=[
+['xNVSE Script Extender','6.3.5',1.8,'Utilities'],['New Vegas Tick Fix (NVTF)','2.0.4',0.6,'Utilities'],
+["lStewieAl's Tweaks & Engine Fixes",'1.9.2',0.4,'Utilities'],['FNV 4GB Patch','1.4.0',0.1,'Utilities'],
+['JIP LN NVSE Plugin','5.8.2',3.2,'Utilities'],['JohnnyGuitar NVSE','4.8.5',2.4,'Utilities'],
+['NVAC — New Vegas Anti Crash','2.1.0',0.9,'Utilities'],
+['Yukichigai Unofficial Patch (YUP)','10.3',214,'Bug Fixes'],['YUP — DLC Patches','10.3',118,'Bug Fixes'],
+['Weapon & Armor Mesh Fixes','1.2.1',46,'Bug Fixes'],['Cell & Collision Fixes','1.1.0',22,'Bug Fixes'],
+['Quest Stage Fixes','1.0.4',3,'Bug Fixes'],['Companion Dialogue Fixes','1.3.0',12,'Bug Fixes'],
+['Audio Glitch Fixes','1.0.0',8,'Bug Fixes'],['Save & Cooldown Fixes','1.1.2',5,'Bug Fixes'],
+['Essential Quality of Life Tweaks','1.4.0',2,'Tweaks'],['Faster Menus & Loading Tweaks','1.0.2',1,'Tweaks'],
+['Balanced Vendor & Repair Tweaks','1.1.0',3,'Tweaks'],['Loot Rarity Tweaks','1.2.0',2,'Tweaks'],
+['Hardcore Mode Balance Tweaks','1.0.5',4,'Tweaks'],['Detection & Stealth Tweaks','1.1.1',2,'Tweaks'],
+['DarNified UI FNV','1.5.2',24,'UI & HUD'],['UIO — User Interface Organizer','2.3.5',4,'UI & HUD'],
+['The Mod Configuration Menu (MCM)','1.5.0',1,'UI & HUD'],['Consistent Pip-boy Icons','4.0.1',18,'UI & HUD'],
+['One HUD (xHUD)','1.2.0',6,'UI & HUD'],['Pip-boy 3000 MK-IV HD','2.1.0',58,'UI & HUD'],
+['Minimal Crosshair Pack','1.0.0',2,'UI & HUD'],['Minimalist Compass','1.1.0',1,'UI & HUD'],
+['Clean Message Boxes','1.0.2',0.5,'UI & HUD'],
+['Clarity — Dark Visual Overhaul','2.0.0',780,'Visuals'],['A Little More Lamplight','1.1.0',12,'Visuals'],
+['Simple Interior Lighting Overhaul','1.3.0',30,'Visuals'],['Mojave Atmospheric Fog','1.0.2',18,'Visuals'],
+['Improved Blood Effects','1.2.0',9,'Visuals'],['Realistic Fire & Embers','1.0.0',14,'Visuals'],
+['Detailed Terrain Textures','1.1.0',240,'Visuals'],['Better Weapon Meshes Lite','1.4.2',96,'Visuals'],
+['Cleaner Armor Meshes','1.2.0',74,'Visuals'],['Night Vision & Glow Polish','1.0.1',2,'Visuals'],
+['Vanilla Combat Enhancements','1.5.0',6,'Gameplay'],['Recoil & Spread Overhaul Lite','1.1.0',3,'Gameplay'],
+['Smarter NPC AI Lite','1.2.0',8,'Gameplay'],['Realistic Iron Sights Lite','1.0.3',15,'Gameplay'],
+['Survival Balance Tweaks','1.3.0',4,'Gameplay'],['Follower Command Improvements','1.2.1',5,'Gameplay'],
+['Encounter Zone Fixes','1.0.0',2,'Gameplay'],['Loot Distribution Lite','1.1.0',10,'Gameplay'],
+['Companion Combat Awareness','1.0.2',3,'Gameplay'],
+['Immersive Sound Overhaul Lite','1.2.0',68,'Audio'],['Weapon Sound Replacements Vol. 1','1.4.0',120,'Audio'],
+['Mojave Ambient Loops','1.0.1',42,'Audio'],['Mojave Music Tweaks','1.1.0',25,'Audio'],
+['Footstep Sound Realism','1.0.0',18,'Audio'],['UI Sound Polish','1.0.3',3,'Audio']];
+const buildMods=()=>RAW.map((r,i)=>({id:i+1,name:r[0],ver:r[1],size:r[2],sec:r[3],status:'pending',pct:0,retried:false,scriptFail:r[0].includes('Clarity')}));
+const TOTAL_MB=sumSize(buildMods());
+const NEED_GB=(TOTAL_MB/1024+0.5).toFixed(1);
+
+/* ============ state ============ */
+const S={ mode:null, busy:false, view:'wizard',
+  done:{setup:true,login:false,credenciales:false,descargar:false,instalar:false,jugar:false},
+  mods:buildMods(), modsOk:0, modsTotal:55, stage4:null,
+  sesion:{steam:'off',nexus:'off',user:null}, draftU:'',draftP:'',
+  filtro:{q:'',sec:'All'}, autoScroll:true };
+const ORDER=['setup','login','credenciales','descargar','instalar'];
+const GROUPS={sys:'SYSTEM',setup:'STEP 1 · SURVEY',login:'STEP 2 · STEAM',credenciales:'STEP 3 · NEXUS',descargar:'STEP 4 · SUPPLY',instalar:'STEP 5 · DEPLOY',jugar:'LAUNCH'};
+const gMeta={};
+const logBody=byId('log-body');
+
+/* ============ theme ============ */
+function setTheme(t,save){ document.documentElement.dataset.theme=t; if(save) localStorage.setItem('vnv-theme',t); }
+function initTheme(){ const s=localStorage.getItem('vnv-theme'); if(s) setTheme(s,false); else if(matchMedia('(prefers-color-scheme: light)').matches) setTheme('light',false); }
+
+/* ============ toasts & modal ============ */
+function toast(sev,msg){ const t=document.createElement('div'); t.className='toast t-'+sev;
+  const face=sev==='ok'?`<img class="t-ic" src="${SPR.salute}" alt="">`:sev==='fail'?`<img class="t-ic" src="${SPR.hurt}" alt="">`
+    :sev==='warn'?`<span class="t-ic" style="display:grid;place-items:center;color:var(--amb)">${ico('i-alert')}</span>`
+    :`<span class="t-ic" style="display:grid;place-items:center;color:var(--blu)">${ico('i-info')}</span>`;
+  const head={ok:'OBJECTIVE COMPLETE',fail:'SYSTEM FAULT',warn:'CAUTION',info:'PIP-BOY'}[sev]||'PIP-BOY';
+  t.innerHTML=face+`<span><b style="display:block;font-size:9.5px;letter-spacing:.12em;color:var(--tx3)">${head}</b>${esc(msg)}</span>`;
+  byId('toasts').appendChild(t); requestAnimationFrame(()=>t.classList.add('in'));
+  setTimeout(()=>{t.classList.remove('in'); setTimeout(()=>t.remove(),300);},4200); }
+let modalCb=null;
+function openModal(o){ byId('modal-title').textContent=o.title; byId('modal-body').textContent=o.body;
+  byId('modal-ok').textContent=o.ok||'CONFIRM'; byId('overlay').classList.add('show'); modalCb=o.onOk; }
+function closeModal(){ byId('overlay').classList.remove('show'); modalCb=null; }
+
+/* ============ logs ============ */
+function hideEmpty(){ const e=logBody.querySelector('.logs-empty'); if(e) e.remove(); }
+function groupEl(g){ let el=logBody.querySelector(`[data-g="${g}"]`); if(el) return el;
+  el=document.createElement('div'); el.className='lg'; el.dataset.g=g;
+  el.innerHTML=`<button class="lg-head">${ico('i-chev','sm chev')}<b>${GROUPS[g]||g}</b><span class="lg-dots"></span><span class="lg-n">0</span></button><div class="lg-body"></div>`;
+  logBody.appendChild(el); hideEmpty(); return el; }
+function updateLogCounts(){ let n=0,w=0,f=0; for(const g in gMeta){const m=gMeta[g]; n+=m.n; w+=m.warn||0; f+=m.fail||0;}
+  byId('log-counts').textContent=`${n} LINES · ${w} WARN · ${f} ERR`; }
+function log(sev,g,msg){ const ts=new Date().toTimeString().slice(0,8);
+  const el=groupEl(g), body=el.querySelector('.lg-body');
+  const d=document.createElement('div'); d.className='ll '+sev;
+  d.innerHTML=`<span class="lt">${ts}</span><span class="ltg">${{ok:'OK',fail:'ERR',warn:'WRN',info:'INF'}[sev]}</span><span class="lm">${esc(msg)}</span>`;
+  body.appendChild(d);
+  const m=gMeta[g]||(gMeta[g]={n:0}); m.n++; m[sev]=(m[sev]||0)+1;
+  el.querySelector('.lg-n').textContent=m.n;
+  el.querySelector('.lg-dots').innerHTML=['ok','warn','fail'].filter(s=>m[s]).map(s=>`<i class="dt ${s}"></i>`).join('');
+  const all=logBody.querySelectorAll('.ll'); if(all.length>600) all[0].remove();
+  updateLogCounts();
+  if(S.autoScroll) logBody.scrollTop=logBody.scrollHeight; }
+function clearLogs(){ logBody.innerHTML='<div class="logs-empty">AWAITING INPUT</div>';
+  for(const k in gMeta) delete gMeta[k]; updateLogCounts(); toast('info','Log purged'); }
+
+/* ============ pipeline / strip ============ */
+function pctTotal(){ let p=0; if(S.done.setup)p+=5; if(S.done.login)p+=10; if(S.done.credenciales)p+=10;
+  if(S.done.descargar)p+=55; else p+=Math.round(S.modsOk/S.modsTotal*55);
+  if(S.done.jugar)p+=20; else if(S.done.instalar)p+=12; return Math.min(100,p); }
+function activeIdx(){ return ORDER.findIndex(k=>!S.done[k]); }
+function syncPipeline(){ const pct=pctTotal(), ai=activeIdx();
+  ORDER.forEach((k,i)=>{ const el=byId('pn-'+k);
+    const done=k==='instalar'?S.done.jugar:S.done[k];
+    const active=!done&&(i===ai);
+    el.classList.toggle('done',done); el.classList.toggle('active',active); el.classList.toggle('pend',!done&&!active); });
+  byId('pipe-fill').style.width=pct+'%'; byId('pipe-pct').textContent=pct;
+  byId('pipe-phase').textContent=S.done.jugar?'COMPLETE':`PHASE ${Math.min(ai+1,5)}/5`; }
+function syncStrip(){ byId('st-mods').textContent=`${S.modsOk}/${S.modsTotal}`;
+  byId('st-mods-bar').style.width=(S.modsOk/S.modsTotal*100)+'%';
+  const steam=S.sesion.steam==='on', nx=S.sesion.nexus==='on';
+  const b=byId('st-sess-b'), s2=byId('st-sess-s');
+  b.textContent=`STEAM · ${steam?'ONLINE':'OFFLINE'}`; b.classList.toggle('good',steam);
+  s2.textContent=`NEXUS · ${nx?(S.sesion.user||'ONLINE').toUpperCase():'OFFLINE'}`; s2.classList.toggle('good',nx);
+  byId('st-disk').textContent=`needs ≈ ${NEED_GB} GB`;
+  const ai=activeIdx();
+  byId('st-stage').textContent=S.stage4?({mo2:'MO2 INSTANCE',inis:'INI FILES',loot:'LOOT ORDER',mods:'DOWNLOADING',verificar:'VERIFYING'})[S.stage4]
+    : S.done.jugar?'COMPLETE ✓': ai===-1?'COMPLETE ✓':['SURVEY','STEAM LOGIN','NEXUS UPLINK','SUPPLY DROP','DEPLOY'][ai];
+  if(S.stage4==='mods'){ const rem=sumSize(S.mods.filter(m=>m.status==='pending'||m.status==='dl'));
+    byId('st-eta').textContent=`≈ ${Math.max(1,Math.ceil(rem/46))}s left · 4 streams`; }
+  else byId('st-eta').textContent=S.done.jugar?'war never changes…':'—'; }
+
+/* ============ perk cards ============ */
+function bodyFor(k,dis){
+  if(k==='setup'){ const items=[['i-zap','PROTON-GE 9-11 · prefix healthy'],['i-box','MO2 · portable instance'],['i-shield','WINE DEPS · winetricks "vnv"'],['i-hdd','GAME PATH · FNV (22380)']];
+    return `<ul class="checks">${items.map(x=>`<li>${ico(x[0])}${x[1]}</li>`).join('')}</ul>
+      <div class="row"><span class="pill ok">${ico('i-check','sm')}PASSED</span><button class="btn ghost" data-act="setup" ${dis}>${ico('i-retry')}RE-RUN</button></div>`; }
+  if(k==='login'){ if(S.done.login) return `<div class="sess"><span class="pill ok">${ico('i-check','sm')}STEAM · courier7</span><span class="pill dim">APP 22380 LINKED</span></div>`;
+    return `<p class="hint">Opens Steam inside the sandboxed session so Mod Organizer 2 can resolve the game library.</p>
+      <button class="btn primary" data-act="login" ${dis}>▸ ${ico('i-login')}LOGIN WITH STEAM</button>`; }
+  if(k==='credenciales'){ if(S.done.credenciales) return `<div class="sess"><span class="pill ok">${ico('i-shield','sm')}NEXUS · ${esc(S.sesion.user||'online')}</span><span class="pill dim">SESSION CACHED · 24H</span></div>`;
+    return `<div class="frm">
+      <label>Nexus username<span class="inwrap"><input id="nx-user" autocomplete="off" placeholder="courier7" value="${esc(S.draftU)}"></span></label>
+      <label>Nexus password<span class="inwrap"><input id="nx-pass" type="password" autocomplete="off" placeholder="••••••••" value="${esc(S.draftP)}"><button class="ibtn sm2 peek" type="button" data-act="peek" data-tip="Show / hide" aria-label="Show password">${ico('i-eye','sm')}</button></span></label></div>
+      <p class="hint tiny">Credentials are sent only to the local backend (127.0.0.1:8397) and never stored in plain text.</p>
+      <button class="btn primary" data-act="credenciales" ${dis}>▸ ${ico('i-key')}CONNECT NEXUS</button>`; }
+  if(k==='descargar'){ const fails=S.mods.filter(m=>m.status==='fail').length;
+    const stages=[['mo2','MO2'],['inis','INIs'],['loot','LOOT'],['mods','MODS'],['verificar','VERIFY']];
+    const idx=stages.findIndex(s=>s[0]===S.stage4);
+    const chips=stages.map((s,i)=>{ let cls='';
+      if(S.done.descargar) cls='done'; else if(S.stage4) cls=i<idx?'done':(i===idx?'on':'');
+      return `<span class="chip ${cls}">${cls==='done'?ico('i-check','sm'):''}${s[1]}</span>`; }).join('');
+    const pct=Math.round(S.modsOk/S.modsTotal*100);
+    return `<div class="chips">${chips}</div>
+      <div class="dl-overall"><div class="bar"><i id="dl-bar" class="${S.stage4==='mods'?'stripes':''}" style="width:${pct}%"></i></div><span class="dl-txt" id="dl-txt">${S.modsOk}/${S.modsTotal}</span></div>
+      <div class="dl-active" id="dl-active"></div>
+      <div class="row wrap">
+        ${S.done.descargar?`<span class="pill ok">${ico('i-shield','sm')}VERIFIED</span><button class="btn ghost" data-act="verificar" ${dis}>${ico('i-retry')}RE-VERIFY</button>`
+          :`<button class="btn primary" data-act="descargar" ${dis}>▸ ${ico('i-download')}START SUPPLY DROP</button>`}
+        ${fails?`<button class="btn danger" data-act="retry-failed" ${dis}>${ico('i-alert')}STIMPAK FAILED (${fails})</button>`:''}
+      </div>`; }
+  if(!S.done.descargar) return `<p class="hint">Complete the previous perk first.</p>`;
+  let h='';
+  if(!S.done.instalar) h+=`<div class="row wrap"><button class="btn primary" data-act="instalar" ${dis}>▸ ${ico('i-spark')}INSTALL &amp; CONFIGURE</button></div>`;
+  else { h+=`<div class="sess"><span class="pill ok">${ico('i-check','sm')}MO2 DEPLOY COMPLETE</span><span class="pill dim">LOAD ORDER LOCKED</span></div>`;
+    h+=`<div class="row wrap">${S.done.jugar?`<span class="pill ok">${ico('i-play','sm')}GAME RUNNING</span>`:`<button class="btn primary" data-act="jugar" ${dis}>▸ ${ico('i-play')}LAUNCH GAME</button>`}<button class="btn ghost" data-act="steam">${ico('i-ext')}OPEN STEAM</button></div>`; }
+  return h; }
+function syncSteps(){ const ai=activeIdx(), dis=S.busy?'disabled':'';
+  ORDER.forEach((k,i)=>{ const el=byId('step-'+k); if(!el) return;
+    const isDone=k==='instalar'?(S.done.instalar&&S.done.jugar):S.done[k];
+    const isActive=!isDone&&(i===ai||(k==='instalar'&&S.done.instalar&&!S.done.jugar));
+    const hasFail=k==='descargar'&&S.mods.some(m=>m.status==='fail')&&!S.done.descargar;
+    el.classList.toggle('done',isDone); el.classList.toggle('active',isActive);
+    el.classList.toggle('locked',i>ai&&!isDone); el.classList.toggle('failst',hasFail);
+    const spr=byId('spr-'+k); if(spr) spr.src=isDone?SPR.salute:hasFail?SPR.hurt:isActive?SPR.walk:SPR.sleep;
+    el.querySelector('[data-stline]').textContent=isDone?'PERK ACQUIRED — RANK 1/1':hasFail?'FAILURE — MEDICAL ATTENTION REQUIRED':isActive?'IN PROGRESS…':'LOCKED — COMPLETE PREVIOUS PERK';
+    el.querySelector('.step-body').innerHTML=bodyFor(k,dis); });
+  syncActiveDl(); }
+function syncActiveDl(){ const box=byId('dl-active'); if(!box) return;
+  box.innerHTML=S.mods.filter(m=>m.status==='dl').map(m=>
+    `<div class="adl"><span class="adl-name">${esc(m.name)}</span><span class="adl-meta">${m.pct}% · ${fmtMB(m.size)}</span><div class="bar sm"><i class="stripes" style="width:${m.pct}%"></i></div></div>`).join(''); }
+function syncStage(){ syncSteps(); syncStrip(); }
+function updateOverall(){ const pct=Math.round(S.modsOk/S.modsTotal*100);
+  const bar=byId('dl-bar'); if(bar){ bar.style.width=pct+'%'; bar.classList.toggle('stripes',S.stage4==='mods'); }
+  const txt=byId('dl-txt'); if(txt) txt.textContent=`${S.modsOk}/${S.modsTotal}`;
+  byId('tab-mods-cnt').textContent=`${S.modsOk}/${S.modsTotal}`;
+  syncPipeline(); syncStrip(); }
+function syncAll(){ syncPipeline(); syncStrip(); syncSteps(); }
+
+/* ============ mods inventory ============ */
+const tagCls=s=>'t-'+s.replace(/[^A-Za-z]/g,'');
+function modCard(m){ const st=m.status;
+  const ic=st==='done'?ico('i-check'):st==='fail'?ico('i-x'):st==='dl'?ico('i-spin','spin'):ico('i-clock');
+  return `<div class="mod st-${st}" data-mod="${m.id}">
+    <div class="m-ic">${ic}</div>
+    <div class="m-main">
+      <div class="m-top"><span class="m-name">${esc(m.name)}</span><span class="tag ${tagCls(m.sec)}">${esc(m.sec)}</span></div>
+      <div class="m-sub"><span class="mono">v${m.ver}</span><span>${fmtMB(m.size)}</span>${st==='dl'?`<span class="m-pct">${m.pct}%</span>`:''}${st==='fail'?`<span class="m-err">HTTP 503</span>`:''}</div>
+      ${st==='dl'?`<div class="bar sm m-bar"><i class="stripes" style="width:${m.pct}%"></i></div>`:''}
+    </div>
+    ${st==='fail'?`<button class="ibtn sm2" data-act="retry-mod" data-mod="${m.id}" data-tip="Stimpak: retry" aria-label="Retry download">${ico('i-retry','sm')}</button>`:''}
+  </div>`; }
+function renderMods(){ const g=byId('mods-grid'), {q,sec}=S.filtro, ql=q.toLowerCase();
+  const list=S.mods.filter(m=>(sec==='All'||m.sec===sec)&&(!ql||(m.name+' '+m.ver).toLowerCase().includes(ql)));
+  byId('mods-meta').textContent=`${list.length} OF ${S.modsTotal} ITEMS SHOWN · ${S.modsOk} INSTALLED · ${fmtMB(TOTAL_MB)} TOTAL PAYLOAD`;
+  byId('mods-total-pill').textContent=`${S.modsOk}/${S.modsTotal} ✔`;
+  if(!list.length){ g.innerHTML=`<div class="empty"><img src="${SPR.sleep}" alt=""><div class="e-t">NO ITEMS FOUND</div><div class="e-s">Nothing matches “${esc(q)}” in ${esc(sec)}. Adjust your filters, dweller.</div><button class="btn ghost" data-act="clear-filters">CLEAR FILTERS</button></div>`; return; }
+  let html='',last='';
+  for(const m of list){ if(sec==='All'&&m.sec!==last){ last=m.sec; html+=`<div class="sec-head">▸ ${esc(m.sec).toUpperCase()}</div>`; } html+=modCard(m); }
+  g.innerHTML=html; }
+function renderMod(m){ const c=document.querySelector(`.mod[data-mod="${m.id}"]`); if(c) c.outerHTML=modCard(m); }
+function renderModProgress(m){ const c=document.querySelector(`.mod[data-mod="${m.id}"]`); if(!c) return;
+  const bar=c.querySelector('.m-bar i'); if(bar) bar.style.width=m.pct+'%';
+  const pc=c.querySelector('.m-pct'); if(pc) pc.textContent=m.pct+'%'; }
+function buildChips(){ byId('sec-chips').innerHTML=['All',...SECTIONS].map(s=>{
+  const n=s==='All'?S.modsTotal:S.mods.filter(m=>m.sec===s).length;
+  return `<button class="schip ${s===S.filtro.sec?'on':''}" data-sec="${esc(s)}">${esc(s)}<span class="cnt">${n}</span></button>`; }).join(''); }
+
+/* ============ demo engine ============ */
+async function job(fn){ if(S.busy){ toast('warn','A job is already running'); return; }
+  S.busy=true; syncSteps(); try{ await fn(); } finally{ S.busy=false; syncSteps(); } }
+function downloadOne(m){ return new Promise(res=>{
+  m.status='dl'; m.pct=0; renderMod(m); syncActiveDl();
+  log('info','descargar',`↓ ${m.name} · ${fmtMB(m.size)}`);
+  const dur=Math.min(3600,420+m.size*7), step=90; let t=0;
+  const failAt=(m.scriptFail&&!m.retried)?0.55+Math.random()*0.2:null;
+  const iv=setInterval(()=>{ t+=step; const p=t/dur;
+    if(failAt&&p>=failAt){ clearInterval(iv); m.status='fail'; m.pct=Math.round(failAt*100);
+      renderMod(m); syncActiveDl(); syncSteps(); updateOverall();
+      log('fail','descargar',`✘ ${m.name} — HTTP 503 (mirror timeout)`); toast('fail',`Download failed: ${m.name}`); res(true); return; }
+    if(p>=1){ clearInterval(iv); m.status='done'; m.pct=100; S.modsOk++;
+      renderMod(m); syncActiveDl(); updateOverall();
+      log('ok','descargar',`✔ ${m.name} · ${fmtMB(m.size)}`); res(false); return; }
+    m.pct=Math.min(99,Math.round(p*100)); renderModProgress(m); syncStrip();
+  },step); }); }
+function startDownloads(list){ return new Promise(res=>{
+  S.stage4='mods'; syncStage();
+  const q=list||S.mods.filter(m=>m.status==='pending');
+  log('info','descargar',`Supply queue · ${q.length} mod(s) · ${fmtMB(sumSize(q))} · 4 parallel streams`);
+  let i=0,active=0,fails=0; const C=4;
+  (function pump(){ if(i>=q.length&&active===0){ res(fails); return; }
+    while(active<C&&i<q.length){ const m=q[i++]; active++;
+      downloadOne(m).then(f=>{ if(f) fails++; active--; updateOverall(); pump(); }); } })(); }); }
+async function verifySeq(){ S.stage4='verificar'; syncStage();
+  log('info','descargar','Verifying integrity · SHA-256'); await sleep(600);
+  log('info','descargar',`Hashing archives… 20/${S.modsTotal} · 41/${S.modsTotal}`); await sleep(700);
+  log('ok','descargar',`${S.modsTotal}/${S.modsTotal} verified · 0 mismatches`); await sleep(300);
+  S.stage4=null; S.done.descargar=true; syncAll(); toast('ok','All downloads verified'); }
+async function maybeFinish(fails){ if(fails===0){ await verifySeq(); } else { S.stage4='mods'; syncStage();
+  log('warn','descargar',`${fails} download(s) failed — stimpaks available`); } }
+
+async function demoAction(a,el){
+  if(a==='setup') return job(async()=>{ log('info','setup','Re-running environment checks…'); await sleep(700);
+    log('ok','setup','Proton-GE 9-11 · MO2 prefix · wine deps — all green'); toast('ok','Environment OK'); });
+  if(a==='login') return job(async()=>{ log('info','login','Requesting Steam session via runtime…'); await sleep(600);
+    log('info','login','Steam overlay attached · app id 22380 (Fallout New Vegas)'); await sleep(700);
+    S.sesion.steam='on'; S.done.login=true; log('ok','login','Signed in as courier7 · library verified');
+    syncAll(); toast('ok','Steam session established'); });
+  if(a==='credenciales'){ const u=(S.draftU||'').trim(), p=(S.draftP||'').trim();
+    if(!u||!p){ toast('warn','Enter your Nexus username and password first'); const f=byId('nx-user'); f&&f.focus(); return; }
+    return job(async()=>{ log('info','credenciales','Authenticating with Nexus Mods API…'); await sleep(700);
+      log('info','credenciales','Token granted · premium mirrors enabled'); await sleep(500);
+      S.sesion.nexus='on'; S.sesion.user=u; S.done.credenciales=true;
+      log('ok','credenciales',`Session cached for 24h · user ${u}`); syncAll(); toast('ok','Nexus uplink established'); }); }
+  if(a==='descargar'){ if(S.done.descargar){ toast('info','Supply drop already complete'); return; }
+    return job(async()=>{
+      S.stage4='mo2'; syncStage(); log('info','descargar','Initializing Mod Organizer 2 instance "VNV-Core"…'); await sleep(800);
+      log('ok','descargar','MO2 instance registered · profile "Viva New Vegas"');
+      S.stage4='inis'; syncStage(); log('info','descargar','Writing Fallout.ini · bInvalidateOlderFiles=1'); await sleep(350);
+      log('info','descargar','Writing FalloutPrefs.ini · resolution, borders, vsync off'); await sleep(350);
+      log('ok','descargar','Applying lStewieAl tweaks ini · 27 tweaks enabled');
+      S.stage4='loot'; syncStage(); log('info','descargar','Fetching LOOT masterlist…'); await sleep(700);
+      log('ok','descargar','Load order sorted · 0 dirty plugins · 2 conditional rules applied');
+      await maybeFinish(await startDownloads()); }); }
+  if(a==='retry-failed') return job(async()=>{ const list=S.mods.filter(m=>m.status==='fail');
+    list.forEach(m=>{ m.status='pending'; m.pct=0; m.retried=true; renderMod(m); });
+    log('info','descargar',`Applying stimpaks · retrying ${list.length} failed download(s)…`);
+    await maybeFinish(await startDownloads(list)); });
+  if(a==='verificar') return job(verifySeq);
+  if(a==='instalar'){ if(!S.done.descargar){ toast('warn','Finish the supply drop first'); return; }
+    return job(async()=>{ log('info','instalar','Deploying 55 archives through MO2 virtual fs…'); await sleep(900);
+      log('info','instalar','Cleaning overwrite dir · 0 conflicts detected'); await sleep(600);
+      log('info','instalar','Applying LOOT load order to plugins.txt'); await sleep(500);
+      log('ok','instalar','Install complete · profile "Viva New Vegas" ready');
+      S.done.instalar=true; syncAll(); toast('ok','Install complete'); }); }
+  if(a==='jugar'){ if(!S.done.instalar){ toast('warn','Run the installer first'); return; }
+    return job(async()=>{ log('info','jugar','Writing launch options · -nvse · windowed borderless'); await sleep(500);
+      log('info','jugar','Starting FalloutNV.exe via Proton-GE…'); await sleep(900);
+      log('ok','jugar','Game process online · pid 48213 · overlay attached');
+      S.done.jugar=true; syncAll(); toast('ok','The Mojave awaits, Courier'); }); }
+  if(a==='steam'){ toast('info','Opening Steam library · app 22380…'); return; }
+}
+function demoRetryMod(id){ const m=S.mods.find(x=>x.id===id); if(!m||m.status!=='fail') return;
+  job(async()=>{ m.retried=true; log('info','descargar',`Retrying ${m.name}…`);
+    const f=await startDownloads([m]); if(f===0&&S.mods.every(x=>x.status==='done')&&!S.done.descargar) await verifySeq();
+    else if(f>0){ m.status='fail'; renderMod(m); syncSteps(); log('fail','descargar',`✘ ${m.name} still failing`); } }); }
+function confirmReset(){ openModal({ title:'RESET INSTALL PROGRESS?',
+  body:'WARNING: this purges the whole wizard state (sessions, supply drops, logs) back to a fresh vault. The action cannot be undone.',
+  ok:'RESET VAULT', onOk(){ S.done={setup:true,login:false,credenciales:false,descargar:false,instalar:false,jugar:false};
+    S.mods=buildMods(); S.modsOk=0; S.stage4=null; S.busy=false; S.sesion={steam:'off',nexus:'off',user:null};
+    clearLogs(); seedDemoLogs(); syncAll(); renderMods(); toast('ok','Vault reset complete'); } }); }
+
+/* ============ live backend bridge (unchanged endpoints) ============ */
+async function tryLive(){ try{ const c=new AbortController(); const t=setTimeout(()=>c.abort(),1600);
+  const r=await fetch('/api/estado',{signal:c.signal}); clearTimeout(t); if(!r.ok) throw 0; return await r.json(); }catch(e){ return null; } }
+function guessSev(l){ if(/(ERROR|FAIL|✘|TRACEBACK)/i.test(l)) return 'fail'; if(/(WARN|⚠)/i.test(l)) return 'warn'; if(/(OK|DONE|✔|SUCCESS)/i.test(l)) return 'ok'; return 'info'; }
+function applyEstado(d){ if(!d) return;
+  S.done.setup=d.setup==='ok'||d.setup===true;
+  S.done.login=!!(d.sesion&&d.sesion.steam&&d.sesion.steam!=='offline');
+  S.done.credenciales=d.credenciales==='ok'||!!(d.sesion&&d.sesion.nexus&&d.sesion.nexus!=='offline');
+  if(typeof d.mods_ok==='number'){ S.modsOk=d.mods_ok; S.mods.forEach((m,i)=>{ m.status=i<d.mods_ok?'done':'pending'; }); }
+  S.done.descargar=d.archivos==='ok'||S.modsOk>=S.modsTotal;
+  S.done.instalar=(d.mo2==='ok'&&S.done.descargar)||d.juego==='ok';
+  syncAll(); }
+function liveAction(a){ const body = (a==='credenciales') ? JSON.stringify({user:S.draftU||'',pass:S.draftP||''}) : undefined;
+  fetch('/api/accion/'+a,{method:'POST',headers:{'Content-Type':'application/json'},body}).then(r=>r.json()).then(j=>{
+    if(j&&j.job_id!=null){ S.busy=true; syncSteps();
+      const es=new EventSource('/api/log/'+j.job_id);
+      es.onmessage=ev=>String(ev.data).split('\n').forEach(ln=>{ if(ln.trim()) log(guessSev(ln),ORDER[activeIdx()]||'sys',ln.trim()); });
+      es.onerror=()=>{ es.close(); S.busy=false; syncSteps(); tryLive().then(applyEstado); }; }
+    else tryLive().then(applyEstado);
+  }).catch(()=>toast('fail','Backend unreachable')); }
+function runAction(a,el){ if(a==='peek'){ const p=byId('nx-pass'); if(p) p.type=p.type==='password'?'text':'password'; return; }
+  if(a==='reset'){ confirmReset(); return; }
+  if(a==='clear-filters'){ S.filtro={q:'',sec:'All'}; const s=byId('mod-search'); if(s) s.value=''; buildChips(); renderMods(); return; }
+  if(a==='retry-mod'){ const id=+(el&&el.dataset.mod); if(S.mode==='demo') demoRetryMod(id); return; }
+  if(S.mode==='live'){ liveAction(a); return; }
+  demoAction(a,el); }
+
+/* ============ boot ============ */
+function seedDemoLogs(){ log('info','sys','ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM');
+  log('info','sys','COPYRIGHT 2075-2077 ROBCO INDUSTRIES · LOADER V1.1');
+  log('ok','sys','EXECUTE VNV-INSTALLER.EXE');
+  log('warn','sys','Backend not detected at 127.0.0.1:8397 — interactive demo mode');
+  log('ok','setup','Proton-GE 9-11 detected · prefix healthy');
+  log('ok','setup','Mod Organizer 2 portable instance found (VNV-Core)');
+  log('ok','setup','Wine dependencies satisfied · winetricks profile "vnv"');
+  log('info','sys','Wizard ready · continue with Steam authentication'); }
+function wire(){
+  document.addEventListener('click',e=>{
+    const head=e.target.closest('.lg-head'); if(head){ head.parentElement.classList.toggle('closed'); return; }
+    const chip=e.target.closest('.schip'); if(chip){ S.filtro.sec=chip.dataset.sec; buildChips(); renderMods(); return; }
+    const act=e.target.closest('[data-act]'); if(act){ if(act.disabled) return; runAction(act.dataset.act,act); } });
+  document.addEventListener('input',e=>{ if(e.target.id==='nx-user') S.draftU=e.target.value; if(e.target.id==='nx-pass') S.draftP=e.target.value; });
+  byId('mod-search').addEventListener('input',debounce(e=>{ S.filtro.q=e.target.value; renderMods(); },120));
+  $$('.tab').forEach(b=>b.addEventListener('click',()=>{ S.view=b.dataset.view;
+    $$('.tab').forEach(x=>x.classList.toggle('on',x===b));
+    byId('view-wizard').hidden=S.view!=='wizard'; byId('view-mods').hidden=S.view!=='mods';
+    if(S.view==='mods') renderMods(); }));
+  byId('btn-theme').addEventListener('click',()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark',true));
+  byId('btn-reset').addEventListener('click',confirmReset);
+  byId('btn-autoscroll').addEventListener('click',()=>{ S.autoScroll=!S.autoScroll;
+    const b=byId('btn-autoscroll'); b.classList.toggle('on',S.autoScroll);
+    b.dataset.tip=`Auto-scroll: ${S.autoScroll?'on':'off'}`; if(S.autoScroll) logBody.scrollTop=logBody.scrollHeight; });
+  byId('btn-clearlogs').addEventListener('click',clearLogs);
+  byId('modal-cancel').addEventListener('click',closeModal);
+  byId('overlay').addEventListener('click',e=>{ if(e.target.id==='overlay') closeModal(); });
+  byId('modal-ok').addEventListener('click',()=>{ const cb=modalCb; closeModal(); cb&&cb(); });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape') closeModal();
+    if(e.key==='/'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){ e.preventDefault();
+      if(S.view!=='mods') $$('.tab').find(t=>t.dataset.view==='mods').click();
+      byId('mod-search').focus(); } });
+}
+(async function boot(){
+  initTheme(); buildChips(); wire();
+  const d=await tryLive();
+  if(d){ S.mode='live'; applyEstado(d); setInterval(()=>tryLive().then(applyEstado),3000); }
+  else { S.mode='demo'; seedDemoLogs(); }
+  const mb=byId('mode-badge');
+  mb.innerHTML=`<i class="dot"></i>${S.mode==='live'?'LIVE':'DEMO'}`;
+  mb.className='pill '+(S.mode==='live'?'ok':'warn');
+  mb.dataset.tip=S.mode==='live'?'Connected to 127.0.0.1:8397':'Simulated backend — full wizard is interactive';
+  syncAll(); renderMods();
+})();
+})();
+</script>
+</body>
+</html>
+
+  </body>
+  </html>
