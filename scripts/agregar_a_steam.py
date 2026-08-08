@@ -165,12 +165,14 @@ def main():
         scs = {}
 
     nuevo = shortcut(exe, args.nombre, start_dir, args.icono)
+    idx = None
     for key, sc in list(scs.items()):
         if isinstance(sc, dict) and sc.get("Exe") == exe:
             scs[key] = nuevo
+            idx = key  # the real index of the updated entry (NOT the last key)
             print(f"Existing entry updated (index {key}).")
             break
-    else:
+    if idx is None:
         idx = str(max((int(k) for k in scs if str(k).isdigit()), default=-1) + 1)
         scs[idx] = nuevo
         print(f"New entry added (index {idx}).")
@@ -184,7 +186,7 @@ def main():
 
     # round-trip validation
     verif = parse(tmp.read_bytes())
-    sc = verif["shortcuts"][idx if "idx" in locals() else str(list(scs.keys())[-1])]
+    sc = verif["shortcuts"][idx]
     assert sc["Exe"] == exe, "round-trip failed"
     tmp.replace(path)
     print(f"OK: {path}")

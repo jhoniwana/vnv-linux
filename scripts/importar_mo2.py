@@ -446,10 +446,13 @@ def resolver_archivo(est, m):
         p = DEST / info["archivo"]
         if es_archivo_main(p):
             return p
-    cand = [p for p in sorted(DEST.glob(f"*{m['mod_id']}*")) if es_archivo_main(p)]
+    def coincide(p):
+        n = p.name
+        return f"-{m['mod_id']}-" in n or f" {m['mod_id']} " in n or n.startswith(f"{m['mod_id']}-")
+    cand = [p for p in sorted(DEST.glob(f"*{m['mod_id']}*")) if es_archivo_main(p) and coincide(p)]
     if cand:
         return cand[-1]  # the most recent by name (timestamp)
-    # last resort: any
+    # last resort: any matching file
     cand = sorted(DEST.glob(f"*{m['mod_id']}*"))
     return cand[-1] if cand else None
 
@@ -628,11 +631,7 @@ def importar(mo2_dir, args):
         for nuevo in [p for p in plugins_orden if p.lower() not in
                       [x.lower() for x in loadorder]]:
             # insert after the master (first esm of the plugin) or at the end
-            master = None
-            for m in BASE_ESMS:
-                if m.lower() == nuevo.lower():
-                    master = None
-                    break
+            master = next((m for m in BASE_ESMS if m.lower() == nuevo.lower()), None)
             pos = len(loadorder)
             for i, p in enumerate(loadorder):
                 if p.lower() == nuevo.lower():

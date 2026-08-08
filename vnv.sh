@@ -121,28 +121,6 @@ crear_instancia_mo2() {
   ok "Instancia MO2 creada"
 }
 
-dependencias_wine() {
-  info "Conectando MO2 con el Proton de Steam (appid 22380 — Fallout NV)..."
-  # MO2-LINT usa protontricks para correr MO2 dentro del prefix de Proton del juego
-  if ! command -v protontricks >/dev/null 2>&1; then
-    fail "Falta protontricks — instalalo (la UI lo muestra en el setup) o:"
-    fail "  Debian/Ubuntu: sudo apt install protontricks"
-    fail "  Arch:          sudo pacman -S protontricks"
-    fail "  Fedora:        sudo dnf install protontricks"
-    return 1
-  fi
-  ok "protontricks disponible"
-  # asegurar que Steam tenga el prefix del juego (una corrida con Proton lo crea)
-  local prefix="$HOME/.steam/steam/steamapps/compatdata/22380"
-  if [[ ! -d "$prefix" ]]; then
-    info "Proton prefix for FNV does not exist yet."
-    info "  En Steam: FNV -> Propiedades -> Compatibilidad -> forzar Proton -> Jugar UNA vez."
-    info "  (or run: protontricks-launch 22380 cmd /c echo ready)"
-  else
-    ok "Prefix de Proton del juego encontrado: $prefix"
-  fi
-}
-
 importar_mods() {
   info "Importando mods a la instancia de MO2 ($MO2_INSTANCE)..."
   if [[ -d "$ROOT/downloads" && -n "$(ls -A "$ROOT/downloads" 2>/dev/null)" ]]; then
@@ -235,10 +213,11 @@ correr_loot() {
   local game_path="Z:$(echo "$GAME_DIR" | sed 's|/|\\\\|g')"
   local plugin_list="Z:$(echo "$TMP_DIR/loot_plugins.txt" | sed 's|/|\\\\|g')"
   local out="$TMP_DIR/loot_report.json"
+  # grep -E is POSIX (no dependency on rg); -v invert + -i ignore case
   WINEPATH="$dlls" PYTHONPATH="$PT_PYTHONPATH" "$PY" "$PT_LAUNCH" \
     --appid 22380 "$lootcli" --game FalloutNV --gamePath "$game_path" \
     --pluginListPath "$plugin_list" --out "Z:$(echo "$TMP_DIR/loot_report.json" | sed 's|/|\\\\|g')" \
-    --auto-sort 2>&1 | rg -iv "fixme|pressure|Fontconfig|protontricks \(WARNING\)" | tail -5
+    --auto-sort 2>&1 | grep -Eiv "fixme|pressure|Fontconfig|protontricks \(WARNING\)" | tail -5
   if [[ ${PIPESTATUS[0]} -eq 0 ]]; then
     ok "LOOT validated the load order (diagnostic only — profile untouched)"
   else

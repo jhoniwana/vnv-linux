@@ -137,7 +137,8 @@ def main():
     faltan_esm = [e for e in esms if not (fixed / e).exists()]
     notes4 = [e for e in esms if (fixed / e).exists() and (fixed / e).read_bytes()[:4] != b"TES4"]
     check("Fixed ESMs 6/6", not faltan_esm and not notes4,
-          "6/6 TES4" if not faltan_esm and not notes4 else f"faltan {faltan_esm} no-TES4 {notes4}" if "notes4" in dir() else f"faltan {faltan_esm}")
+          "6/6 TES4" if not faltan_esm and not notes4
+          else f"missing {faltan_esm or '-'} non-TES4 {notes4 or '-'}")
 
     # 6) Descargas
     manifest = json.load(open(BASE / "manifest.json")) if (BASE / "manifest.json").exists() else []

@@ -40,6 +40,11 @@ FILE_SIZE_COMPRESS = 0x40000000    # bit 30 del file size (xEdit)
 SIZE_MASK = 0x3FFFFFFF
 # mask to decide if a BSA "has compression" (processable)
 HAS_COMPRESSION = 0x04 | 0x100
+
+# The 32-bit game CANNOT map these decompressed (2.3 GB + 5 GB total > address
+# space) -> startup crash "File not found (2)". Hard block, not just docs:
+# they are the two zlib BSAs that must ALWAYS stay compressed (see BRAIN.md).
+FORBIDDEN_BSAS = {"Fallout - Meshes.bsa", "Fallout - Misc.bsa"}
 POLY = 0x42F0E1EBA9EA3693
 
 
@@ -203,6 +208,10 @@ def main():
         files = sorted((game_dir / "Data").glob("*.bsa"))
     total = 0
     for p in files:
+        if p.name in FORBIDDEN_BSAS:
+            fail(f"{p.name}: REFUSED - decompressing it crashes the 32-bit game "
+                 f"(BRAIN.md). Keep it vanilla.")
+            continue
         data = p.read_bytes()
         try:
             bsa = parse_bsa(data)

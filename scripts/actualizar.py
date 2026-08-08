@@ -66,7 +66,7 @@ def main():
             print(f"    [FAIL] {type(e).__name__}: {str(e)[:90]}")
         time.sleep(5)
 
-    json.dump(todos, open(MANIFEST, "w"), indent=2)
+    json.dump(todos, open(MANIFEST, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
     if cambios:
         fecha = datetime.now().strftime("%Y-%m-%d %H:%M")
         reporte = ROOT / "mods" / "actualizados.md"

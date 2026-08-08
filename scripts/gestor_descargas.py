@@ -76,9 +76,15 @@ def verificar_archivo(path):
 
 
 def archivo_existente(mid):
+    # substring match without delimiters is fragile (a mod_id could be a
+    # substring of another file's name) -> require "mid-" or "mid." style
+    # tokens like the Nexus naming "-51664-" pattern
     for p in DEST.iterdir():
         if p.is_file() and str(mid) in p.name:
-            return p
+            nombre = p.name
+            # Nexus names: "<Mod>-<id>-<ver>-<ts>.7z" -> safe markers
+            if f"-{mid}-" in nombre or f" {mid} " in nombre or nombre.startswith(f"{mid}-"):
+                return p
     return None
 
 

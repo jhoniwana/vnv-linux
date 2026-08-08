@@ -4,26 +4,13 @@
 Usage:
     NEXUS_USER="..." NEXUS_PASS="..." ./venv/bin/python scripts/login_camoufox.py
 
-Saves the sid cookie in ~/.config/vnv-linux/nexus_sid (600).
+Saves the session cookie in ~/.config/vnv-linux/nexus_session (600).
 """
 import os, pathlib, sys, time
 
 CONFIG_DIR = pathlib.Path.home() / ".config" / "vnv-linux"
 SID_FILE = CONFIG_DIR / "nexus_session"   # real cookie: nexusmods_session (formerly 'sid')
 CF_FILE = CONFIG_DIR / "cf_clearance"     # Cloudflare cookie (important for downloads)
-
-def guardar_sid(context):
-    try:
-        cookies = context.cookies()
-        sid = next((c["value"] for c in cookies if c["name"] == "sid"), None)
-        if sid:
-            CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-            SID_FILE.write_text(sid)
-            SID_FILE.chmod(0o600)
-            return True
-    except Exception:
-        pass
-    return False
 
 def main():
     user = os.environ.get("NEXUS_USER", "")
@@ -103,7 +90,7 @@ def main():
 
         if exito:
             print(f"[OK] LOGIN OK WITH CAMOUFOX! sid saved in {SID_FILE}")
-            print("  Next: python3 scripts/descargar_nexus_cookies.py --resume")
+            print("  Next: run ./vnv.sh download to fetch the 55 mods")
         else:
             try:
                 body = page.locator("body").inner_text(timeout=3000)[:250]
