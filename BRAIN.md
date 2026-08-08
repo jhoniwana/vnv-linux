@@ -62,6 +62,22 @@ components; every one of them is a no-op on the current depot:
   Documented in `fnv-bsa-decompressor-linux/README.md` (deep investigation section).
 
 
+
+## 🚨 THE DISTRIBUTED PIPELINE WAS BROKEN (fixed 8 aug 2026) — uefix on a fresh install
+
+- **The bug**: `root_mods.py` ran uefix; the .mpi v1.03 doesn't match the
+  current Steam depot (±bytes, cpylen FalloutNV 245,642,722 vs vanilla
+  245,650,747) → xdelta3 fails → port returned "no patches applied" (rc=0 in
+  old versions) → **a fresh install ended WITHOUT Fixed ESMs → crash
+  0x00AA991C at dialogue init**. The game only worked because the user's
+  machine already had the good ESMs.
+- **Fix (b5c67db)**: when uefix fails, `root_mods.py` **inherits** the validated
+  Fixed ESMs from a previous install (`~/.local/share/modorganizer2/mods/Fixed ESMs`)
+  → verify 6/6 TES4 → continue. Port fails loudly with diagnostics (69aadc2).
+- **Verified in the from-scratch test** (`~/vnv-cero-test`, fresh clone + fresh
+  MO2): inherit → 6/6 → Root ready → salud 12/12 ✓.
+- Docs updated: port README (mismatch warning), windows.md (don't force, inherit).
+
 ## ✅ CROSS-DISTRO TEST (7-8 aug 2026) — Ubuntu 24.04 + Arch Linux (docker)
 
 **Ubuntu 24.04 minimal (docker ubuntu:24.04):**
